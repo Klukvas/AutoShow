@@ -4,7 +4,8 @@ const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const isDev = process.env.NODE_ENV !== 'production';
 // Backend origin (API + presigned upload target) for CSP connect-src.
-const backendOrigin = new URL(process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000/api')
+// `||` (not `??`): an empty build-arg arrives as '' and must also fall back.
+const backendOrigin = new URL(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000/api')
   .origin;
 const mediaHosts = (process.env.NEXT_PUBLIC_MEDIA_HOSTS?.split(',').filter(Boolean) ?? []).map(
   (host) => `https://${host.trim()}`,
