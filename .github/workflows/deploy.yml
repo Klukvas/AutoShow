@@ -142,84 +142,99 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT || 22 }}
           envs: IMAGE_TAG,SITE_URL,DOCKERHUB_USERNAME
-          # script_stop breaks multiline heredocs — explicit `set -e` instead.
+          # Managed .env: deploy-owned keys are re-synced from GitHub vars on
+          # EVERY deploy; secrets are generated once and never rotated here;
+          # tunables get defaults once and manual server-side edits survive.
           script: |
             set -e
             command -v docker >/dev/null 2>&1 || curl -fsSL https://get.docker.com | sh
             mkdir -p /opt/autoflow
             cd /opt/autoflow
 
-            # --- One-time bootstrap: generate .env with random secrets on a
-            # fresh server. Never overwrites an existing .env. Admin password
-            # lands in /opt/autoflow/CREDENTIALS.txt (root-only), not in logs.
             BOOTSTRAPPED=0
-            if [ ! -f .env ]; then
-              BOOTSTRAPPED=1
-              MEDIA_URL="${SITE_URL}:8081"
-              case "$SITE_URL" in http://*) COOKIE_SECURE=false ;; *) COOKIE_SECURE=true ;; esac
+            [ -f .env ] || BOOTSTRAPPED=1
+            touch .env && chmod 600 .env
+
+            # upsert — deploy is the source of truth for these keys
+            set_env() {
+              if grep -q "^$1=" .env; then sed -i "s|^$1=.*|$1=$2|" .env; else echo "$1=$2" >> .env; fi
+            }
+            # add-if-missing — generated/defaulted once, then left alone
+            ensure_env() { grep -q "^$1=" .env || echo "$1=$2" >> .env; }
+
+            # Derive addresses from SITE_URL: explicit http:// → plain-IP mode
+            # (media on :8081); bare/https domain → media.<domain> + TLS.
+            case "$SITE_URL" in
+              http://*) MEDIA_URL="${SITE_URL}:8081"; COOKIE_SECURE=false ;;
+              *) MEDIA_URL="https://media.${SITE_URL#https://}"; COOKIE_SECURE=true ;;
+            esac
+
+            # --- managed by deploy (GitHub vars propagate here) ---
+            set_env DOCKERHUB_USER "$DOCKERHUB_USERNAME"
+            set_env SITE_ADDRESS "$SITE_URL"
+            set_env MEDIA_ADDRESS "$MEDIA_URL"
+            set_env PUBLIC_URL "$SITE_URL"
+            set_env PUBLIC_SITE_URL "$SITE_URL"
+            set_env CORS_ORIGINS "$SITE_URL"
+            set_env S3_ENDPOINT "$MEDIA_URL"
+            set_env S3_PUBLIC_URL "$MEDIA_URL/autoflow"
+            set_env ADMIN_COOKIE_SECURE "$COOKIE_SECURE"
+            set_env NODE_ENV production
+            set_env TRUST_PROXY 1
+
+            # --- secrets: generated on first run only ---
+            ensure_env DB_NAME autoflow
+            ensure_env DB_ADMIN_USER autoflow_owner
+            ensure_env DB_ADMIN_PASSWORD "$(openssl rand -hex 24)"
+            ensure_env DB_APP_USER app_user
+            ensure_env DB_APP_PASSWORD "$(openssl rand -hex 24)"
+            ensure_env JWT_ACCESS_SECRET "$(openssl rand -hex 32)"
+            ensure_env JWT_REFRESH_SECRET "$(openssl rand -hex 32)"
+            ensure_env S3_ACCESS_KEY "autoflow-$(openssl rand -hex 6)"
+            ensure_env S3_SECRET_KEY "$(openssl rand -hex 24)"
+            ensure_env ADMIN_COOKIE_SIGNING_KEY "$(openssl rand -hex 32)"
+            if ! grep -q '^SEED_ADMIN_PASSWORD=' .env; then
               SEED_PASS="Adm!$(openssl rand -hex 8)"
-              cat > .env <<EOF
-            DOCKERHUB_USER=$DOCKERHUB_USERNAME
-            SITE_ADDRESS=$SITE_URL
-            MEDIA_ADDRESS=$MEDIA_URL
-            NODE_ENV=production
-            PORT=3000
-            API_PREFIX=api
-            PUBLIC_URL=$SITE_URL
-            PUBLIC_SITE_URL=$SITE_URL
-            CORS_ORIGINS=$SITE_URL
-            TRUST_PROXY=1
-            LOG_LEVEL=info
-            DB_NAME=autoflow
-            DB_ADMIN_USER=autoflow_owner
-            DB_ADMIN_PASSWORD=$(openssl rand -hex 24)
-            DB_APP_USER=app_user
-            DB_APP_PASSWORD=$(openssl rand -hex 24)
-            REDIS_PASSWORD=
-            REDIS_DB=0
-            JWT_ACCESS_SECRET=$(openssl rand -hex 32)
-            JWT_ACCESS_TTL=900
-            JWT_REFRESH_SECRET=$(openssl rand -hex 32)
-            JWT_REFRESH_TTL=2592000
-            AUTH_MAX_FAILED_ATTEMPTS=5
-            AUTH_LOCKOUT_SECONDS=900
-            AUTH_LOGIN_RATE_PER_MIN=10
-            S3_ENDPOINT=$MEDIA_URL
-            S3_REGION=us-east-1
-            S3_BUCKET=autoflow
-            S3_ACCESS_KEY=autoflow-$(openssl rand -hex 6)
-            S3_SECRET_KEY=$(openssl rand -hex 24)
-            S3_FORCE_PATH_STYLE=true
-            S3_PUBLIC_URL=$MEDIA_URL/autoflow
-            S3_PRESIGNED_PUT_TTL=600
-            MEDIA_MAX_BYTES=20971520
-            MEDIA_ORPHAN_TTL_HOURS=24
-            FX_PROVIDER=static
-            FX_STATIC_USD_UAH=41.5
-            FX_STATIC_USD_EUR=0.92
-            FX_STATIC_EUR_UAH=45.0
-            FX_CACHE_TTL=3600
-            SMTP_HOST=
-            SMTP_PORT=587
-            SMTP_USER=
-            SMTP_PASS=
-            EMAIL_FROM=AutoFlow <no-reply@autoflow.example>
-            LEAD_NOTIFY_TO=
-            LEAD_RATE_PER_HOUR=5
-            PUBLIC_API_RATE_PER_MIN=120
-            VIEW_DEDUP_TTL_SECONDS=600
-            VIEW_FLUSH_INTERVAL_SECONDS=60
-            SEED_ADMIN_EMAIL=admin@autoflow.example
-            SEED_ADMIN_PASSWORD=$SEED_PASS
-            ADMIN_COOKIE_NAME=autoflow_admin
-            ADMIN_COOKIE_DOMAIN=
-            ADMIN_COOKIE_SECURE=$COOKIE_SECURE
-            ADMIN_COOKIE_SIGNING_KEY=$(openssl rand -hex 32)
-            EOF
-              chmod 600 .env
+              echo "SEED_ADMIN_PASSWORD=$SEED_PASS" >> .env
               printf 'Admin login: admin@autoflow.example\nAdmin password: %s\n' "$SEED_PASS" > CREDENTIALS.txt
               chmod 600 CREDENTIALS.txt
             fi
+            ensure_env SEED_ADMIN_EMAIL admin@autoflow.example
+
+            # --- tunables: defaults once, server-side edits survive deploys ---
+            ensure_env PORT 3000
+            ensure_env API_PREFIX api
+            ensure_env LOG_LEVEL info
+            ensure_env REDIS_PASSWORD ""
+            ensure_env REDIS_DB 0
+            ensure_env JWT_ACCESS_TTL 900
+            ensure_env JWT_REFRESH_TTL 2592000
+            ensure_env AUTH_MAX_FAILED_ATTEMPTS 5
+            ensure_env AUTH_LOCKOUT_SECONDS 900
+            ensure_env AUTH_LOGIN_RATE_PER_MIN 10
+            ensure_env S3_REGION us-east-1
+            ensure_env S3_BUCKET autoflow
+            ensure_env S3_FORCE_PATH_STYLE true
+            ensure_env S3_PRESIGNED_PUT_TTL 600
+            ensure_env MEDIA_MAX_BYTES 20971520
+            ensure_env MEDIA_ORPHAN_TTL_HOURS 24
+            ensure_env FX_PROVIDER static
+            ensure_env FX_STATIC_USD_UAH 41.5
+            ensure_env FX_STATIC_USD_EUR 0.92
+            ensure_env FX_STATIC_EUR_UAH 45.0
+            ensure_env FX_CACHE_TTL 3600
+            ensure_env SMTP_HOST ""
+            ensure_env SMTP_PORT 587
+            ensure_env SMTP_USER ""
+            ensure_env SMTP_PASS ""
+            ensure_env EMAIL_FROM "AutoFlow <no-reply@autoflow.example>"
+            ensure_env LEAD_NOTIFY_TO ""
+            ensure_env LEAD_RATE_PER_HOUR 5
+            ensure_env PUBLIC_API_RATE_PER_MIN 120
+            ensure_env VIEW_DEDUP_TTL_SECONDS 600
+            ensure_env VIEW_FLUSH_INTERVAL_SECONDS 60
+            ensure_env ADMIN_COOKIE_NAME autoflow_admin
+            ensure_env ADMIN_COOKIE_DOMAIN ""
 
             export IMAGE_TAG
             docker compose pull app worker frontend
@@ -228,10 +243,9 @@ jobs:
             # app (expand-only) — see deploy/README.md.
             docker compose run --rm app npm run migration:run:prod
             docker compose up -d --remove-orphans
-            # First run: seed the catalog and the admin account.
-            if [ "$BOOTSTRAPPED" = "1" ]; then
-              docker compose run --rm app npm run seed
-            fi
+            # Idempotent: creates catalog/admin on first run, no-ops after —
+            # and heals a half-bootstrapped server from a failed first deploy.
+            docker compose run --rm app npm run seed:prod
             docker image prune -f
             # Persist the deployed tag for manual compose commands on the box.
             # `|` delimiter: tags never contain it, unlike `/`.

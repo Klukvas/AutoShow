@@ -25,17 +25,20 @@ MEDIA_ADDRESS        → MinIO :9000 (фото: публичное чтение 
 
 ## 1. Разовая подготовка сервера (Hetzner Cloud, Ubuntu 22.04+)
 
-```bash
-# Docker + compose-плагин
-curl -fsSL https://get.docker.com | sh
+Ручной подготовки почти нет — первый деплой сам ставит docker, создаёт
+`/opt/autoflow/.env` и сидит каталог с админ-аккаунтом.
 
-# Каталог приложения
-mkdir -p /opt/autoflow
-cd /opt/autoflow
+**`.env` на сервере управляется деплоем:**
+- адресные ключи (`SITE_ADDRESS`, `PUBLIC_SITE_URL`, `CORS_ORIGINS`, `S3_*_URL`,
+  `ADMIN_COOKIE_SECURE`, …) пересинхронизируются из GitHub Variables при
+  **каждом** деплое — смена `SITE_URL` в GitHub применяется автоматически;
+- секреты (пароли БД, JWT, ключи MinIO, подпись cookie) генерируются один раз
+  и деплоем никогда не перезаписываются;
+- тюнинги (rate limits, SMTP, FX-курсы) получают дефолт один раз — ручные
+  правки на сервере переживают деплои.
 
-# Окружение: скопировать deploy/.env.production.example → /opt/autoflow/.env
-# и заполнить ВСЕ CHANGE_ME (openssl rand -hex 32 для секретов).
-```
+Пароль админки после первого деплоя: `cat /opt/autoflow/CREDENTIALS.txt`
+(логин `admin@autoflow.example`).
 
 DNS (только доменный режим): A-записи `SITE_ADDRESS` и `MEDIA_ADDRESS` → IP
 сервера до первого запуска, иначе Let's Encrypt не выдаст сертификат.

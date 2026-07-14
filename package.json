@@ -22,6 +22,7 @@
     "migration:run:prod": "typeorm migration:run -d dist/src/database/data-source.js",
     "migration:revert": "npm run typeorm -- migration:revert",
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/run-seeds.ts",
+    "seed:prod": "node dist/src/database/seeds/run-seeds.js",
     "seed:demo": "ts-node -r tsconfig-paths/register src/database/seeds/demo/seed-demo-cars.ts",
     "test": "jest",
     "test:watch": "jest --watch",
