@@ -35,7 +35,9 @@ services:
       BACKEND_INTERNAL_URL: http://app:3000/api
       ADMIN_COOKIE_NAME: ${ADMIN_COOKIE_NAME}
       ADMIN_COOKIE_DOMAIN: ${ADMIN_COOKIE_DOMAIN:-}
-      ADMIN_COOKIE_SECURE: "true"
+      # From the managed .env: false in plain-HTTP (IP) mode — a Secure cookie
+      # over http:// is silently dropped by the browser (= instant logout).
+      ADMIN_COOKIE_SECURE: ${ADMIN_COOKIE_SECURE:-true}
       ADMIN_COOKIE_SIGNING_KEY: ${ADMIN_COOKIE_SIGNING_KEY}
     depends_on:
       - app
