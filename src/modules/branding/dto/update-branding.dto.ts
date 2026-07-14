@@ -1,5 +1,13 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsHexColor, IsIn, IsObject, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import {
+  IsHexColor,
+  IsIn,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUrl,
+  MaxLength,
+} from 'class-validator';
 import { CURRENCIES, type Currency } from '../../../common/types/currency';
 import type { SeoDefaults, SocialLinks, WorkingHours } from '../entities/site-settings.entity';
 

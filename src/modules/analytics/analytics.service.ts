@@ -119,7 +119,13 @@ export class AnalyticsService {
       views: {
         total: viewsRow[0]?.total ?? 0,
         top: topViews.map(
-          (row: { id: string; slug: string; title: string; status: string; views_count: number }) => ({
+          (row: {
+            id: string;
+            slug: string;
+            title: string;
+            status: string;
+            views_count: number;
+          }) => ({
             id: row.id,
             slug: row.slug,
             title: row.title,
@@ -128,13 +134,11 @@ export class AnalyticsService {
           }),
         ),
       },
-      salesByMonth: byMonth.map(
-        (row: { month: string; count: number; commission: string }) => ({
-          month: row.month,
-          count: row.count,
-          commission: String(row.commission),
-        }),
-      ),
+      salesByMonth: byMonth.map((row: { month: string; count: number; commission: string }) => ({
+        month: row.month,
+        count: row.count,
+        commission: String(row.commission),
+      })),
     };
   }
 }

@@ -59,7 +59,12 @@ async function putObject(
   contentType: string,
 ): Promise<void> {
   await storage.client.send(
-    new PutObjectCommand({ Bucket: storage.bucket, Key: key, Body: body, ContentType: contentType }),
+    new PutObjectCommand({
+      Bucket: storage.bucket,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+    }),
   );
 }
 
@@ -118,7 +123,8 @@ export async function ingestListingPhoto(
         .rotate()
         .resize({ width: targetWidth, withoutEnlargement: true });
       let buffer: Buffer;
-      if (combo.format === 'webp') buffer = await pipeline.webp({ quality: combo.quality }).toBuffer();
+      if (combo.format === 'webp')
+        buffer = await pipeline.webp({ quality: combo.quality }).toBuffer();
       else if (combo.format === 'avif')
         buffer = await pipeline.avif({ quality: combo.quality }).toBuffer();
       else buffer = await pipeline.jpeg({ quality: combo.quality, mozjpeg: true }).toBuffer();

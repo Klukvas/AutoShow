@@ -136,7 +136,9 @@ async function ensureListing(
     .filter((id): id is string => Boolean(id));
   if (optionIds.length > 0) {
     const linkRepo = ds.getRepository(ListingOption);
-    await linkRepo.save(optionIds.map((optionId) => linkRepo.create({ listingId: saved.id, optionId })));
+    await linkRepo.save(
+      optionIds.map((optionId) => linkRepo.create({ listingId: saved.id, optionId })),
+    );
   }
   console.log(`Created listing ${spec.slug}`);
   return saved;
@@ -230,7 +232,9 @@ async function main(): Promise<void> {
       .count({ where: { status: 'published', deletedAt: IsNull() } });
     console.log(`Done. Published listings: ${published}.`);
     if (withoutPhotos.length > 0) {
-      console.warn(`Listings without photos (photo sources unavailable): ${withoutPhotos.join(', ')}`);
+      console.warn(
+        `Listings without photos (photo sources unavailable): ${withoutPhotos.join(', ')}`,
+      );
     }
   } finally {
     await ds.destroy();
