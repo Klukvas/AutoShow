@@ -130,19 +130,97 @@ jobs:
           strip_components: 1
           overwrite: true
 
-      - name: Pull, migrate, restart
+      - name: Bootstrap (first run), pull, migrate, restart
         uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
         env:
           IMAGE_TAG: ${{ github.event.inputs.image_tag || github.sha }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT || 22 }}
-          envs: IMAGE_TAG
-          script_stop: true
+          envs: IMAGE_TAG,SITE_URL,DOCKERHUB_USERNAME
+          # script_stop breaks multiline heredocs — explicit `set -e` instead.
           script: |
+            set -e
+            command -v docker >/dev/null 2>&1 || curl -fsSL https://get.docker.com | sh
+            mkdir -p /opt/autoflow
             cd /opt/autoflow
+
+            # --- One-time bootstrap: generate .env with random secrets on a
+            # fresh server. Never overwrites an existing .env. Admin password
+            # lands in /opt/autoflow/CREDENTIALS.txt (root-only), not in logs.
+            BOOTSTRAPPED=0
+            if [ ! -f .env ]; then
+              BOOTSTRAPPED=1
+              MEDIA_URL="${SITE_URL}:8081"
+              case "$SITE_URL" in http://*) COOKIE_SECURE=false ;; *) COOKIE_SECURE=true ;; esac
+              SEED_PASS="Adm!$(openssl rand -hex 8)"
+              cat > .env <<EOF
+            DOCKERHUB_USER=$DOCKERHUB_USERNAME
+            SITE_ADDRESS=$SITE_URL
+            MEDIA_ADDRESS=$MEDIA_URL
+            NODE_ENV=production
+            PORT=3000
+            API_PREFIX=api
+            PUBLIC_URL=$SITE_URL
+            PUBLIC_SITE_URL=$SITE_URL
+            CORS_ORIGINS=$SITE_URL
+            TRUST_PROXY=1
+            LOG_LEVEL=info
+            DB_NAME=autoflow
+            DB_ADMIN_USER=autoflow_owner
+            DB_ADMIN_PASSWORD=$(openssl rand -hex 24)
+            DB_APP_USER=app_user
+            DB_APP_PASSWORD=$(openssl rand -hex 24)
+            REDIS_PASSWORD=
+            REDIS_DB=0
+            JWT_ACCESS_SECRET=$(openssl rand -hex 32)
+            JWT_ACCESS_TTL=900
+            JWT_REFRESH_SECRET=$(openssl rand -hex 32)
+            JWT_REFRESH_TTL=2592000
+            AUTH_MAX_FAILED_ATTEMPTS=5
+            AUTH_LOCKOUT_SECONDS=900
+            AUTH_LOGIN_RATE_PER_MIN=10
+            S3_ENDPOINT=$MEDIA_URL
+            S3_REGION=us-east-1
+            S3_BUCKET=autoflow
+            S3_ACCESS_KEY=autoflow-$(openssl rand -hex 6)
+            S3_SECRET_KEY=$(openssl rand -hex 24)
+            S3_FORCE_PATH_STYLE=true
+            S3_PUBLIC_URL=$MEDIA_URL/autoflow
+            S3_PRESIGNED_PUT_TTL=600
+            MEDIA_MAX_BYTES=20971520
+            MEDIA_ORPHAN_TTL_HOURS=24
+            FX_PROVIDER=static
+            FX_STATIC_USD_UAH=41.5
+            FX_STATIC_USD_EUR=0.92
+            FX_STATIC_EUR_UAH=45.0
+            FX_CACHE_TTL=3600
+            SMTP_HOST=
+            SMTP_PORT=587
+            SMTP_USER=
+            SMTP_PASS=
+            EMAIL_FROM=AutoFlow <no-reply@autoflow.example>
+            LEAD_NOTIFY_TO=
+            LEAD_RATE_PER_HOUR=5
+            PUBLIC_API_RATE_PER_MIN=120
+            VIEW_DEDUP_TTL_SECONDS=600
+            VIEW_FLUSH_INTERVAL_SECONDS=60
+            SEED_ADMIN_EMAIL=admin@autoflow.example
+            SEED_ADMIN_PASSWORD=$SEED_PASS
+            ADMIN_COOKIE_NAME=autoflow_admin
+            ADMIN_COOKIE_DOMAIN=
+            ADMIN_COOKIE_SECURE=$COOKIE_SECURE
+            ADMIN_COOKIE_SIGNING_KEY=$(openssl rand -hex 32)
+            EOF
+              chmod 600 .env
+              printf 'Admin login: admin@autoflow.example\nAdmin password: %s\n' "$SEED_PASS" > CREDENTIALS.txt
+              chmod 600 CREDENTIALS.txt
+            fi
+
             export IMAGE_TAG
             docker compose pull app worker frontend
             # Migrations run against the NEW image before the app flips over.
@@ -150,6 +228,10 @@ jobs:
             # app (expand-only) — see deploy/README.md.
             docker compose run --rm app npm run migration:run:prod
             docker compose up -d --remove-orphans
+            # First run: seed the catalog and the admin account.
+            if [ "$BOOTSTRAPPED" = "1" ]; then
+              docker compose run --rm app npm run seed
+            fi
             docker image prune -f
             # Persist the deployed tag for manual compose commands on the box.
             # `|` delimiter: tags never contain it, unlike `/`.
