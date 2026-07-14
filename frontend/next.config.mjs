@@ -7,11 +7,19 @@ const isDev = process.env.NODE_ENV !== 'production';
 // `||` (not `??`): an empty build-arg arrives as '' and must also fall back.
 const backendOrigin = new URL(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000/api')
   .origin;
-const mediaHosts = (process.env.NEXT_PUBLIC_MEDIA_HOSTS?.split(',').filter(Boolean) ?? []).map(
-  (host) => `https://${host.trim()}`,
-);
+/**
+ * NEXT_PUBLIC_MEDIA_HOSTS entries: bare hostname (`media.example.com` → https)
+ * or a full origin (`http://157.90.1.2:8081` — the no-domain deploy mode).
+ */
+const mediaEntries = (process.env.NEXT_PUBLIC_MEDIA_HOSTS?.split(',') ?? [])
+  .map((entry) => entry.trim())
+  .filter(Boolean)
+  .map((entry) => new URL(entry.includes('://') ? entry : `https://${entry}`));
 // Dev media/storage lives on MinIO; prod comes from NEXT_PUBLIC_MEDIA_HOSTS.
-const mediaOrigins = [...(isDev ? ['http://localhost:9000'] : []), ...mediaHosts];
+const mediaOrigins = [
+  ...(isDev ? ['http://localhost:9000'] : []),
+  ...mediaEntries.map((u) => u.origin),
+];
 
 /**
  * Pragmatic CSP: source allowlists + frame/object hardening. `unsafe-inline`
@@ -53,11 +61,13 @@ const nextConfig = {
         protocol: 'http',
         hostname: 'localhost',
       },
-      // Allow MinIO in dev + production S3/CDN — set NEXT_PUBLIC_MEDIA_HOSTS
-      // to a comma-separated list of additional hostnames.
-      ...(process.env.NEXT_PUBLIC_MEDIA_HOSTS?.split(',').filter(Boolean) ?? []).map(
-        (host) => ({ protocol: 'https', hostname: host }),
-      ),
+      // Allow MinIO in dev + production S3/CDN — from NEXT_PUBLIC_MEDIA_HOSTS
+      // (bare hostnames or full origins, see mediaEntries above).
+      ...mediaEntries.map((u) => ({
+        protocol: u.protocol.replace(':', ''),
+        hostname: u.hostname,
+        ...(u.port ? { port: u.port } : {}),
+      })),
     ],
   },
   async headers() {

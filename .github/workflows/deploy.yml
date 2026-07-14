@@ -49,11 +49,12 @@ jobs:
       - name: Validate repo variables
         run: |
           missing=""
-          [ -z "${{ vars.DOMAIN }}" ] && missing="$missing DOMAIN"
+          [ -z "${{ vars.SITE_URL }}" ] && missing="$missing SITE_URL"
           [ -z "${{ vars.NEXT_PUBLIC_BACKEND_URL }}" ] && missing="$missing NEXT_PUBLIC_BACKEND_URL"
           if [ -n "$missing" ]; then
             echo "::error::Missing GitHub repo VARIABLES (Settings → Secrets and variables → Actions → Variables):$missing"
-            echo "::error::Example: DOMAIN=autoflow.example.com, NEXT_PUBLIC_BACKEND_URL=https://autoflow.example.com/api, NEXT_PUBLIC_MEDIA_HOSTS=media.autoflow.example.com"
+            echo "::error::Domain mode: SITE_URL=https://autoflow.example.com, NEXT_PUBLIC_BACKEND_URL=https://autoflow.example.com/api, NEXT_PUBLIC_MEDIA_HOSTS=media.autoflow.example.com"
+            echo "::error::IP-only mode: SITE_URL=http://157.90.x.y, NEXT_PUBLIC_BACKEND_URL=http://157.90.x.y/api, NEXT_PUBLIC_MEDIA_HOSTS=http://157.90.x.y:8081"
             exit 1
           fi
 
@@ -156,11 +157,11 @@ jobs:
 
       - name: Smoke check
         run: |
-          # First deploy includes Let's Encrypt issuance — retry instead of
-          # a fixed sleep.
+          # First HTTPS deploy includes Let's Encrypt issuance — retry instead
+          # of a fixed sleep. SITE_URL carries the scheme (http:// for IP-only).
           for i in $(seq 1 12); do
-            if curl -sSf --max-time 10 "https://${{ vars.DOMAIN }}/api/listings?limit=1" > /dev/null \
-               && curl -sSf --max-time 10 "https://${{ vars.DOMAIN }}/" > /dev/null; then
+            if curl -sSf --max-time 10 "${{ vars.SITE_URL }}/api/listings?limit=1" > /dev/null \
+               && curl -sSf --max-time 10 "${{ vars.SITE_URL }}/" > /dev/null; then
               echo "Smoke check passed (attempt $i)"
               exit 0
             fi

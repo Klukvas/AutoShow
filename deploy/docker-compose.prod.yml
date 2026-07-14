@@ -1,7 +1,7 @@
 # Production compose for a single Hetzner server.
 # Copied to /opt/autoflow/docker-compose.yml by the deploy workflow.
-# Interpolation values (DOCKERHUB_USER, IMAGE_TAG, DOMAIN, MEDIA_DOMAIN) and
-# service env come from /opt/autoflow/.env — see .env.production.example.
+# Interpolation values (DOCKERHUB_USER, IMAGE_TAG, SITE_ADDRESS, MEDIA_ADDRESS)
+# and service env come from /opt/autoflow/.env — see .env.production.example.
 
 services:
   caddy:
@@ -10,9 +10,11 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      # Media entrypoint in the no-domain (plain-IP) mode; idle otherwise.
+      - "8081:8081"
     environment:
-      DOMAIN: ${DOMAIN}
-      MEDIA_DOMAIN: ${MEDIA_DOMAIN}
+      SITE_ADDRESS: ${SITE_ADDRESS}
+      MEDIA_ADDRESS: ${MEDIA_ADDRESS}
       S3_BUCKET: ${S3_BUCKET}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro

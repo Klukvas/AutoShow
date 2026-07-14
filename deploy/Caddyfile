@@ -1,9 +1,14 @@
-# Caddy v2 — automatic HTTPS via Let's Encrypt.
-# DOMAIN / MEDIA_DOMAIN come from the compose environment.
+# Caddy v2. Site addresses come from the compose environment:
+#   SITE_ADDRESS  — `autoflow.example.com` (auto-HTTPS via Let's Encrypt)
+#                   or `http://157.90.x.y` (plain HTTP when there is no domain)
+#   MEDIA_ADDRESS — `media.autoflow.example.com` or `http://157.90.x.y:8081`
+# A bare hostname turns TLS on automatically; an explicit http:// prefix or
+# port keeps it plain HTTP — no other changes needed between the two modes.
 
-{$DOMAIN} {
+{$SITE_ADDRESS} {
 	encode zstd gzip
 
+	# No-op over plain HTTP; hardens the HTTPS mode.
 	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
 	# API → NestJS. The /api prefix is part of the backend routing (global
@@ -21,9 +26,9 @@
 }
 
 # Object storage: public bucket reads + presigned uploads. The backend signs
-# URLs against https://{$MEDIA_DOMAIN} (S3_ENDPOINT), so the browser PUTs
-# arrive here and are proxied to MinIO with the signature intact.
-{$MEDIA_DOMAIN} {
+# URLs against MEDIA_ADDRESS (S3_ENDPOINT), so the browser PUTs arrive here
+# and are proxied to MinIO with the signature intact.
+{$MEDIA_ADDRESS} {
 	encode zstd gzip
 	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
