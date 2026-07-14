@@ -21,8 +21,13 @@ export function ContactPanel({ listing, branding }: ContactPanelProps) {
   const price = formatMoney(listing.price.amount, listing.price.currency);
   const priceNote = formatPriceNote(listing.price, branding?.defaultCurrency, t('negotiable'));
 
-  const phone = branding?.contactPhone;
+  // Client (consignment) car → the owner's contacts; own car → the showroom's.
+  const isClientCar = listing.seller.type === 'client' && Boolean(listing.seller.phone);
+  const phone = isClientCar ? listing.seller.phone : branding?.contactPhone;
   const phoneHref = phone ? `tel:${phone.replace(/[^+\d]/g, '')}` : null;
+  const sellerLine = isClientCar
+    ? t('sellerPrivate', { name: listing.seller.name ?? t('sellerPrivateFallback') })
+    : t('sellerDealer', { name: branding?.displayName ?? 'AutoFlow' });
 
   const trust = [
     listing.customsCleared ? t('trustCustoms') : null,
@@ -36,6 +41,7 @@ export function ContactPanel({ listing, branding }: ContactPanelProps) {
     <div className="rounded-card border border-line bg-surface p-6 shadow-panel">
       <div className="tabular font-heading text-price-lg font-extrabold text-ink">{price}</div>
       {priceNote && <p className="mt-1 text-sub text-ink-2">{priceNote}</p>}
+      <p className="mt-2 text-sub font-semibold text-ink-2">{sellerLine}</p>
 
       <div className="mt-5 space-y-2.5">
         {phoneHref && (
@@ -81,11 +87,14 @@ export function ContactPanel({ listing, branding }: ContactPanelProps) {
               {phone}
             </a>
           )}
-          {hours.map((line) => (
-            <p key={line} className="tabular mt-1 text-sub text-ink-3">
-              {line}
-            </p>
-          ))}
+          {/* Working hours are the showroom's — irrelevant next to a private
+              owner's phone number. */}
+          {!isClientCar &&
+            hours.map((line) => (
+              <p key={line} className="tabular mt-1 text-sub text-ink-3">
+                {line}
+              </p>
+            ))}
         </div>
       )}
     </div>

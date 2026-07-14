@@ -38,6 +38,8 @@ export interface PublicListing {
   title: string;
   description: string;
   status: 'published' | 'reserved' | 'sold';
+  /** Own showroom car (contacts = branding) vs client's car (owner contacts). */
+  seller: { type: 'own' | 'client'; name: string | null; phone: string | null };
   make: CatalogRef;
   model: CatalogRef;
   generation: string | null;

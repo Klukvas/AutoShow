@@ -181,7 +181,11 @@ export default async function ListingPage({ params }: PageProps) {
       </div>
 
       <SimilarCars listing={listing} baseCurrency={baseCurrency} />
-      <MobileCtaBar branding={branding} acceptsLeads={acceptsLeads} />
+      <MobileCtaBar
+        branding={branding}
+        acceptsLeads={acceptsLeads}
+        phoneOverride={listing.seller.type === 'client' ? listing.seller.phone : undefined}
+      />
     </div>
   );
 }

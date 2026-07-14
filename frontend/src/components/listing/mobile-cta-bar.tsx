@@ -10,13 +10,16 @@ import type { Branding } from '@/lib/api/types';
 export function MobileCtaBar({
   branding,
   acceptsLeads = true,
+  phoneOverride,
 }: {
   branding: Branding | null;
   /** false on sold listings — the lead form is not rendered there. */
   acceptsLeads?: boolean;
+  /** Client (consignment) cars: the owner's phone instead of the showroom's. */
+  phoneOverride?: string | null;
 }) {
   const t = useTranslations('listing');
-  const phone = branding?.contactPhone;
+  const phone = phoneOverride ?? branding?.contactPhone;
   const phoneHref = phone ? `tel:${phone.replace(/[^+\d]/g, '')}` : null;
   if (!phoneHref && !acceptsLeads) return null;
 

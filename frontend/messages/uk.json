@@ -158,7 +158,10 @@
       "damaged": "після ДТП"
     },
     "yes": "так",
-    "no": "ні"
+    "no": "ні",
+    "sellerPrivate": "Продавець: {name} · приватна особа",
+    "sellerPrivateFallback": "приватна особа",
+    "sellerDealer": "Продавець: {name} · автосалон"
   },
   "lead": {
     "title": "Залишити заявку",

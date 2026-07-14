@@ -75,6 +75,12 @@ export interface PublicListing {
     isNegotiable: boolean;
   };
   location: { city: string; region: string | null };
+  /**
+   * Who is selling: the showroom's own car (contacts come from branding) or a
+   * client's consignment car (owner's contacts shown so buyers reach them
+   * directly). Contacts are dropped once the car is sold.
+   */
+  seller: { type: 'own' | 'client'; name: string | null; phone: string | null };
   publishedAt: string | null;
   viewsCount: number;
   media: PublicListingMedia[];
@@ -145,6 +151,13 @@ export class ListingsMapper {
         isNegotiable: listing.isNegotiable,
       },
       location: { city: listing.locationCity, region: listing.locationRegion },
+      seller: {
+        type: listing.sellerType,
+        name:
+          listing.sellerType === 'client' && listing.status !== 'sold' ? listing.sellerName : null,
+        phone:
+          listing.sellerType === 'client' && listing.status !== 'sold' ? listing.sellerPhone : null,
+      },
       publishedAt: listing.publishedAt?.toISOString() ?? null,
       viewsCount: listing.viewsCount,
       media: mediaSorted.map((m) => this.mapMedia(m)),
