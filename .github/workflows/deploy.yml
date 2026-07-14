@@ -1,0 +1,158 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Existing image tag to (re)deploy — e.g. a previous SHA for rollback. Leave empty to build from this commit.'
+        required: false
+
+# Never two deploys at once; a queued deploy waits for the running one.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  BACKEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/autoflow-backend
+  FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/autoflow-frontend
+
+jobs:
+  test:
+    name: Gate — backend checks
+    runs-on: ubuntu-latest
+    # Rollback path redeploys an already-tested image; skip the gate.
+    if: ${{ github.event.inputs.image_tag == '' || github.event.inputs.image_tag == null }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+  build-push:
+    name: Build & push images
+    runs-on: ubuntu-latest
+    needs: [test]
+    if: ${{ github.event.inputs.image_tag == '' || github.event.inputs.image_tag == null }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & push backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.BACKEND_IMAGE }}:latest
+            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+
+      - name: Build & push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            NEXT_PUBLIC_BACKEND_URL=${{ vars.NEXT_PUBLIC_BACKEND_URL }}
+            NEXT_PUBLIC_MEDIA_HOSTS=${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
+          tags: |
+            ${{ env.FRONTEND_IMAGE }}:latest
+            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,scope=frontend,mode=max
+
+  deploy:
+    name: Deploy to Hetzner
+    runs-on: ubuntu-latest
+    needs: [test, build-push]
+    # needs are skipped on rollback runs; always() lets deploy proceed then.
+    if: >-
+      ${{ always() &&
+          (needs.build-push.result == 'success' || needs.build-push.result == 'skipped') &&
+          (needs.test.result == 'success' || needs.test.result == 'skipped') }}
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate rollback tag
+        if: ${{ github.event.inputs.image_tag != '' && github.event.inputs.image_tag != null }}
+        run: |
+          echo "${{ github.event.inputs.image_tag }}" | grep -qE '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$' \
+            || { echo "image_tag contains characters that are invalid in a docker tag"; exit 1; }
+
+      - name: Prepare server bundle
+        run: |
+          mkdir -p bundle/postgres-init
+          cp deploy/docker-compose.prod.yml bundle/docker-compose.yml
+          cp deploy/Caddyfile bundle/Caddyfile
+          cp docker/postgres/init/* bundle/postgres-init/
+
+      # appleboy/* actions receive live production secrets — pinned by commit
+      # SHA so a re-pointed tag upstream cannot exfiltrate them.
+      - name: Copy compose bundle to server
+        uses: appleboy/scp-action@917f8b81dfc1ccd331fef9e2d61bdc6c8be94634 # v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          source: 'bundle/*'
+          target: /opt/autoflow
+          strip_components: 1
+          overwrite: true
+
+      - name: Pull, migrate, restart
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag || github.sha }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          envs: IMAGE_TAG
+          script_stop: true
+          script: |
+            cd /opt/autoflow
+            export IMAGE_TAG
+            docker compose pull app worker frontend
+            # Migrations run against the NEW image before the app flips over.
+            # They must stay backward-compatible with the still-running old
+            # app (expand-only) — see deploy/README.md.
+            docker compose run --rm app npm run migration:run:prod
+            docker compose up -d --remove-orphans
+            docker image prune -f
+            # Persist the deployed tag for manual compose commands on the box.
+            # `|` delimiter: tags never contain it, unlike `/`.
+            grep -q '^IMAGE_TAG=' .env && sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=$IMAGE_TAG|" .env || echo "IMAGE_TAG=$IMAGE_TAG" >> .env
+
+      - name: Smoke check
+        run: |
+          # First deploy includes Let's Encrypt issuance — retry instead of
+          # a fixed sleep.
+          for i in $(seq 1 12); do
+            if curl -sSf --max-time 10 "https://${{ vars.DOMAIN }}/api/listings?limit=1" > /dev/null \
+               && curl -sSf --max-time 10 "https://${{ vars.DOMAIN }}/" > /dev/null; then
+              echo "Smoke check passed (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "Smoke check FAILED after 12 attempts"
+          exit 1

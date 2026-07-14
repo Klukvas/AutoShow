@@ -1,0 +1,276 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ====================================================================
+ *  Design tokens — vitrina handoff (design_handoff_vitrina/README.md).
+ *
+ *  Colours are stored as space-separated RGB CHANNELS (not hex) so
+ *  Tailwind's `/opacity` modifier can emit `rgb(var(--x) / <alpha-value>)`.
+ *  Use them in raw CSS via rgb(var(--x)).
+ *
+ *  --accent / --accent-hover are brand-configurable: overridden per theme
+ *  via an inline <style> injected at SSR (src/lib/branding/theme.ts).
+ *  Accent-soft surfaces are built with alpha (bg-accent/[0.08]) so ANY
+ *  brand colour works — never hardcode accent-tinted hexes.
+ * ==================================================================== */
+
+/* ---------- Light theme (primary). Declared on [data-theme='light'] too,
+   so a subtree (the admin shell) can pin itself light regardless of the
+   html-level theme attribute. ---------- */
+:root,
+[data-theme='light'] {
+  /* Canvas & surfaces */
+  --bg: 245 245 242; /* #F5F5F2 page background */
+  --canvas: 237 237 232; /* #EDEDE8 outer canvas */
+  --surface: 255 255 255; /* #FFFFFF cards / panels */
+  --surface-warm: 250 250 248; /* #FAFAF8 editorial hero */
+  --surface-2: 251 251 249; /* #FBFBF9 filter rail */
+
+  /* Ink */
+  --ink: 20 22 27; /* #14161B primary text */
+  --ink-2: 86 91 103; /* #565B67 secondary */
+  --ink-3: 140 146 158; /* #8C929E tertiary / placeholder */
+
+  /* Lines */
+  --line: 236 236 230; /* #ECECE6 */
+  --line-input: 221 221 214; /* #DDDDD6 inputs */
+  --line-strong: 219 219 212; /* #DBDBD4 window chrome */
+  --line-hover: 214 214 207; /* #D6D6CF card hover border */
+
+  /* Accent — SSR-overridden from site settings */
+  --accent: 46 83 230; /* #2E53E6 */
+  --accent-hover: 35 64 192; /* #2340C0 */
+  --on-accent: 255 255 255;
+
+  /* Focus ring — teal, intentionally separate from accent */
+  --focus: 14 158 158; /* #0E9E9E */
+
+  /* Statuses */
+  --ok: 31 157 87; /* #1F9D57 available */
+  --ok-bg: 231 246 238; /* #E7F6EE */
+  --warn: 224 138 0; /* #E08A00 reserved */
+  --warn-strong: 182 123 0; /* #B67B00 reserved text-on-light */
+  --danger: 180 69 60; /* #B4453C sold / error */
+  --danger-bg: 251 234 231; /* #FBEAE7 */
+  --danger-line: 242 217 213; /* #F2D9D5 */
+  --ratelimit: 138 99 0; /* #8A6300 */
+  --ratelimit-2: 154 122 46; /* #9A7A2E */
+  --ratelimit-bg: 255 249 236; /* #FFF9EC */
+  --ratelimit-line: 243 226 184; /* #F3E2B8 */
+
+  /* Media placeholder & skeleton */
+  --ph-a: 238 240 242; /* #EEF0F2 gradient start */
+  --ph-b: 224 226 230; /* #E0E2E6 gradient end */
+  --ph-glyph: 196 199 206; /* #C4C7CE car glyph */
+  --skeleton: 233 234 236; /* #E9EAEC */
+  --skeleton-hi: 242 243 244; /* #F2F3F4 */
+
+  /* Shadow colour channel — alpha is baked into the boxShadow tokens */
+  --shadow: 20 22 27;
+
+  /* ---- Admin backoffice ---- */
+  /* Sidebar is a DARK surface in both themes (admin handoff). */
+  --sb-bg: 20 22 27; /* #14161B */
+  --sb-ink: 255 255 255;
+  --sb-ink-2: 199 202 209; /* #C7CAD1 secondary */
+  --sb-muted: 155 160 171; /* #9BA0AB inactive nav */
+  --sb-faint: 124 129 140; /* #7C818C tertiary */
+  /* Alpha-baked (used without /opacity modifier). */
+  --sb-line: rgba(255, 255, 255, 0.08);
+  --sb-active: rgba(255, 255, 255, 0.08);
+  --sb-input-line: rgba(255, 255, 255, 0.14);
+  --sb-input-bg: rgba(255, 255, 255, 0.05);
+
+  /* Listing lifecycle badges — exact admin handoff pairs (bg/fg). */
+  --st-draft-bg: 239 239 234; /* #EFEFEA */
+  --st-draft-fg: 124 129 140; /* #7C818C */
+  --st-published-bg: 231 246 238; /* #E7F6EE */
+  --st-published-fg: 31 138 76; /* #1F8A4C */
+  --st-reserved-bg: 255 243 220; /* #FFF3DC */
+  --st-reserved-fg: 182 123 0; /* #B67B00 */
+  --st-sold-bg: 251 234 231; /* #FBEAE7 */
+  --st-sold-fg: 180 69 60; /* #B4453C */
+  --st-archived-bg: 241 241 236; /* #F1F1EC */
+  --st-archived-fg: 160 164 173; /* #A0A4AD */
+
+  /* Table header surface (#F5F5F2 in the handoff). */
+  --thead: 245 245 242;
+
+  color-scheme: light;
+}
+
+/* ---------- Dark theme — derived from the light spec (not in handoff):
+   same hue temperature, AA contrast, teal focus unchanged, accent injected
+   per-theme by branding CSS. ---------- */
+[data-theme='dark'] {
+  --bg: 16 18 22; /* #101216 */
+  --canvas: 11 13 16; /* #0B0D10 */
+  --surface: 25 28 34; /* #191C22 */
+  --surface-warm: 21 24 29; /* #15181D */
+  --surface-2: 20 23 28; /* #14171C */
+
+  --ink: 242 243 245; /* #F2F3F5 */
+  --ink-2: 168 173 184; /* #A8ADB8 */
+  --ink-3: 115 121 133; /* #737985 */
+
+  --line: 38 42 50; /* #262A32 */
+  --line-input: 51 56 66; /* #333842 */
+  --line-strong: 61 67 78; /* #3D434E */
+  --line-hover: 74 81 96; /* #4A5160 */
+
+  /* --accent / --accent-hover: dark-adjusted values injected via SSR
+     branding CSS (deriveDarkAccent). --on-accent stays white. */
+
+  --focus: 14 158 158; /* teal survives both themes */
+
+  --ok: 61 190 118; /* #3DBE76 */
+  --ok-bg: 16 44 30; /* #102C1E */
+  --warn: 240 163 60; /* #F0A33C */
+  --warn-strong: 217 150 47; /* #D9962F */
+  --danger: 224 123 112; /* #E07B70 */
+  --danger-bg: 58 26 23; /* #3A1A17 */
+  --danger-line: 92 42 36; /* #5C2A24 */
+  --ratelimit: 217 180 92; /* #D9B45C */
+  --ratelimit-2: 191 158 82; /* #BF9E52 */
+  --ratelimit-bg: 42 35 16; /* #2A2310 */
+  --ratelimit-line: 92 76 32; /* #5C4C20 */
+
+  --ph-a: 35 39 48; /* #232730 */
+  --ph-b: 26 29 36; /* #1A1D24 */
+  --ph-glyph: 74 80 92; /* #4A505C */
+  --skeleton: 34 38 48; /* #222630 */
+  --skeleton-hi: 44 49 60; /* #2C313C */
+
+  --shadow: 0 0 0; /* shadows read pure black on dark */
+
+  /* ---- Admin backoffice (dark) ---- */
+  /* Sidebar stays dark but drops below the page surface for separation. */
+  --sb-bg: 11 13 16; /* #0B0D10 = canvas */
+  --sb-ink: 242 243 245;
+  --sb-ink-2: 168 173 184;
+  --sb-muted: 115 121 133;
+  --sb-faint: 100 106 118;
+  --sb-line: rgba(255, 255, 255, 0.08);
+  --sb-active: rgba(255, 255, 255, 0.08);
+  --sb-input-line: rgba(255, 255, 255, 0.14);
+  --sb-input-bg: rgba(255, 255, 255, 0.05);
+
+  /* Lifecycle badges — dark derivations (same hue, AA on dark). */
+  --st-draft-bg: 42 46 54; /* #2A2E36 */
+  --st-draft-fg: 154 160 171; /* #9AA0AB */
+  --st-published-bg: 16 44 30; /* #102C1E */
+  --st-published-fg: 61 190 118; /* #3DBE76 */
+  --st-reserved-bg: 56 44 12; /* #382C0C */
+  --st-reserved-fg: 240 163 60; /* #F0A33C */
+  --st-sold-bg: 58 26 23; /* #3A1A17 */
+  --st-sold-fg: 224 123 112; /* #E07B70 */
+  --st-archived-bg: 38 42 50; /* #262A32 */
+  --st-archived-fg: 140 146 158; /* #8C929E */
+
+  --thead: 20 23 28; /* #14171C — below surface, like light's #F5F5F2 */
+
+  color-scheme: dark;
+}
+
+/* ---------- Legacy tokens (frozen) — the admin area and a shrinking set of
+   public files still reference these names. Values must not change; the
+   public storefront migrates off them, the admin keeps them. ---------- */
+:root {
+  --bg-dark: 26 24 21;
+  --surface-dark: 33 30 26;
+  --surface-dark-2: 41 37 31;
+
+  --bg-light: 250 249 245;
+  --surface-soft-light: 240 238 232;
+  --surface-strong-light: 229 225 216;
+
+  --paper: 251 250 246;
+  --muted-on-dark: 156 148 138;
+  --muted-on-light: 110 102 92;
+  /* Hairlines keep a baked alpha — used without the /opacity modifier. */
+  --hairline-dark: rgba(255, 252, 245, 0.14);
+  --hairline-light: rgba(20, 16, 8, 0.12);
+}
+
+html,
+body {
+  background-color: rgb(var(--bg));
+  color: rgb(var(--ink));
+  font-family: var(--font-sans), 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+/* Numerals everywhere — tabular by default so prices and specs align. */
+@layer base {
+  body {
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection {
+    background: rgb(var(--accent));
+    color: rgb(var(--on-accent));
+  }
+}
+
+/* Honour reduced motion globally — transitions become instant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Lock smooth-scroll only when Lenis is active (and not reduced motion). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+/* Image-forward layout primitive — used by hero & cards. */
+.media-fill {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Skeleton shimmer — catalog/detail loading states. Reduced-motion users get
+   a static two-tone block (the global rule above also zeroes the animation). */
+@layer utilities {
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      rgb(var(--skeleton)) 25%,
+      rgb(var(--skeleton-hi)) 50%,
+      rgb(var(--skeleton)) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.25s linear infinite;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+  }
+}

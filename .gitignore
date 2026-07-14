@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+.env
+.env.local
+.env.*.local
+frontend/.env
+frontend/.env.local
+frontend/.next/
+frontend/out/
+*.log
+.DS_Store
+.idea/
+.vscode/
+*.tsbuildinfo
+
+# Local design references and archives (not part of the codebase)
+design_handoff_vitrina/
+download_backoffice/
+download_backoffice 2/
+*.zip
