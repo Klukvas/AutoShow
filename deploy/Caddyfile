@@ -18,6 +18,14 @@
 		reverse_proxy app:3000
 	}
 
+	# SEO files come straight from the API (skips the Next rewrite, whose
+	# destination is frozen at image build time).
+	@seo path /robots.txt /sitemap.xml
+	handle @seo {
+		rewrite * /api{uri}
+		reverse_proxy app:3000
+	}
+
 	# Everything else → Next.js (it proxies /robots.txt and /sitemap.xml to
 	# the API itself via rewrites).
 	handle {

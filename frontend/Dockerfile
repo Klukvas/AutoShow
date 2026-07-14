@@ -11,10 +11,14 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 # NEXT_PUBLIC_* are baked into the client bundle at BUILD time — the image is
 # environment-specific. Pass them as build args from CI (GitHub repo vars).
+# BACKEND_INTERNAL_URL is ALSO frozen at build time by Next's rewrites()
+# (robots/sitemap proxy) — default to the compose service name.
 ARG NEXT_PUBLIC_BACKEND_URL
 ARG NEXT_PUBLIC_MEDIA_HOSTS
+ARG BACKEND_INTERNAL_URL=http://app:3000/api
 ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL \
     NEXT_PUBLIC_MEDIA_HOSTS=$NEXT_PUBLIC_MEDIA_HOSTS \
+    BACKEND_INTERNAL_URL=$BACKEND_INTERNAL_URL \
     NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
