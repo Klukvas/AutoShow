@@ -46,6 +46,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: '/admin', key: 'dashboard' },
     { href: '/admin/listings', key: 'listings' },
     { href: '/admin/leads', key: 'leads', badge: newLeads },
+    { href: '/admin/reviews', key: 'reviews' },
     ...(isAdmin
       ? ([
           { href: '/admin/team', key: 'team' },

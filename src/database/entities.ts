@@ -15,6 +15,7 @@ import { ListingOption } from '../modules/listings/entities/listing-option.entit
 import { Listing } from '../modules/listings/entities/listing.entity';
 import { MediaRendition } from '../modules/listings/entities/media-rendition.entity';
 import { Reservation } from '../modules/reservations/entities/reservation.entity';
+import { Review } from '../modules/reviews/entities/review.entity';
 
 export const ALL_ENTITIES = [
   SiteSettings,
@@ -33,5 +34,6 @@ export const ALL_ENTITIES = [
   ListingOption,
   Lead,
   Reservation,
+  Review,
   AuditLog,
 ];

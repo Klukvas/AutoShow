@@ -16,6 +16,7 @@ import { SpecTable } from '@/components/listing/spec-table';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ViewBeacon } from '@/components/listing/view-beacon';
 import { LeadForm } from '@/components/lead/lead-form';
+import { CreditCalculator } from '@/components/listing/credit-calculator';
 import { LEAD_FORM_ID } from '@/components/lead/lead-cta';
 import { formatMoney, formatYear } from '@/lib/format';
 import { formatPriceNote } from '@/lib/listing-price';
@@ -172,9 +173,18 @@ export default async function ListingPage({ params }: PageProps) {
           )}
 
           {acceptsLeads && (
-            <section id={LEAD_FORM_ID} className="mt-10 scroll-mt-24">
-              <LeadForm listingId={listing.id} variant="callback" />
-            </section>
+            <>
+              <section className="mt-8">
+                <CreditCalculator
+                  listingId={listing.id}
+                  priceAmount={listing.price.amount}
+                  currency={listing.price.currency}
+                />
+              </section>
+              <section id={LEAD_FORM_ID} className="mt-10 scroll-mt-24">
+                <LeadForm listingId={listing.id} variant="callback" />
+              </section>
+            </>
           )}
         </div>
 

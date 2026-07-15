@@ -2,7 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../database/base/base.entity';
 import { Listing } from '../../listings/entities/listing.entity';
 
-export type LeadType = 'callback' | 'message' | 'test_drive';
+export type LeadType = 'callback' | 'message' | 'test_drive' | 'sell_request' | 'credit';
 export type LeadStatus = 'new' | 'in_progress' | 'done' | 'spam';
 
 interface Utm {

@@ -31,9 +31,16 @@ export class SitemapService {
         return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod></url>`;
       })
       .join('\n');
+    // Curated SEO collections — keep in sync with the storefront's
+    // frontend/src/lib/collections.ts preset keys.
+    const collections = ['family', 'budget', 'electric', 'business', 'suv']
+      .map((key) => `  <url><loc>${this.siteUrl}/collections/${key}</loc></url>`)
+      .join('\n');
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>${this.siteUrl}/</loc></url>
+  <url><loc>${this.siteUrl}/cars</loc></url>
+${collections}
 ${urls}
 </urlset>`;
   }

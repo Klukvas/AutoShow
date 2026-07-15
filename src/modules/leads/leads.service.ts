@@ -54,7 +54,13 @@ export class LeadsService {
     }
 
     const lead = this.leads.create({
-      ...dto,
+      type: dto.type,
+      name: dto.name,
+      phone: dto.phone,
+      email: dto.email ?? null,
+      message: this.composeMessage(dto),
+      sourceUrl: dto.sourceUrl ?? null,
+      utm: dto.utm ?? null,
       status: 'new',
       ipHash: ip ? this.hashIp(ip) : null,
       listingId: dto.listingId ?? null,
@@ -134,6 +140,32 @@ export class LeadsService {
       actorRole: actor.role,
     });
     return saved;
+  }
+
+  /**
+   * Folds the structured sell/credit fields into the free-text message so the
+   * admin inbox and email notifications show everything without schema
+   * changes. Validation stays strict on the DTO side.
+   */
+  private composeMessage(dto: CreateLeadDto): string | null {
+    const details: string[] = [];
+    if (dto.type === 'sell_request') {
+      if (dto.carMake || dto.carModel) {
+        details.push(`Авто: ${[dto.carMake, dto.carModel].filter(Boolean).join(' ')}`);
+      }
+      if (dto.carYear) details.push(`Рік: ${dto.carYear}`);
+      if (dto.carMileageKm != null) {
+        details.push(`Пробіг: ${dto.carMileageKm.toLocaleString('uk-UA')} км`);
+      }
+    }
+    if (dto.type === 'credit') {
+      if (dto.creditDownPayment != null) {
+        details.push(`Перший внесок: ${dto.creditDownPayment.toLocaleString('uk-UA')}`);
+      }
+      if (dto.creditTermMonths) details.push(`Строк: ${dto.creditTermMonths} міс`);
+    }
+    const parts = [details.join(' · ') || null, dto.message?.trim() || null].filter(Boolean);
+    return parts.length > 0 ? parts.join('\n') : null;
   }
 
   private async rateLimit(phone: string, ip: string | undefined): Promise<void> {

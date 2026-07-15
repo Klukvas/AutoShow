@@ -40,6 +40,9 @@ const LEAD_TYPE_CLS: Record<AdminLead['type'], string> = {
   callback: 'bg-st-draft-bg text-ink-2',
   message: 'bg-accent/[0.10] text-accent',
   test_drive: 'bg-accent/[0.08] text-accent-hover',
+  // Money-adjacent leads stand out: sell intake green, credit amber.
+  sell_request: 'bg-ok-bg text-ok',
+  credit: 'bg-warn/[0.12] text-warn-strong',
 };
 
 export function LeadTypeBadge({
@@ -69,7 +72,9 @@ export function UserStatusBadge({ isActive }: { isActive: boolean }) {
     <span
       className={cn(
         'inline-flex items-center rounded-[5px] px-2 py-[3px] text-[10.5px] font-bold leading-none',
-        isActive ? 'bg-st-published-bg text-st-published-fg' : 'bg-st-archived-bg text-st-archived-fg',
+        isActive
+          ? 'bg-st-published-bg text-st-published-fg'
+          : 'bg-st-archived-bg text-st-archived-fg',
       )}
     >
       {t(isActive ? 'active' : 'blocked')}

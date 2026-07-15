@@ -132,7 +132,7 @@ export interface ListingsQuery {
 }
 
 export interface CreateLeadBody {
-  type: 'callback' | 'message' | 'test_drive';
+  type: 'callback' | 'message' | 'test_drive' | 'sell_request' | 'credit';
   name: string;
   phone: string;
   email?: string;
@@ -140,8 +140,31 @@ export interface CreateLeadBody {
   listingId?: string;
   sourceUrl?: string;
   utm?: Record<string, string>;
+  // sell_request: the visitor's own car
+  carMake?: string;
+  carModel?: string;
+  carYear?: number;
+  carMileageKm?: number;
+  // credit: calculator inputs
+  creditDownPayment?: number;
+  creditTermMonths?: number;
   /** Honeypot — must be empty. */
   website?: string;
+}
+
+export interface PublicReview {
+  id: string;
+  authorName: string;
+  city: string | null;
+  text: string;
+  rating: number;
+  createdAt: string;
+}
+
+export interface PublicStats {
+  available: number;
+  sold: number;
+  views: number;
 }
 
 export interface ApiError {

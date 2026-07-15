@@ -7,6 +7,8 @@ import type {
   CreateLeadBody,
   ListingsQuery,
   PublicListing,
+  PublicReview,
+  PublicStats,
   VehicleOption,
 } from './types';
 
@@ -66,6 +68,20 @@ export const publicApi = {
     return apiFetch<T[]>(`/catalog/${endpoint}`, {
       method: 'GET',
       next: { revalidate: 600, tags: [`catalog:${endpoint}`] },
+    });
+  },
+
+  listReviews(opts: PublicOpts = {}) {
+    return apiFetch<PublicReview[]>('/reviews', {
+      method: 'GET',
+      next: { revalidate: opts.revalidate ?? 300, tags: ['reviews'] },
+    });
+  },
+
+  getStats(opts: PublicOpts = {}) {
+    return apiFetch<PublicStats>('/stats', {
+      method: 'GET',
+      next: { revalidate: opts.revalidate ?? 300, tags: ['stats'] },
     });
   },
 

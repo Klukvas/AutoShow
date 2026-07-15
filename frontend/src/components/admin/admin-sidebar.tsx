@@ -13,7 +13,7 @@ import type { AdminRole } from '@/lib/api/admin';
 
 export interface AdminNavLink {
   href: string;
-  key: 'dashboard' | 'listings' | 'leads' | 'team' | 'branding' | 'audit';
+  key: 'dashboard' | 'listings' | 'leads' | 'reviews' | 'team' | 'branding' | 'audit';
   badge?: number;
 }
 
@@ -61,6 +61,17 @@ const ICONS: Record<AdminNavLink['key'], React.ReactNode> = {
     >
       <rect x="1.5" y="3" width="13" height="10" rx="1.5" />
       <path d="m2 4 6 5 6-5" />
+    </svg>
+  ),
+  reviews: (
+    <svg
+      viewBox="0 0 16 16"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path d="M8 1.8l1.9 3.8 4.2.6-3 3 .7 4.2L8 11.4l-3.8 2 .7-4.2-3-3 4.2-.6L8 1.8Z" />
     </svg>
   ),
   team: (

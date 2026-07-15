@@ -17,7 +17,7 @@ export interface AdminAuthResponse {
 
 export interface AdminLead {
   id: string;
-  type: 'callback' | 'message' | 'test_drive';
+  type: 'callback' | 'message' | 'test_drive' | 'sell_request' | 'credit';
   name: string;
   phone: string;
   email: string | null;
@@ -34,6 +34,17 @@ export type AdminMediaStatus = 'pending' | 'processing' | 'ready' | 'failed';
 
 export type SellerType = 'own' | 'client';
 export type FeeType = 'none' | 'fixed' | 'percent';
+
+export interface AdminReview {
+  id: string;
+  authorName: string;
+  city: string | null;
+  text: string;
+  rating: number;
+  isPublished: boolean;
+  position: number;
+  createdAt: string;
+}
 
 export interface AnalyticsSummary {
   listings: Record<string, number>;
@@ -214,6 +225,29 @@ export const adminApi = {
   },
   getAnalyticsSummary(opts: AdminCallOpts) {
     return apiFetch<AnalyticsSummary>('/admin/analytics/summary', {
+      accessToken: opts.accessToken,
+    });
+  },
+  listReviews(opts: AdminCallOpts) {
+    return apiFetch<AdminReview[]>('/admin/reviews', { accessToken: opts.accessToken });
+  },
+  createReview(body: Record<string, unknown>, opts: AdminCallOpts) {
+    return apiFetch<AdminReview>('/admin/reviews', {
+      method: 'POST',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  updateReview(id: string, body: Record<string, unknown>, opts: AdminCallOpts) {
+    return apiFetch<AdminReview>(`/admin/reviews/${id}`, {
+      method: 'PATCH',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  deleteReview(id: string, opts: AdminCallOpts) {
+    return apiFetch<void>(`/admin/reviews/${id}`, {
+      method: 'DELETE',
       accessToken: opts.accessToken,
     });
   },

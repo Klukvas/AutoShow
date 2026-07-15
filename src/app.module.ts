@@ -20,6 +20,7 @@ import { LeadsModule } from './modules/leads/leads.module';
 import { ListingsModule } from './modules/listings/listings.module';
 import { MediaModule } from './modules/media/media.module';
 import { NotificationModule } from './modules/notifications/notification.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SitemapModule } from './modules/sitemap/sitemap.module';
 import { SlugModule } from './modules/slug/slug.module';
 import { StorageModule } from './modules/storage/storage.module';
@@ -46,6 +47,7 @@ import { ViewsModule } from './modules/views/views.module';
     MediaModule,
     LeadsModule,
     AnalyticsModule,
+    ReviewsModule,
     SitemapModule,
   ],
   providers: [

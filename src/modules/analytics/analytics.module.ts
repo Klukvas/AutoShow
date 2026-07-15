@@ -5,11 +5,12 @@ import { Lead } from '../leads/entities/lead.entity';
 import { Listing } from '../listings/entities/listing.entity';
 import { AnalyticsAdminController } from './analytics-admin.controller';
 import { AnalyticsService } from './analytics.service';
+import { StatsPublicController } from './stats-public.controller';
 
 @Module({
   // AuthModule provides AuthTokenService for the controller-level JwtAuthGuard.
   imports: [TypeOrmModule.forFeature([Listing, Lead]), AuthModule],
-  controllers: [AnalyticsAdminController],
+  controllers: [AnalyticsAdminController, StatsPublicController],
   providers: [AnalyticsService],
 })
 export class AnalyticsModule {}

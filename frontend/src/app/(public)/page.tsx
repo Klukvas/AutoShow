@@ -1,6 +1,10 @@
 import { getTranslations } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
 import { HomeHero } from '@/components/hero/home-hero';
+import { CollectionsSection } from '@/components/home/collections-section';
+import { ReviewsSection } from '@/components/home/reviews-section';
+import { SellCarSection } from '@/components/home/sell-car-section';
+import { StatsBand } from '@/components/home/stats-band';
 import { ListingCard } from '@/components/listing/listing-card';
 import { ScrollReveal } from '@/components/motion/scroll-reveal';
 import { publicApi } from '@/lib/api/public';
@@ -53,6 +57,10 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <StatsBand />
+
+      <CollectionsSection />
+
       {/* Trust block */}
       <section className="border-t border-line bg-surface">
         <div className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
@@ -75,6 +83,10 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      <ReviewsSection />
+
+      <SellCarSection />
     </>
   );
 }
