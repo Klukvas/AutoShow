@@ -243,6 +243,10 @@ jobs:
             # app (expand-only) — see deploy/README.md.
             docker compose run --rm app npm run migration:run:prod
             docker compose up -d --remove-orphans
+            # Compose won't recreate caddy for a changed bind-mounted
+            # Caddyfile — reload gracefully (zero downtime) so routing/header
+            # changes actually apply.
+            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
             # Idempotent: creates catalog/admin on first run, no-ops after —
             # and heals a half-bootstrapped server from a failed first deploy.
             docker compose run --rm app npm run seed:prod
