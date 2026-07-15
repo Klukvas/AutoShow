@@ -76,6 +76,7 @@ export interface AdminListing {
   priceNormalized: string;
   year: number;
   mileageKm: number;
+  viewsCount?: number;
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;

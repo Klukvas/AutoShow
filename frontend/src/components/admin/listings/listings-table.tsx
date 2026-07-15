@@ -123,6 +123,7 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
             <th className="w-[140px] px-2 py-3 font-bold">{t('listings.colStatus')}</th>
             <th className="w-[110px] px-2 py-3 font-bold">{t('listings.colPrice')}</th>
             <th className="w-[80px] px-2 py-3 font-bold">{t('listings.colYear')}</th>
+            <th className="w-[100px] px-2 py-3 font-bold">{t('listings.colViews')}</th>
             <th className="w-[90px] px-2 py-3 font-bold">{t('listings.colMedia')}</th>
             <th className="w-[56px] rounded-tr-[11px] px-2 py-3" />
           </tr>
@@ -152,6 +153,9 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
               </td>
               <td className="px-2 py-[11px] text-[13px] font-medium text-ink-2 tabular">
                 {l.year}
+              </td>
+              <td className="px-2 py-[11px] text-[13px] font-medium text-ink-2 tabular">
+                {l.viewsCount ?? 0}
               </td>
               <td className="px-2 py-[11px]">
                 <MediaCount listing={l} />

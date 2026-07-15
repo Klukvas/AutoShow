@@ -108,6 +108,10 @@ export default async function ListingPage({ params }: PageProps) {
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <h1 className="font-heading text-title-lg font-extrabold text-ink">{listing.title}</h1>
           <StatusBadge status={availability}>{availabilityLabel}</StatusBadge>
+          <span className="inline-flex items-center gap-1.5 text-sub text-ink-3" aria-live="off">
+            <ViewsIcon />
+            {t('viewsCount', { count: listing.viewsCount })}
+          </span>
           <div className="ml-auto">
             <ShareButton title={listing.title} />
           </div>
@@ -128,7 +132,9 @@ export default async function ListingPage({ params }: PageProps) {
               </h1>
               <StatusBadge status={availability}>{availabilityLabel}</StatusBadge>
             </div>
-            <p className="text-sub text-ink-2">{subLine}</p>
+            <p className="text-sub text-ink-2">
+              {subLine} · {t('viewsCount', { count: listing.viewsCount })}
+            </p>
             <div>
               <div className="tabular font-heading text-price-md font-extrabold text-ink">
                 {price}
@@ -187,5 +193,21 @@ export default async function ListingPage({ params }: PageProps) {
         phoneOverride={listing.seller.type === 'client' ? listing.seller.phone : undefined}
       />
     </div>
+  );
+}
+
+function ViewsIcon() {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      className="h-3.5 w-3.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      aria-hidden
+    >
+      <path d="M1.5 8s2.4-4.2 6.5-4.2S14.5 8 14.5 8s-2.4 4.2-6.5 4.2S1.5 8 1.5 8Z" />
+      <circle cx="8" cy="8" r="1.9" />
+    </svg>
   );
 }

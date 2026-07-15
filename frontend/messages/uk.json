@@ -161,7 +161,8 @@
     "no": "ні",
     "sellerPrivate": "Продавець: {name} · приватна особа",
     "sellerPrivateFallback": "приватна особа",
-    "sellerDealer": "Продавець: {name} · автосалон"
+    "sellerDealer": "Продавець: {name} · автосалон",
+    "viewsCount": "{count, plural, one {# перегляд} few {# перегляди} many {# переглядів} other {# перегляду}}"
   },
   "lead": {
     "title": "Залишити заявку",
@@ -305,7 +306,8 @@
       "menuDelete": "Видалити",
       "deleteTitle": "Видалити об'яву?",
       "deleteBody": "«{title}» буде видалено назавжди. Цю дію не можна скасувати.",
-      "photoAlt": "Прев'ю: {title}"
+      "photoAlt": "Прев'ю: {title}",
+      "colViews": "Перегляди"
     },
     "form": {
       "createTitle": "Нова об'ява",
