@@ -40,6 +40,11 @@
 	encode zstd gzip
 	header Strict-Transport-Security "max-age=31536000; includeSubDomains"
 
+	# Object keys are unique per upload (nanoid) — content never changes under
+	# a key, so browsers may cache renditions forever. MinIO itself sends only
+	# an ETag, which forces a revalidation round-trip per image otherwise.
+	header /{$S3_BUCKET}/* Cache-Control "public, max-age=31536000, immutable"
+
 	# The bucket's anonymous "download" policy also grants ListBucket — a GET
 	# on the bucket root would enumerate every object key. Object reads and
 	# presigned operations target /{bucket}/{key}, so blocking the bare bucket
