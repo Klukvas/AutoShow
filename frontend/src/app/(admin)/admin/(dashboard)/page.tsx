@@ -32,6 +32,19 @@ function MetricCard({
   );
 }
 
+function FunnelStep({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="text-center">
+      <div
+        className={`tabular font-heading text-[22px] font-extrabold ${accent ? 'text-accent' : 'text-ink'}`}
+      >
+        {value}
+      </div>
+      <div className="text-[11px] font-semibold text-ink-3">{label}</div>
+    </div>
+  );
+}
+
 const MONTH_LABELS = [
   'Січ',
   'Лют',
@@ -98,7 +111,53 @@ export default async function AdminDashboardPage() {
         <MetricCard label={t('cardViews')} value={String(summary.views.total)} />
       </div>
 
+      {/* Funnel & attribution */}
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
+        <SectionCard title={t('conversionTitle')}>
+          <div className="flex items-center justify-between gap-3">
+            <FunnelStep label={t('funnelViews')} value={String(summary.conversion.views)} />
+            <span aria-hidden className="text-[18px] text-ink-3">
+              →
+            </span>
+            <FunnelStep label={t('funnelLeads')} value={String(summary.conversion.leads)} />
+            <span aria-hidden className="text-[18px] text-ink-3">
+              →
+            </span>
+            <FunnelStep label={t('funnelRate')} value={`${summary.conversion.rate}%`} accent />
+          </div>
+          <p className="mt-3 text-[12px] font-medium text-ink-3">{t('conversionHint')}</p>
+        </SectionCard>
+
+        <SectionCard title={t('attributionTitle')}>
+          {summary.attribution.length === 0 ? (
+            <p className="text-[13px] font-medium text-ink-3">{t('empty')}</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {summary.attribution.map((row) => {
+                const max = Math.max(1, ...summary.attribution.map((r) => r.count));
+                return (
+                  <div key={row.source} className="flex items-center gap-3">
+                    <span className="w-[96px] flex-none truncate text-[12px] font-semibold text-ink-2">
+                      {row.source}
+                    </span>
+                    <div className="h-[18px] flex-1 overflow-hidden rounded-[5px] bg-surface-2">
+                      <div
+                        className="h-full rounded-[5px] bg-accent/80"
+                        style={{ width: `${Math.max(6, (row.count / max) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="tabular w-8 flex-none text-right text-[12px] font-bold text-ink-2">
+                      {row.count}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </SectionCard>
+      </div>
+
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
         {/* Sales by month (CSS bars, no chart lib) */}
         <SectionCard title={t('salesByMonth')}>
           {summary.salesByMonth.length === 0 ? (
@@ -150,9 +209,15 @@ export default async function AdminDashboardPage() {
                       {item.title}
                     </span>
                     <ListingStatusBadge status={item.status as ListingStatus} />
-                    <span className="tabular flex-none text-[12.5px] font-bold text-ink-2">
+                    <span className="tabular flex-none text-right text-[12.5px] font-bold text-ink-2">
                       {item.viewsCount}{' '}
                       <span className="font-medium text-ink-3">{t('viewsSuffix')}</span>
+                      {item.viewsCount > 0 && (
+                        <span className="ml-1.5 font-medium text-ink-3">
+                          · {item.leadsCount} ·{' '}
+                          {Math.round((item.leadsCount / item.viewsCount) * 100)}%
+                        </span>
+                      )}
                     </span>
                   </Link>
                 </li>

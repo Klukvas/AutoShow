@@ -75,8 +75,17 @@ export interface AnalyticsSummary {
   leads: { byStatus: Record<string, number>; last30d: number };
   views: {
     total: number;
-    top: Array<{ id: string; slug: string; title: string; status: string; viewsCount: number }>;
+    top: Array<{
+      id: string;
+      slug: string;
+      title: string;
+      status: string;
+      viewsCount: number;
+      leadsCount: number;
+    }>;
   };
+  conversion: { views: number; leads: number; rate: number };
+  attribution: Array<{ source: string; count: number }>;
   salesByMonth: Array<{ month: string; count: number; commission: string }>;
 }
 

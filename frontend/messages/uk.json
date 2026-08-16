@@ -659,6 +659,12 @@
       "salesCount": "{count} авто",
       "topViews": "Топ за переглядами",
       "viewsSuffix": "переглядів",
+      "conversionTitle": "Конверсія (перегляди → заявки)",
+      "conversionHint": "Частка переглядів, що перетворилися на заявки з прив'язкою до авто.",
+      "funnelViews": "Перегляди",
+      "funnelLeads": "Заявки",
+      "funnelRate": "Конверсія",
+      "attributionTitle": "Джерела заявок (30 днів)",
       "empty": "Поки немає даних — продайте перше авто 🙂"
     },
     "reviews": {
