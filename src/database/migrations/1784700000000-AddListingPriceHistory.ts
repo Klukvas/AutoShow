@@ -22,7 +22,7 @@ export class AddListingPriceHistory1784700000000 implements MigrationInterface {
     );
     await queryRunner.query(`
       CREATE TABLE "listing_price_history" (
-        "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+        "id" uuid NOT NULL DEFAULT gen_random_uuid(),
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "listing_id" uuid NOT NULL,
         "price_amount" numeric(12,2) NOT NULL,

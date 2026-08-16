@@ -1,9 +1,10 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsEmail,
   IsHexColor,
   IsIn,
   IsObject,
@@ -15,7 +16,62 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { CURRENCIES, type Currency } from '../../../common/types/currency';
-import type { SeoDefaults, SocialLinks, WorkingHours } from '../entities/site-settings.entity';
+import type { WorkingHours } from '../entities/site-settings.entity';
+
+// Empty inputs arrive as '' from the editor; treat them as absent so an
+// optional @IsUrl doesn't reject a cleared field.
+const emptyToUndefined = ({ value }: { value: unknown }) => (value === '' ? undefined : value);
+const HTTP_URL = { protocols: ['http', 'https'], require_protocol: true };
+
+/**
+ * Social links are rendered directly as anchor hrefs on the public storefront,
+ * so each MUST be an http(s) URL — a stored `javascript:`/`data:` URI would be
+ * a DOM-injection vector. Nested DTO + whitelist also strips unknown keys.
+ */
+export class SocialLinksDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsUrl(HTTP_URL)
+  @MaxLength(512)
+  facebook?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsUrl(HTTP_URL)
+  @MaxLength(512)
+  instagram?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsUrl(HTTP_URL)
+  @MaxLength(512)
+  telegram?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsUrl(HTTP_URL)
+  @MaxLength(512)
+  youtube?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsUrl(HTTP_URL)
+  @MaxLength(512)
+  tiktok?: string;
+}
+
+export class SeoDefaultsDto {
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(255) titleTemplate?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(320) description?: string;
+  // ogImage ends up in <meta og:image>; constrain to a real http(s) URL.
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsUrl(HTTP_URL)
+  @MaxLength(512)
+  ogImage?: string;
+}
 
 export class TelegramChannelDto {
   @ApiPropertyOptional({ description: '@channelname or a numeric chat id (-100…)' })
@@ -75,11 +131,24 @@ export class UpdateBrandingDto {
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(128) displayName?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(255) tagline?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(32) contactPhone?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(254) contactEmail?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsEmail()
+  @MaxLength(254)
+  contactEmail?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(512) address?: string;
   @ApiPropertyOptional() @IsOptional() @IsObject() workingHours?: WorkingHours;
-  @ApiPropertyOptional() @IsOptional() @IsObject() socialLinks?: SocialLinks;
-  @ApiPropertyOptional() @IsOptional() @IsObject() seoDefaults?: SeoDefaults;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SocialLinksDto)
+  socialLinks?: SocialLinksDto;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SeoDefaultsDto)
+  seoDefaults?: SeoDefaultsDto;
   @ApiPropertyOptional({ enum: CURRENCIES })
   @IsOptional()
   @IsIn(CURRENCIES)

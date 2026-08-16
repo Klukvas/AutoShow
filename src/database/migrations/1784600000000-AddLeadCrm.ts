@@ -29,7 +29,7 @@ export class AddLeadCrm1784600000000 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE "lead_notes" (
-        "id" uuid NOT NULL DEFAULT uuid_generate_v4(),
+        "id" uuid NOT NULL DEFAULT gen_random_uuid(),
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "lead_id" uuid NOT NULL,
         "author_id" uuid,

@@ -78,17 +78,23 @@ function draftFrom(c: Collection): Draft {
 
 function bodyFrom(draft: Draft) {
   const query: Record<string, unknown> = {};
-  const str = (v: string) => v.trim() || undefined;
-  const num = (v: string) => (v.trim() === '' ? undefined : Number(v));
-  if (str(draft.bodyType)) query.bodyType = str(draft.bodyType);
-  if (str(draft.fuelType)) query.fuelType = str(draft.fuelType);
-  if (str(draft.transmission)) query.transmission = str(draft.transmission);
-  if (str(draft.driveType)) query.driveType = str(draft.driveType);
+  const setStr = (key: string, v: string) => {
+    const s = v.trim();
+    if (s) query[key] = s;
+  };
+  const setNum = (key: string, v: string) => {
+    const s = v.trim();
+    if (s !== '') query[key] = Number(s);
+  };
+  setStr('bodyType', draft.bodyType);
+  setStr('fuelType', draft.fuelType);
+  setStr('transmission', draft.transmission);
+  setStr('driveType', draft.driveType);
   if (draft.condition) query.condition = draft.condition;
-  if (num(draft.priceMin) != null) query.priceMin = num(draft.priceMin);
-  if (num(draft.priceMax) != null) query.priceMax = num(draft.priceMax);
-  if (num(draft.yearMin) != null) query.yearMin = num(draft.yearMin);
-  if (num(draft.mileageMax) != null) query.mileageMax = num(draft.mileageMax);
+  setNum('priceMin', draft.priceMin);
+  setNum('priceMax', draft.priceMax);
+  setNum('yearMin', draft.yearMin);
+  setNum('mileageMax', draft.mileageMax);
   return {
     key: draft.key.trim(),
     emoji: draft.emoji.trim() || undefined,

@@ -84,7 +84,13 @@ export class CollectionsService {
       action: 'collection.update',
       entityType: 'collection',
       entityId: id,
-      diff: { patch: dto },
+      // Before/after of the meaningful fields, not just the requested patch —
+      // an omitted field means "unchanged", which the raw dto can't convey.
+      diff: {
+        from: { key: current.key, isPublished: current.isPublished, position: current.position },
+        to: { key: saved.key, isPublished: saved.isPublished, position: saved.position },
+        patch: dto,
+      },
       actorId: actor.id,
       actorRole: actor.role,
     });

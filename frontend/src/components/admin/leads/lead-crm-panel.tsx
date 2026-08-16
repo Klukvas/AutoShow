@@ -28,6 +28,7 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [followUp, setFollowUp] = useState(() => toLocalInput(lead.followUpAt));
+  const [assigneeId, setAssigneeId] = useState<string | null>(lead.assigneeId);
   const [notes, setNotes] = useState<AdminLeadNote[]>(initialNotes);
   const [draft, setDraft] = useState('');
 
@@ -54,11 +55,19 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
     }
   };
 
-  const changeAssignee = (value: string) =>
+  const changeAssignee = (value: string) => {
+    const next = value || null;
+    setAssigneeId(next); // optimistic: keep the select steady until the refresh lands
     void run(async (token) => {
-      await adminApi.assignLead(lead.id, value || null, { accessToken: token });
-      router.refresh();
+      try {
+        await adminApi.assignLead(lead.id, next, { accessToken: token });
+        router.refresh();
+      } catch (err) {
+        setAssigneeId(lead.assigneeId); // revert on failure
+        throw err;
+      }
     });
+  };
 
   const saveFollowUp = () =>
     void run(async (token) => {
@@ -97,7 +106,7 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
           </label>
           <select
             id={`assignee-${lead.id}`}
-            value={lead.assigneeId ?? ''}
+            value={assigneeId ?? ''}
             disabled={busy}
             onChange={(e) => changeAssignee(e.target.value)}
             className="focus-ring h-10 w-full rounded-[9px] border border-line-input bg-surface px-3 text-[13px] font-semibold text-ink disabled:opacity-60"
