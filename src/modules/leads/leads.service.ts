@@ -10,7 +10,7 @@ import { AuditLogService } from '../audit/audit-log.service';
 import { NotificationService } from '../notifications/notification.service';
 import { Listing } from '../listings/entities/listing.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
-import { Lead, type LeadStatus } from './entities/lead.entity';
+import { Lead, type LeadDetails, type LeadStatus } from './entities/lead.entity';
 
 const RATE_PREFIX = 'leads:rate:';
 
@@ -25,7 +25,19 @@ export class LeadsService {
     private readonly notifications: NotificationService,
     private readonly audit: AuditLogService,
     @Inject('APP_CONFIG') private readonly config: AppConfig,
-  ) {}
+  ) {
+    // Loud boot-time warning: a dealership that silently stops receiving lead
+    // alerts loses deals, so a misconfigured pipeline must be visible in logs.
+    if (!this.config.LEAD_NOTIFY_TO) {
+      this.logger.warn(
+        'LEAD_NOTIFY_TO is not set — new leads are stored but nobody is emailed about them',
+      );
+    } else if (!this.config.SMTP_HOST) {
+      this.logger.warn(
+        'LEAD_NOTIFY_TO is set but SMTP_HOST is not — lead notifications will only be logged, not delivered',
+      );
+    }
+  }
 
   async create(dto: CreateLeadDto, ip: string | undefined): Promise<Lead> {
     if (dto.website) {
@@ -59,6 +71,7 @@ export class LeadsService {
       phone: dto.phone,
       email: dto.email ?? null,
       message: this.composeMessage(dto),
+      details: this.detailsFrom(dto),
       sourceUrl: dto.sourceUrl ?? null,
       utm: dto.utm ?? null,
       status: 'new',
@@ -67,18 +80,21 @@ export class LeadsService {
     });
     const saved = await this.leads.save(lead);
 
+    const subject = `New lead [${dto.type}] from ${dto.name}`;
+    const body = [
+      `Type: ${dto.type}`,
+      `Name: ${dto.name}`,
+      `Phone: ${dto.phone}`,
+      dto.email ? `Email: ${dto.email}` : null,
+      // saved.message = structured sell/credit details + the visitor's text —
+      // the raw dto.message would drop the car/credit info from the alert.
+      saved.message ? `Message: ${saved.message}` : null,
+      dto.sourceUrl ? `Source: ${dto.sourceUrl}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n');
+
     if (this.config.LEAD_NOTIFY_TO) {
-      const subject = `New lead [${dto.type}] from ${dto.name}`;
-      const body = [
-        `Type: ${dto.type}`,
-        `Name: ${dto.name}`,
-        `Phone: ${dto.phone}`,
-        dto.email ? `Email: ${dto.email}` : null,
-        dto.message ? `Message: ${dto.message}` : null,
-        dto.sourceUrl ? `Source: ${dto.sourceUrl}` : null,
-      ]
-        .filter(Boolean)
-        .join('\n');
       await this.notifications.enqueue('email', {
         to: this.config.LEAD_NOTIFY_TO,
         subject,
@@ -86,6 +102,15 @@ export class LeadsService {
         meta: { leadId: saved.id },
       });
     }
+    // Instant Telegram alert to the manager chat. The channel is a no-op when
+    // site_settings.telegram.leadChatId is unset, so enqueuing unconditionally
+    // is safe — leads are low-volume and the drained job is cheap.
+    await this.notifications.enqueue('telegram', {
+      to: 'telegram',
+      subject,
+      body,
+      meta: { leadId: saved.id },
+    });
 
     return saved;
   }
@@ -143,9 +168,29 @@ export class LeadsService {
   }
 
   /**
-   * Folds the structured sell/credit fields into the free-text message so the
-   * admin inbox and email notifications show everything without schema
-   * changes. Validation stays strict on the DTO side.
+   * Structured sell/credit payload for `details` (jsonb). Only the fields
+   * relevant to the lead type are kept — a stray carYear on a callback lead
+   * is dropped, not stored.
+   */
+  private detailsFrom(dto: CreateLeadDto): LeadDetails | null {
+    const details: LeadDetails = {};
+    if (dto.type === 'sell_request') {
+      if (dto.carMake) details.carMake = dto.carMake;
+      if (dto.carModel) details.carModel = dto.carModel;
+      if (dto.carYear != null) details.carYear = dto.carYear;
+      if (dto.carMileageKm != null) details.carMileageKm = dto.carMileageKm;
+    }
+    if (dto.type === 'credit') {
+      if (dto.creditDownPayment != null) details.creditDownPayment = dto.creditDownPayment;
+      if (dto.creditTermMonths != null) details.creditTermMonths = dto.creditTermMonths;
+    }
+    return Object.keys(details).length > 0 ? details : null;
+  }
+
+  /**
+   * Human-readable rendering of the same sell/credit fields for the admin
+   * inbox and email notifications. The machine-readable copy lives in
+   * `details` (see detailsFrom) — this string is display-only.
    */
   private composeMessage(dto: CreateLeadDto): string | null {
     const details: string[] = [];

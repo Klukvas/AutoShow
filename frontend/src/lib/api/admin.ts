@@ -73,6 +73,8 @@ export interface AdminMedia {
   /** Public URL of the thumb rendition (null until processing finishes). */
   thumbUrl?: string | null;
   originalUrl?: string;
+  /** Reason set by the worker when status is 'failed'. */
+  failureReason?: string | null;
 }
 
 export interface AdminListing {
@@ -202,6 +204,23 @@ export const adminApi = {
       accessToken: opts.accessToken,
     });
   },
+  createCatalogMake(body: { nameUk: string; nameEn?: string; slug: string }, opts: AdminCallOpts) {
+    return apiFetch<import('./types').CatalogMake>('/admin/catalog/makes', {
+      method: 'POST',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  createCatalogModel(
+    body: { nameUk: string; nameEn?: string; slug: string; makeId: string },
+    opts: AdminCallOpts,
+  ) {
+    return apiFetch<import('./types').CatalogModel>('/admin/catalog/models', {
+      method: 'POST',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
   updateListing(id: string, body: Record<string, unknown>, opts: AdminCallOpts) {
     return apiFetch<AdminListing>(`/admin/listings/${id}`, {
       method: 'PATCH',
@@ -257,6 +276,21 @@ export const adminApi = {
       accessToken: opts.accessToken,
     });
   },
+  /** Apply one action to many listings in a single request; per-id results. */
+  bulkListings(
+    body: { ids: string[]; action: 'publish' | 'archive' | 'delete' },
+    opts: AdminCallOpts,
+  ) {
+    return apiFetch<{
+      results: { id: string; ok: boolean; error?: string }[];
+      succeeded: number;
+      failed: number;
+    }>('/admin/listings/bulk', {
+      method: 'POST',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
 
   // Media
   beginMediaUpload(
@@ -276,6 +310,16 @@ export const adminApi = {
   confirmMedia(mediaId: string, opts: AdminCallOpts) {
     return apiFetch<{ id: string; status: 'pending' | 'processing' | 'ready' | 'failed' }>(
       `/admin/media/${mediaId}/confirm`,
+      {
+        method: 'POST',
+        accessToken: opts.accessToken,
+      },
+    );
+  },
+  /** Re-run rendition processing for an already-uploaded image that failed. */
+  retryMedia(mediaId: string, opts: AdminCallOpts) {
+    return apiFetch<{ id: string; status: 'pending' | 'processing' | 'ready' | 'failed' }>(
+      `/admin/media/${mediaId}/retry`,
       {
         method: 'POST',
         accessToken: opts.accessToken,
@@ -366,6 +410,24 @@ export const adminApi = {
     return apiFetch<import('./types').Branding>('/admin/branding', {
       method: 'PATCH',
       body: patch,
+      accessToken: opts.accessToken,
+    });
+  },
+
+  // Telegram channel publishing
+  listTelegramPosts(listingId: string, opts: AdminCallOpts) {
+    return apiFetch<import('./types').AdminTelegramPost[]>(
+      `/admin/listings/${listingId}/telegram-posts`,
+      {
+        method: 'GET',
+        accessToken: opts.accessToken,
+        cache: 'no-store',
+      },
+    );
+  },
+  postListingToTelegram(listingId: string, opts: AdminCallOpts) {
+    return apiFetch<{ enqueuedChannels: number }>(`/admin/listings/${listingId}/telegram-posts`, {
+      method: 'POST',
       accessToken: opts.accessToken,
     });
   },

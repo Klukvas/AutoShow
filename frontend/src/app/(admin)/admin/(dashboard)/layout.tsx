@@ -4,6 +4,7 @@ import { readSession } from '@/lib/auth/session';
 import { readServerToken } from '@/lib/auth/refresh';
 import { getSiteBranding } from '@/lib/branding/resolve';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+import { ToastProvider } from '@/components/admin/ui/toast';
 import { AdminSidebar, type AdminNavLink } from '@/components/admin/admin-sidebar';
 
 /**
@@ -12,7 +13,8 @@ import { AdminSidebar, type AdminNavLink } from '@/components/admin/admin-sideba
  * sidebar stays dark by design in either).
  *
  * Role gate: editors only ever SEE Об'яви/Заявки (hidden, not disabled);
- * admin-only routes additionally redirect on the page level.
+ * everything else (dashboard, reviews, team, branding, audit) is admin-only
+ * and additionally redirects on the page level.
  *
  * Lives in the `(dashboard)` route group so `/admin/login` renders outside it.
  */
@@ -43,12 +45,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const brandName = branding?.displayName ?? 'AutoFlow';
 
   const links: AdminNavLink[] = [
-    { href: '/admin', key: 'dashboard' },
+    ...(isAdmin ? ([{ href: '/admin', key: 'dashboard' }] as AdminNavLink[]) : []),
     { href: '/admin/listings', key: 'listings' },
     { href: '/admin/leads', key: 'leads', badge: newLeads },
-    { href: '/admin/reviews', key: 'reviews' },
     ...(isAdmin
       ? ([
+          { href: '/admin/reviews', key: 'reviews' },
           { href: '/admin/team', key: 'team' },
           { href: '/admin/branding', key: 'branding' },
           { href: '/admin/audit', key: 'audit' },
@@ -58,17 +60,19 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <ThemeProvider>
-      <div className="min-h-dvh bg-surface-2 text-ink md:flex">
-        <AdminSidebar
-          links={links}
-          email={session.user.email}
-          role={session.user.role}
-          brandName={brandName}
-        />
-        <main className="min-w-0 flex-1 px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 md:px-[30px] md:py-[26px]">
-          {children}
-        </main>
-      </div>
+      <ToastProvider>
+        <div className="min-h-dvh bg-surface-2 text-ink md:flex">
+          <AdminSidebar
+            links={links}
+            email={session.user.email}
+            role={session.user.role}
+            brandName={brandName}
+          />
+          <main className="min-w-0 flex-1 px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 md:px-[30px] md:py-[26px]">
+            {children}
+          </main>
+        </div>
+      </ToastProvider>
     </ThemeProvider>
   );
 }

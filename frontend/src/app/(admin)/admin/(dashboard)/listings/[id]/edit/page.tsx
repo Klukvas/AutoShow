@@ -5,9 +5,10 @@ import { ApiClientError } from '@/lib/api/client';
 import { requireServerToken } from '@/lib/auth/refresh';
 import { publicApi } from '@/lib/api/public';
 import { ListingForm } from '@/components/admin/listings/listing-form';
+import { TelegramPostPanel } from '@/components/admin/listings/telegram-post-panel';
 import { MediaManager } from '@/components/admin/media/media-manager';
 import { SectionCard } from '@/components/admin/ui/section-card';
-import type { CatalogModel, CatalogRef, VehicleOption } from '@/lib/api/types';
+import type { AdminTelegramPost, CatalogModel, CatalogRef, VehicleOption } from '@/lib/api/types';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -22,7 +23,10 @@ export default async function EditListingPage({ params }: PageProps) {
   const { id } = await params;
   if (!UUID_RE.test(id)) notFound();
   const auth = await requireServerToken(`/admin/listings/${id}/edit`);
-  const t = await getTranslations('admin.media');
+  const [t, tTelegram] = await Promise.all([
+    getTranslations('admin.media'),
+    getTranslations('admin.telegram'),
+  ]);
 
   let listing: Awaited<ReturnType<typeof adminApi.getListing>>;
   try {
@@ -31,6 +35,21 @@ export default async function EditListingPage({ params }: PageProps) {
     if (err instanceof ApiClientError && (err.status === 404 || err.status === 400)) notFound();
     throw err;
   }
+
+  // Telegram panel data — decorative relative to the edit flow, so failures
+  // degrade to an empty history instead of breaking the page.
+  const [telegramPosts, branding] = await Promise.all([
+    adminApi
+      .listTelegramPosts(id, { accessToken: auth.accessToken })
+      .catch(() => [] as AdminTelegramPost[]),
+    adminApi.getBranding({ accessToken: auth.accessToken }).catch(() => null),
+  ]);
+  // Editors don't receive the telegram block (it carries the bot token) —
+  // show the button optimistically; the backend 422s with a clear message.
+  const telegramConfigured =
+    !branding || branding.telegram === undefined
+      ? true
+      : Boolean(branding.telegram?.botToken && branding.telegram.channels.length);
 
   const [makes, models, bodyTypes, fuelTypes, transmissions, driveTypes, colors, options] =
     await Promise.all([
@@ -74,6 +93,14 @@ export default async function EditListingPage({ params }: PageProps) {
         contentClassName=""
       >
         <MediaManager listingId={listing.id} initial={media} />
+      </SectionCard>
+      <SectionCard title={tTelegram('title')}>
+        <TelegramPostPanel
+          listingId={listing.id}
+          status={listing.status}
+          posts={telegramPosts}
+          configured={telegramConfigured}
+        />
       </SectionCard>
     </div>
   );

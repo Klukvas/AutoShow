@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { getTranslations } from 'next-intl/server';
 import { adminApi, type AnalyticsSummary } from '@/lib/api/admin';
 import { requireServerToken } from '@/lib/auth/refresh';
@@ -31,7 +32,20 @@ function MetricCard({
   );
 }
 
-const MONTH_LABELS = ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
+const MONTH_LABELS = [
+  'Січ',
+  'Лют',
+  'Бер',
+  'Кві',
+  'Тра',
+  'Чер',
+  'Лип',
+  'Сер',
+  'Вер',
+  'Жов',
+  'Лис',
+  'Гру',
+];
 
 function monthLabel(month: string): string {
   const idx = Number(month.slice(5, 7)) - 1;
@@ -45,16 +59,17 @@ export default async function AdminDashboardPage() {
     getTranslations('admin.dashboard'),
     getSiteBranding().catch(() => null),
   ]);
+  // Admin-only: the dashboard shows sales/commission money — editors get
+  // bounced to their workspace (nav already hides the link).
+  if (auth.session.user.role !== 'admin') redirect('/admin/listings');
+
   const summary: AnalyticsSummary = await adminApi.getAnalyticsSummary({
     accessToken: auth.accessToken,
   });
 
   const currency = branding?.defaultCurrency ?? 'USD';
   const money = (v: string) => formatMoney(v, currency);
-  const maxMonthCommission = Math.max(
-    1,
-    ...summary.salesByMonth.map((m) => Number(m.commission)),
-  );
+  const maxMonthCommission = Math.max(1, ...summary.salesByMonth.map((m) => Number(m.commission)));
 
   return (
     <div className="mx-auto max-w-[1100px]">
@@ -66,7 +81,11 @@ export default async function AdminDashboardPage() {
       {/* Sales & money */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard label={t('cardSold30')} value={String(summary.sales.last30d)} />
-        <MetricCard label={t('cardCommission30')} value={money(summary.sales.commission30d)} accent />
+        <MetricCard
+          label={t('cardCommission30')}
+          value={money(summary.sales.commission30d)}
+          accent
+        />
         <MetricCard label={t('cardCommissionTotal')} value={money(summary.sales.commissionTotal)} />
         <MetricCard label={t('cardPipeline')} value={money(summary.sales.commissionPipeline)} />
       </div>
@@ -75,10 +94,7 @@ export default async function AdminDashboardPage() {
       <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <MetricCard label={t('cardActive')} value={String(summary.listings.published ?? 0)} />
         <MetricCard label={t('cardReserved')} value={String(summary.listings.reserved ?? 0)} />
-        <MetricCard
-          label={t('cardLeads30')}
-          value={String(summary.leads.last30d)}
-        />
+        <MetricCard label={t('cardLeads30')} value={String(summary.leads.last30d)} />
         <MetricCard label={t('cardViews')} value={String(summary.views.total)} />
       </div>
 

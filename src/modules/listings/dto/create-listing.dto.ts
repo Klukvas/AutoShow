@@ -4,6 +4,7 @@ import {
   ArrayUnique,
   IsArray,
   IsBoolean,
+  IsDefined,
   IsEnum,
   IsInt,
   IsNumber,
@@ -15,6 +16,7 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateIf,
 } from 'class-validator';
 
 const VIN_REGEX = /^[A-HJ-NPR-Z0-9]{17}$/;
@@ -71,7 +73,11 @@ export class CreateListingDto {
 
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isNegotiable?: boolean;
 
-  /* Consignment economics (back-office only, never exposed publicly). */
+  /* Consignment economics (back-office only, never exposed publicly).
+   * Cross-field rules are enforced here for POST bodies; partial PATCHes are
+   * re-checked against the merged entity in ListingsService, so API clients
+   * can't create a client car without a callback number or a percent/fixed
+   * commission without its rate. */
 
   @ApiPropertyOptional({ enum: ['own', 'client'] })
   @IsOptional()
@@ -79,7 +85,13 @@ export class CreateListingDto {
   sellerType?: 'own' | 'client';
 
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(128) sellerName?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(32) sellerPhone?: string;
+
+  @ApiPropertyOptional()
+  @ValidateIf((o: CreateListingDto) => o.sellerType === 'client' || o.sellerPhone !== undefined)
+  @IsDefined({ message: 'sellerPhone is required when sellerType is client' })
+  @IsString()
+  @Length(5, 32)
+  sellerPhone?: string;
 
   @ApiPropertyOptional({ enum: ['none', 'fixed', 'percent'] })
   @IsOptional()
@@ -87,18 +99,20 @@ export class CreateListingDto {
   feeType?: 'none' | 'fixed' | 'percent';
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @ValidateIf((o: CreateListingDto) => o.feeType === 'percent' || o.feePercent !== undefined)
+  @IsDefined({ message: 'feePercent is required when feeType is percent' })
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
+  @Min(0.01)
   @Max(100)
   feePercent?: number;
 
   @ApiPropertyOptional()
-  @IsOptional()
+  @ValidateIf((o: CreateListingDto) => o.feeType === 'fixed' || o.feeFixedAmount !== undefined)
+  @IsDefined({ message: 'feeFixedAmount is required when feeType is fixed' })
   @Type(() => Number)
   @IsNumber({ maxDecimalPlaces: 2 })
-  @Min(0)
+  @Min(0.01)
   feeFixedAmount?: number;
 
   @ApiProperty() @IsString() @Length(8, 255) title!: string;

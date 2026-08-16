@@ -20,6 +20,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { AdminListListingsQuery } from './dto/admin-list-listings.query';
+import { BulkListingsDto } from './dto/bulk-listings.dto';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { TransitionStatusDto } from './dto/transition-status.dto';
 import { UpdateListingDto } from './dto/update-listing.dto';
@@ -72,6 +73,21 @@ export class ListingsAdminController {
   @ApiOperation({ summary: 'Soft-delete a listing' })
   async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
     await this.listings.softDelete(id, user);
+  }
+
+  @Post('bulk')
+  @HttpCode(200)
+  @ApiOperation({
+    summary: 'Apply an action (publish/archive/delete) to many listings; per-id result',
+  })
+  async bulk(@Body() dto: BulkListingsDto, @CurrentUser() user: AuthenticatedUser) {
+    // `delete` is admin-only (enforced in the service), mirroring DELETE /:id.
+    const results = await this.listings.bulk(dto.ids, dto.action, user);
+    return {
+      results,
+      succeeded: results.filter((r) => r.ok).length,
+      failed: results.filter((r) => !r.ok).length,
+    };
   }
 
   @Post(':id/publish')

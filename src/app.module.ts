@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import type { AppConfig } from './config/config.module';
 import { BullRootModule } from './bull/bull.module';
 import { CommonModule } from './common/common.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -24,6 +25,7 @@ import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SitemapModule } from './modules/sitemap/sitemap.module';
 import { SlugModule } from './modules/slug/slug.module';
 import { StorageModule } from './modules/storage/storage.module';
+import { TelegramModule } from './modules/telegram/telegram.module';
 import { ViewsModule } from './modules/views/views.module';
 
 @Module({
@@ -32,7 +34,15 @@ import { ViewsModule } from './modules/views/views.module';
     CommonModule,
     BullRootModule,
     DatabaseModule,
-    ThrottlerModule.forRoot([{ name: 'global', ttl: 60_000, limit: 120 }]),
+    // Limit comes from PUBLIC_API_RATE_PER_MIN — a hardcoded number here would
+    // silently ignore the documented env knob.
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: ['APP_CONFIG'],
+      useFactory: (config: AppConfig) => ({
+        throttlers: [{ name: 'global', ttl: 60_000, limit: config.PUBLIC_API_RATE_PER_MIN }],
+      }),
+    }),
     StorageModule,
     SlugModule,
     FxModule,
@@ -43,6 +53,7 @@ import { ViewsModule } from './modules/views/views.module';
     AdminUsersModule,
     AuthModule,
     BrandingModule,
+    TelegramModule,
     ListingsModule,
     MediaModule,
     LeadsModule,

@@ -15,6 +15,8 @@ export interface MediaTileState {
   /** Kept for retry after a failed upload. */
   file?: File;
   canRetry: boolean;
+  /** Worker failure reason for an already-uploaded image (server-side fail). */
+  failureReason?: string | null;
 }
 
 export const MAX_FILE_MB = 20;

@@ -36,7 +36,9 @@ function tileFromServer(m: AdminMedia): MediaTileState {
     progress: 100,
     isCover: m.isCover ?? false,
     previewUrl: m.thumbUrl ?? null,
-    canRetry: false,
+    // An already-uploaded image can be reprocessed server-side (videos can't).
+    canRetry: m.status === 'failed' && (m.type ?? 'image') === 'image',
+    failureReason: m.failureReason ?? null,
   };
 }
 
@@ -195,7 +197,15 @@ export function MediaManager({ listingId, initial }: MediaManagerProps) {
                 previewUrl: tile.previewUrl ?? media.thumbUrl ?? null,
               };
             }
-            if (media?.status === 'failed') return { ...tile, phase: 'failed', canRetry: false };
+            if (media?.status === 'failed') {
+              // Uploaded-but-failed image → offer a server-side reprocess.
+              return {
+                ...tile,
+                phase: 'failed',
+                canRetry: tile.type === 'image' && Boolean(tile.mediaId),
+                failureReason: media.failureReason ?? null,
+              };
+            }
             return tile;
           }),
         );
@@ -264,9 +274,24 @@ export function MediaManager({ listingId, initial }: MediaManagerProps) {
   };
 
   const retry = (tile: MediaTileState) => {
-    if (!tile.file) return;
-    patchTile(tile.key, { phase: 'uploading', progress: 0, canRetry: false });
-    void upload(tile.key, tile.file);
+    // A local file that never confirmed → re-run the whole upload pipeline.
+    if (tile.file) {
+      patchTile(tile.key, { phase: 'uploading', progress: 0, canRetry: false });
+      void upload(tile.key, tile.file);
+      return;
+    }
+    // Already uploaded but processing failed → ask the backend to reprocess.
+    if (!tile.mediaId) return;
+    const id = tile.mediaId;
+    patchTile(tile.key, { phase: 'processing', canRetry: false, failureReason: null });
+    void withToken(async (token) => {
+      try {
+        await adminApi.retryMedia(id, { accessToken: token });
+      } catch (e) {
+        patchTile(tile.key, { phase: 'failed', canRetry: true });
+        throw e;
+      }
+    });
   };
 
   /* ---------------- reorder: pointer drag + keyboard ---------------- */

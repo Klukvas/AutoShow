@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/cn';
+import { useFavorites } from '@/lib/favorites';
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scroll-lock';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
@@ -86,6 +87,7 @@ export function PublicNav({ branding }: PublicNavProps) {
 
         {/* Desktop right cluster */}
         <div className="hidden items-center gap-3 md:flex">
+          <FavoritesLink label={t('favorites')} />
           <ThemeToggle />
           <LanguageSwitcher label={t('language')} />
           <Button as="link" href="/contacts#lead" variant="primary" size="sm">
@@ -95,6 +97,7 @@ export function PublicNav({ branding }: PublicNavProps) {
 
         {/* Mobile right cluster */}
         <div className="flex items-center gap-2 md:hidden">
+          <FavoritesLink label={t('favorites')} />
           <ThemeToggle />
           <button
             type="button"
@@ -151,6 +154,32 @@ export function PublicNav({ branding }: PublicNavProps) {
           document.body,
         )}
     </header>
+  );
+}
+
+/** Heart with a count bubble → /favorites. Hidden until hydration (count is
+ *  client-only) and while empty — an always-on zero would just be noise. */
+function FavoritesLink({ label }: { label: string }) {
+  const { slugs, ready } = useFavorites();
+  if (!ready || slugs.length === 0) return null;
+  return (
+    <Link
+      href="/favorites"
+      aria-label={`${label} (${slugs.length})`}
+      className="focus-ring relative flex h-[38px] w-[38px] items-center justify-center rounded-btn border border-line-input bg-surface text-ink transition-colors hover:border-line-hover"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        strokeWidth="2"
+        aria-hidden
+        className="h-[18px] w-[18px] fill-transparent stroke-current"
+      >
+        <path d="M12 21c-4.8-3.6-8-6.7-8-10.2C4 8 6 6 8.5 6c1.4 0 2.7.7 3.5 1.8C12.8 6.7 14.1 6 15.5 6 18 6 20 8 20 10.8c0 3.5-3.2 6.6-8 10.2z" />
+      </svg>
+      <span className="absolute -right-1.5 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-accent px-1 text-[10.5px] font-bold text-on-accent">
+        {slugs.length}
+      </span>
+    </Link>
   );
 }
 

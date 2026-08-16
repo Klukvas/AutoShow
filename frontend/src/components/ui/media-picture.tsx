@@ -15,6 +15,20 @@ interface MediaPictureProps {
 const VARIANT_ORDER: Record<string, number> = { thumb: 0, gallery: 1, full: 2 };
 
 /**
+ * Neutral shimmer placeholder (inline SVG): the photo area reads as "loading"
+ * instead of flashing empty. Static — no per-image tiny renditions needed.
+ * URI-encoded (not base64) so it works in both server and client bundles.
+ */
+const SHIMMER_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="10">' +
+  '<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="0">' +
+  '<stop offset="0%" stop-color="#e8eaee"/><stop offset="50%" stop-color="#f3f4f6"/>' +
+  '<stop offset="100%" stop-color="#e8eaee"/></linearGradient></defs>' +
+  '<rect width="16" height="10" fill="url(#g)"/></svg>';
+
+const SHIMMER_DATA_URL = `data:image/svg+xml,${encodeURIComponent(SHIMMER_SVG)}`;
+
+/**
  * Renders the backend-generated renditions as a responsive Image. We pick the
  * largest 'full' variant as the src (so Next still does its own optimization)
  * and rely on `sizes` for proper srcset selection. AVIF/WebP/JPEG variants are
@@ -64,6 +78,8 @@ export function MediaPicture({
         fill
         sizes={sizes}
         priority={priority}
+        placeholder="blur"
+        blurDataURL={SHIMMER_DATA_URL}
         className={cn('object-cover', className)}
       />
     );
@@ -77,6 +93,8 @@ export function MediaPicture({
       height={height}
       sizes={sizes}
       priority={priority}
+      placeholder="blur"
+      blurDataURL={SHIMMER_DATA_URL}
       className={className}
     />
   );

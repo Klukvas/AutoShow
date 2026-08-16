@@ -8,7 +8,9 @@ import { AnalyticsService } from './analytics.service';
 @ApiTags('admin:analytics')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin', 'editor')
+// Dashboard exposes sales/commission figures — admin-only per the role policy
+// (editors are scoped to listings + leads).
+@Roles('admin')
 @Controller('admin/analytics')
 export class AnalyticsAdminController {
   constructor(private readonly analytics: AnalyticsService) {}

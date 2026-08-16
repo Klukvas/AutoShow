@@ -42,6 +42,13 @@ export class MediaAdminController {
     return this.media.confirm(id, user);
   }
 
+  @Post('media/:id/retry')
+  @HttpCode(200)
+  @ApiOperation({ summary: 'Re-run rendition processing for a failed image' })
+  retry(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.media.retry(id, user);
+  }
+
   @Patch('listings/:listingId/media/reorder')
   @HttpCode(204)
   @ApiOperation({ summary: 'Reorder media of a listing' })

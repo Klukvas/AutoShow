@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { FilterBar } from '@/components/filters/filter-bar';
 import { ListingCard } from '@/components/listing/listing-card';
 import { LoadMore } from '@/components/listing/load-more';
+import { MakeLogoStrip } from '@/components/listing/make-logo-strip';
 import { publicApi } from '@/lib/api/public';
 import { getSiteBranding } from '@/lib/branding/resolve';
 import type { ListingsQuery } from '@/lib/api/types';
@@ -65,7 +66,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const t = await getTranslations('catalog');
-  const query = buildQuery(await searchParams);
+  const params = await searchParams;
+  const query = buildQuery(params);
 
   const [page, makes, models, bodyTypes, fuelTypes, transmissions, driveTypes, options, branding] =
     await Promise.all([
@@ -95,6 +97,11 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       resultCount={page.total}
       baseCurrency={branding?.defaultCurrency}
     >
+      <MakeLogoStrip
+        makes={makes}
+        activeMake={typeof params.make === 'string' ? params.make : undefined}
+        label={t('brands')}
+      />
       {page.items.length === 0 ? (
         <EmptyState title={t('emptyTitle')} body={t('emptyBody')} resetLabel={t('emptyReset')} />
       ) : (

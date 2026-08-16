@@ -2,6 +2,7 @@ import { PublicFooter } from '@/components/nav/public-footer';
 import { PublicNav } from '@/components/nav/public-nav';
 import { LenisProvider } from '@/components/motion/lenis-provider';
 import { ThemeProvider } from '@/components/theme/theme-provider';
+import { FavoritesProvider } from '@/lib/favorites';
 import { getSiteBranding } from '@/lib/branding/resolve';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -9,9 +10,11 @@ export default async function PublicLayout({ children }: { children: React.React
   return (
     <ThemeProvider>
       <LenisProvider>
-        <PublicNav branding={branding} />
-        <main className="min-h-dvh">{children}</main>
-        <PublicFooter branding={branding} />
+        <FavoritesProvider>
+          <PublicNav branding={branding} />
+          <main className="min-h-dvh">{children}</main>
+          <PublicFooter branding={branding} />
+        </FavoritesProvider>
       </LenisProvider>
     </ThemeProvider>
   );

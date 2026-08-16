@@ -11,7 +11,14 @@ export class BrandingPublicController {
 
   @Get()
   @ApiOperation({ summary: 'Site branding for the storefront' })
-  get() {
-    return this.branding.getCurrent();
+  async get() {
+    // The telegram block holds the bot token — a live credential that must
+    // never reach the public endpoint. (Delete on a fresh copy; the cached
+    // entity itself is never mutated.)
+    const settings: Partial<Awaited<ReturnType<BrandingService['getCurrent']>>> = {
+      ...(await this.branding.getCurrent()),
+    };
+    delete settings.telegram;
+    return settings;
   }
 }

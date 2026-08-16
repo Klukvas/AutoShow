@@ -1,10 +1,18 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
+import { FavoriteButton } from '@/components/listing/favorite-button';
 import { MediaPicture } from '@/components/ui/media-picture';
 import { MediaPlaceholder } from '@/components/ui/media-placeholder';
 import { ConditionBadge, StatusBadge } from '@/components/ui/status-badge';
 import { formatMoney, formatMileage, formatYear } from '@/lib/format';
 import type { Currency, PublicListing } from '@/lib/api/types';
+
+const NEW_ARRIVAL_DAYS = 7;
+
+function isNewArrival(publishedAt: string | null): boolean {
+  if (!publishedAt) return false;
+  return Date.now() - Date.parse(publishedAt) < NEW_ARRIVAL_DAYS * 24 * 60 * 60 * 1000;
+}
 
 interface ListingCardProps {
   listing: PublicListing;
@@ -33,6 +41,9 @@ export function ListingCard({
   const price = baseCurrency
     ? formatMoney(listing.price.normalized, baseCurrency)
     : formatMoney(listing.price.amount, listing.price.currency);
+  const photoCount = listing.media.filter((m) => m.type === 'image').length;
+  const hasVideo = listing.media.some((m) => m.type === 'video');
+  const fresh = isNewArrival(listing.publishedAt);
 
   return (
     <Link
@@ -45,13 +56,35 @@ export function ListingCard({
         ) : (
           <MediaPlaceholder ariaLabel={display} wordmark="AUTOFLOW" className="absolute inset-0" />
         )}
-        <ConditionBadge condition={listing.condition} className="absolute left-3 top-3">
-          {t(`condition.${listing.condition}`)}
-        </ConditionBadge>
+        <div className="absolute left-3 top-3 flex items-center gap-1.5">
+          <ConditionBadge condition={listing.condition}>
+            {t(`condition.${listing.condition}`)}
+          </ConditionBadge>
+          {fresh && (
+            <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-on-accent">
+              {t('badgeNew')}
+            </span>
+          )}
+        </div>
+        <FavoriteButton slug={listing.slug} className="absolute right-2.5 top-2.5" />
         {listing.status === 'reserved' && (
-          <StatusBadge status="reserved" className="absolute right-3 top-3 backdrop-blur-sm">
+          <StatusBadge status="reserved" className="absolute bottom-3 left-3 backdrop-blur-sm">
             {tl('statusReserved')}
           </StatusBadge>
+        )}
+        {(photoCount > 0 || hasVideo) && (
+          <span
+            aria-label={t('photoCount', { count: photoCount })}
+            className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-md bg-black/55 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm"
+          >
+            {hasVideo && <span aria-hidden>🎬</span>}
+            {photoCount > 0 && (
+              <span className="inline-flex items-center gap-1">
+                <CameraIcon />
+                {photoCount}
+              </span>
+            )}
+          </span>
         )}
       </div>
 
@@ -73,5 +106,21 @@ export function ListingCard({
         </div>
       </div>
     </Link>
+  );
+}
+
+function CameraIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden
+      className="h-3 w-3"
+    >
+      <path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8z" />
+      <circle cx="12" cy="13" r="3.5" />
+    </svg>
   );
 }

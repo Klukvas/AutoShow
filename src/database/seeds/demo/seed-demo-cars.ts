@@ -1,6 +1,6 @@
 import { config as loadDotenv } from 'dotenv';
 import 'reflect-metadata';
-import { DataSource, In, IsNull } from 'typeorm';
+import { DataSource, IsNull } from 'typeorm';
 import { adminDataSourceOptions } from '../../data-source';
 import { BodyType } from '../../../modules/catalog/entities/body-type.entity';
 import { Color } from '../../../modules/catalog/entities/color.entity';

@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { Job, Queue } from 'bullmq';
 import { In, LessThan, Not, IsNull, Repository } from 'typeorm';
 import type { AppConfig } from '../config/config.module';
+import { MakeLogoService } from '../modules/catalog/make-logo.service';
 import { ListingMedia } from '../modules/listings/entities/listing-media.entity';
 import { MediaRendition } from '../modules/listings/entities/media-rendition.entity';
 import { StorageService } from '../modules/storage/storage.service';
@@ -22,6 +23,7 @@ export class MaintenanceWorker extends WorkerHost implements OnModuleInit {
     @InjectRepository(MediaRendition)
     private readonly renditions: Repository<MediaRendition>,
     private readonly storage: StorageService,
+    private readonly makeLogos: MakeLogoService,
     @InjectQueue(MAINTENANCE_QUEUE) private readonly queue: Queue,
     @Inject('APP_CONFIG') private readonly config: AppConfig,
   ) {
@@ -39,7 +41,14 @@ export class MaintenanceWorker extends WorkerHost implements OnModuleInit {
   async process(job: Job): Promise<void> {
     if (job.name === REPEAT_KEY) {
       await this.cleanupOrphans();
+      await this.cleanupFailed();
       await this.cleanupSoftDeleted();
+      // Backfill/weekly-retry of manufacturer logos (pre-feature makes and
+      // makes whose Wikipedia lookup missed earlier).
+      await this.makeLogos.sweepMissingLogos();
+    }
+    if (job.name === 'make-logo') {
+      await this.makeLogos.fetchLogo((job.data as { makeId: string }).makeId);
     }
   }
 
@@ -65,6 +74,44 @@ export class MaintenanceWorker extends WorkerHost implements OnModuleInit {
     }
     if (stale.length) {
       this.logger.log({ count: stale.length }, 'orphan media swept');
+    }
+  }
+
+  /**
+   * Uploads that failed validation (oversized, mime mismatch, bad magic
+   * bytes): the row keeps failureReason visible in the admin UI for the TTL
+   * window, then the S3 object and the row are reclaimed — otherwise every
+   * failed upload leaks a bucket object forever.
+   */
+  private async cleanupFailed(): Promise<void> {
+    const cutoff = new Date(Date.now() - this.config.MEDIA_ORPHAN_TTL_HOURS * 60 * 60 * 1000);
+    const stale = await this.media.find({
+      where: { status: 'failed', updatedAt: LessThan(cutoff), deletedAt: IsNull() },
+      take: 500,
+    });
+    if (!stale.length) return;
+    const renditions = await this.renditions.find({
+      withDeleted: true,
+      where: { mediaId: In(stale.map((m) => m.id)) },
+    });
+
+    let removed = 0;
+    for (const media of stale) {
+      const keys = [
+        media.originalS3Key,
+        ...renditions.filter((r) => r.mediaId === media.id).map((r) => r.s3Key),
+      ];
+      try {
+        await Promise.all(keys.map((key) => this.storage.delete(key)));
+        await this.renditions.delete({ mediaId: media.id });
+        await this.media.delete({ id: media.id });
+        removed += 1;
+      } catch (err) {
+        this.logger.warn({ err, mediaId: media.id }, 'failed media cleanup failed');
+      }
+    }
+    if (removed) {
+      this.logger.log({ count: removed }, 'failed media reclaimed');
     }
   }
 

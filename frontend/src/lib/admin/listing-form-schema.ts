@@ -117,7 +117,11 @@ export const listingFormSchema = z.object({
   ),
 });
 
-/** The fee rate matching the chosen fee type must actually be filled in. */
+/**
+ * Cross-field consignment rules (mirrors ListingsService.assertConsignmentConsistent):
+ * the fee rate matching the chosen fee type must be filled in, and a client
+ * car needs a callback number.
+ */
 export const listingFormSchemaWithFees = listingFormSchema.superRefine((values, ctx) => {
   if (values.feeType === 'percent' && (values.feePercent === undefined || values.feePercent <= 0)) {
     ctx.addIssue({
@@ -133,6 +137,13 @@ export const listingFormSchemaWithFees = listingFormSchema.superRefine((values, 
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       path: ['feeFixedAmount'],
+      message: issue('vRequired'),
+    });
+  }
+  if (values.sellerType === 'client' && !values.sellerPhone?.trim()) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ['sellerPhone'],
       message: issue('vRequired'),
     });
   }

@@ -9,6 +9,7 @@ import { JwtAuthGuard } from '../auth/jwt.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { BrandingService } from './branding.service';
 import { UpdateBrandingDto } from './dto/update-branding.dto';
+import type { SiteSettings, TelegramSettings } from './entities/site-settings.entity';
 
 @ApiTags('admin:branding')
 @ApiBearerAuth()
@@ -20,14 +21,38 @@ export class BrandingAdminController {
   @Get()
   @Roles('admin', 'editor')
   @ApiOperation({ summary: 'Get current site settings' })
-  get() {
-    return this.branding.getCurrent();
+  async get(@CurrentUser() user: AuthenticatedUser) {
+    const settings = await this.branding.getCurrent();
+    if (user.role === 'admin') return settings;
+    // Editors read branding for the shell, but the bot token is a credential
+    // and channel config is admin-only — strip the whole block. (Delete on a
+    // fresh copy; the cached entity itself is never mutated.)
+    const rest: Partial<typeof settings> = { ...settings };
+    delete rest.telegram;
+    return rest;
   }
 
   @Patch()
   @Roles('admin')
   @ApiOperation({ summary: 'Update site settings' })
   update(@Body() dto: UpdateBrandingDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.branding.update(dto, user);
+    // Normalize the nested DTO (optional fields) into the entity's shape.
+    const { telegram, ...rest } = dto;
+    const patch: Partial<SiteSettings> = { ...rest };
+    if (telegram !== undefined) {
+      patch.telegram = telegram === null ? null : this.normalizeTelegram(telegram);
+    }
+    return this.branding.update(patch, user);
+  }
+
+  private normalizeTelegram(dto: NonNullable<UpdateBrandingDto['telegram']>): TelegramSettings {
+    return {
+      botToken: dto.botToken ?? null,
+      channels: dto.channels.map((c) => ({
+        chatId: c.chatId,
+        ...(c.label ? { label: c.label } : {}),
+      })),
+      autoPublish: dto.autoPublish,
+    };
   }
 }

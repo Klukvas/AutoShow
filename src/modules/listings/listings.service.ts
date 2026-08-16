@@ -5,6 +5,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BadRequestException } from '@nestjs/common';
@@ -22,6 +23,7 @@ import { AuditLogService } from '../audit/audit-log.service';
 import { BrandingService } from '../branding/branding.service';
 import { FxRateProvider } from '../fx/fx-rate.provider';
 import { SlugService } from '../slug/slug.service';
+import { TelegramPostService } from '../telegram/telegram-post.service';
 import { AdminListListingsQuery } from './dto/admin-list-listings.query';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { ListListingsQuery } from './dto/list-listings.query';
@@ -110,6 +112,7 @@ export class ListingsService {
     private readonly fx: FxRateProvider,
     private readonly slug: SlugService,
     private readonly audit: AuditLogService,
+    private readonly telegram: TelegramPostService,
     @Inject('APP_CONFIG') private readonly config: AppConfig,
   ) {}
 
@@ -317,6 +320,18 @@ export class ListingsService {
     return { items, nextCursor, total };
   }
 
+  /**
+   * Cheap PK probe for the public view beacon: is this a live, publicly
+   * visible listing? No relations, no mapper — the beacon fires on every
+   * detail-page visit.
+   */
+  async existsPublic(id: string): Promise<boolean> {
+    const count = await this.listings.count({
+      where: { id, status: In(['published', 'reserved']), deletedAt: IsNull() },
+    });
+    return count > 0;
+  }
+
   async adminFindById(id: string): Promise<Listing> {
     const listing = await this.listings.findOne({
       where: { id, deletedAt: IsNull() },
@@ -327,6 +342,13 @@ export class ListingsService {
   }
 
   async create(dto: CreateListingDto, actor: AuthenticatedUser): Promise<Listing> {
+    this.assertConsignmentConsistent({
+      sellerType: dto.sellerType ?? 'own',
+      sellerPhone: dto.sellerPhone ?? null,
+      feeType: dto.feeType ?? 'none',
+      feePercent: dto.feePercent ?? null,
+      feeFixedAmount: dto.feeFixedAmount ?? null,
+    });
     await this.assertCatalogRefs(dto);
     const slugBase = await this.buildSlugBase(dto);
     const slug = await this.slug.unique(slugBase, {
@@ -349,8 +371,10 @@ export class ListingsService {
       isNegotiable: dto.isNegotiable ?? false,
       vinVisible: dto.vinVisible ?? false,
       sourceType: 'manual',
-      feePercent: dto.feePercent !== undefined ? dto.feePercent.toFixed(2) : null,
-      feeFixedAmount: dto.feeFixedAmount !== undefined ? dto.feeFixedAmount.toFixed(2) : null,
+      // Only the rate matching the chosen fee type is stored — a stray value
+      // for another type would silently resurface if feeType is later changed.
+      feePercent: dto.feeType === 'percent' ? dto.feePercent!.toFixed(2) : null,
+      feeFixedAmount: dto.feeType === 'fixed' ? dto.feeFixedAmount!.toFixed(2) : null,
     });
 
     const saved = await this.listings.manager.transaction(async (em) => {
@@ -436,6 +460,27 @@ export class ListingsService {
       patch.feeFixedAmount = dto.feeFixedAmount === null ? null : dto.feeFixedAmount.toFixed(2);
     }
 
+    // Cross-field consignment rules on the EFFECTIVE (merged) values — a
+    // partial PATCH can silently break consistency the DTO alone can't see
+    // (e.g. feeType switched to percent while feePercent stays NULL).
+    this.assertConsignmentConsistent({
+      sellerType: dto.sellerType ?? current.sellerType,
+      sellerPhone: dto.sellerPhone !== undefined ? dto.sellerPhone : current.sellerPhone,
+      feeType: dto.feeType ?? current.feeType,
+      feePercent:
+        dto.feePercent !== undefined
+          ? dto.feePercent
+          : current.feePercent !== null
+            ? Number(current.feePercent)
+            : null,
+      feeFixedAmount:
+        dto.feeFixedAmount !== undefined
+          ? dto.feeFixedAmount
+          : current.feeFixedAmount !== null
+            ? Number(current.feeFixedAmount)
+            : null,
+    });
+
     const priceChanged =
       dto.priceAmount !== undefined && Number(dto.priceAmount).toFixed(2) !== current.priceAmount;
     const currencyChanged =
@@ -495,6 +540,40 @@ export class ListingsService {
     });
   }
 
+  /**
+   * Apply one action to many listings, reusing the per-item domain logic (same
+   * validation, audit and Telegram side effects) so a bulk call can never skip
+   * a guard a single call enforces. Each item is independent: one failure
+   * (e.g. a draft failing publish readiness → 422) is reported per id and does
+   * NOT abort the rest. Version is read per item — bulk is a deliberate admin
+   * action, so it self-heals rather than 409-ing on a stale client list.
+   */
+  async bulk(
+    ids: string[],
+    action: 'publish' | 'archive' | 'delete',
+    actor: AuthenticatedUser,
+  ): Promise<{ id: string; ok: boolean; error?: string }[]> {
+    if (action === 'delete' && actor.role !== 'admin') {
+      throw new ForbiddenException('Only admins can delete listings');
+    }
+    const uniqueIds = [...new Set(ids)];
+    const results: { id: string; ok: boolean; error?: string }[] = [];
+    for (const id of uniqueIds) {
+      try {
+        if (action === 'delete') {
+          await this.softDelete(id, actor);
+        } else {
+          const current = await this.adminFindById(id);
+          await this.transition(id, action, current.version, actor);
+        }
+        results.push({ id, ok: true });
+      } catch (err) {
+        results.push({ id, ok: false, error: err instanceof Error ? err.message : 'failed' });
+      }
+    }
+    return results;
+  }
+
   /* =====================================================================
    *  Status transitions
    * ===================================================================== */
@@ -517,11 +596,14 @@ export class ListingsService {
       throw new ForbiddenException(`Transition ${from} -> ${target} not allowed`);
     }
 
+    if (target === 'publish') this.assertPublishable(current);
+
     const patch: Partial<Listing> = { status: to };
     // First publish stamps publishedAt; re-publishing from archived/reserved
     // preserves the original date so SEO/sitemap don't see a fake "freshly
     // listed" timestamp.
-    if (target === 'publish' && !current.publishedAt) patch.publishedAt = new Date();
+    const firstPublish = target === 'publish' && !current.publishedAt;
+    if (firstPublish) patch.publishedAt = new Date();
     if (target === 'mark-sold') {
       patch.soldAt = new Date();
       // Deal economics: the final price defaults to the asking price; the
@@ -541,6 +623,14 @@ export class ListingsService {
       actorId: actor.id,
       actorRole: actor.role,
     });
+
+    // Telegram side effects AFTER the transition is committed. Both enqueue
+    // methods swallow their own errors — a Telegram outage never blocks the
+    // showroom workflow. Re-publishes are deliberately not re-posted (the
+    // per-channel rows make even a manual re-post idempotent).
+    if (firstPublish) await this.telegram.enqueueAutoPost(current.id);
+    if (target === 'mark-sold') await this.telegram.enqueueMarkSold(current.id);
+
     return this.adminFindById(current.id);
   }
 
@@ -548,15 +638,99 @@ export class ListingsService {
    *  Helpers
    * ===================================================================== */
 
-  /** Platform earnings for a sale, in the listing's price currency. */
+  /**
+   * Platform earnings for a sale, in the listing's price currency. A missing
+   * rate is a hard error, not a silent 0 — otherwise a data-entry slip erases
+   * the commission from analytics forever (it is stamped once, at sale time).
+   */
   private commissionFor(listing: Listing, salePrice: number): number {
     switch (listing.feeType) {
-      case 'fixed':
-        return Number(listing.feeFixedAmount ?? 0);
-      case 'percent':
-        return (salePrice * Number(listing.feePercent ?? 0)) / 100;
+      case 'fixed': {
+        const fee = Number(listing.feeFixedAmount);
+        if (!Number.isFinite(fee) || fee <= 0) {
+          throw new UnprocessableEntityException(
+            'feeFixedAmount is not set — fill in the commission before marking the listing sold',
+          );
+        }
+        return fee;
+      }
+      case 'percent': {
+        const percent = Number(listing.feePercent);
+        if (!Number.isFinite(percent) || percent <= 0) {
+          throw new UnprocessableEntityException(
+            'feePercent is not set — fill in the commission before marking the listing sold',
+          );
+        }
+        return (salePrice * percent) / 100;
+      }
       default:
         return 0;
+    }
+  }
+
+  /**
+   * Consignment cross-field rules, applied to the EFFECTIVE values (create
+   * defaults or dto-merged-over-current). Keeping this in the domain — not
+   * only in the admin form — protects imports and future API clients.
+   */
+  private assertConsignmentConsistent(effective: {
+    sellerType: string;
+    sellerPhone: string | null;
+    feeType: string;
+    feePercent: number | null;
+    feeFixedAmount: number | null;
+  }): void {
+    if (
+      effective.feeType === 'percent' &&
+      (effective.feePercent === null || effective.feePercent <= 0)
+    ) {
+      throw new BadRequestException('feePercent must be set (> 0) when feeType is percent');
+    }
+    if (
+      effective.feeType === 'fixed' &&
+      (effective.feeFixedAmount === null || effective.feeFixedAmount <= 0)
+    ) {
+      throw new BadRequestException('feeFixedAmount must be set (> 0) when feeType is fixed');
+    }
+    if (effective.sellerType === 'client' && !effective.sellerPhone?.trim()) {
+      throw new BadRequestException('sellerPhone is required when sellerType is client');
+    }
+  }
+
+  /**
+   * A listing may only go public when it can actually sell the car. Checked at
+   * transition time (not in the DTO) so drafts stay free-form while the public
+   * storefront never receives a listing without sales-ready content.
+   */
+  private assertPublishable(listing: Listing): void {
+    const problems: string[] = [];
+    const readyPhotos = (listing.media ?? []).filter(
+      (m) => m.type === 'image' && m.status === 'ready' && !m.deletedAt,
+    );
+    if (readyPhotos.length === 0) {
+      problems.push('at least one processed photo is required');
+    }
+    if (listing.vinVisible && !listing.vin) {
+      problems.push('vinVisible is enabled but the listing has no VIN');
+    }
+    try {
+      this.assertConsignmentConsistent({
+        sellerType: listing.sellerType,
+        sellerPhone: listing.sellerPhone,
+        feeType: listing.feeType,
+        feePercent: listing.feePercent !== null ? Number(listing.feePercent) : null,
+        feeFixedAmount: listing.feeFixedAmount !== null ? Number(listing.feeFixedAmount) : null,
+      });
+    } catch (err) {
+      // Legacy rows predate create/update validation — surface the same
+      // message as a publish blocker instead of a bare 400.
+      if (err instanceof BadRequestException) problems.push(err.message);
+      else throw err;
+    }
+    if (problems.length) {
+      throw new UnprocessableEntityException(
+        `Listing is not ready to be published: ${problems.join('; ')}`,
+      );
     }
   }
 

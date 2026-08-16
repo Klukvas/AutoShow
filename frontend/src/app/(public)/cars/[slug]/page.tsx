@@ -6,6 +6,7 @@ import { publicApi } from '@/lib/api/public';
 import { getSiteBranding } from '@/lib/branding/resolve';
 import { Breadcrumbs } from '@/components/listing/breadcrumbs';
 import { ContactPanel } from '@/components/listing/contact-panel';
+import { FavoriteButton } from '@/components/listing/favorite-button';
 import { Gallery } from '@/components/listing/gallery';
 import { KeySpecs } from '@/components/listing/key-specs';
 import { MobileCtaBar } from '@/components/listing/mobile-cta-bar';
@@ -92,9 +93,28 @@ export default async function ListingPage({ params }: PageProps) {
   // A sold car takes no inquiries — the page stays up as social proof.
   const acceptsLeads = listing.status !== 'sold';
 
+  // Mirrors the visible breadcrumbs — lets search results render the
+  // Головна → Каталог → car trail instead of a bare URL.
+  const siteOrigin = new URL(listing.seo.canonical).origin;
+  const breadcrumbsJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t('breadcrumbHome'), item: siteOrigin },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: t('breadcrumbCatalog'),
+        item: `${siteOrigin}/cars`,
+      },
+      { '@type': 'ListItem', position: 3, name: listing.title, item: listing.seo.canonical },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-[1200px] px-5 pb-28 pt-4 md:px-8 md:pb-16 md:pt-6">
       <JsonLd data={listing.seo.jsonLd} />
+      <JsonLd data={breadcrumbsJsonLd} />
       <ViewBeacon listingId={listing.id} />
 
       {/* Desktop header: breadcrumbs → H1 + status + share */}
@@ -113,7 +133,8 @@ export default async function ListingPage({ params }: PageProps) {
             <ViewsIcon />
             {t('viewsCount', { count: listing.viewsCount })}
           </span>
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-2">
+            <FavoriteButton slug={listing.slug} variant="inline" />
             <ShareButton title={listing.title} />
           </div>
         </div>

@@ -24,7 +24,8 @@ import { ReviewsService } from './reviews.service';
 @ApiTags('admin:reviews')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin', 'editor')
+// Admin-only per the role policy: editors are scoped to listings + leads.
+@Roles('admin')
 @Controller('admin/reviews')
 export class ReviewsAdminController {
   constructor(private readonly reviews: ReviewsService) {}

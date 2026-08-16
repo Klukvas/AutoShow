@@ -1,8 +1,11 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
+import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Queue } from 'bullmq';
 import { IsNull, Repository } from 'typeorm';
 import { catchUniqueViolation } from '../../common/db/conflict';
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { MAINTENANCE_QUEUE } from '../../workers/queue.tokens';
 import { AuditLogService } from '../audit/audit-log.service';
 import { Listing } from '../listings/entities/listing.entity';
 import { CatalogService } from './catalog.service';
@@ -38,11 +41,26 @@ export class CatalogAdminService {
     @InjectRepository(Listing) private readonly listings: Repository<Listing>,
     private readonly catalog: CatalogService,
     private readonly audit: AuditLogService,
+    @InjectQueue(MAINTENANCE_QUEUE) private readonly maintenance: Queue,
   ) {}
 
+  private readonly logger = new Logger(CatalogAdminService.name);
+
   /* makes / models */
-  createMake(dto: UpsertMakeDto, actor: AuthenticatedUser) {
-    return this.create(this.makes, dto, 'make', actor);
+  async createMake(dto: UpsertMakeDto, actor: AuthenticatedUser) {
+    const saved = await this.create(this.makes, dto, 'make', actor);
+    // Logo fetch is best-effort background work — a queue hiccup must not
+    // fail make creation (the weekly sweep will pick the make up anyway).
+    try {
+      await this.maintenance.add(
+        'make-logo',
+        { makeId: (saved as Make).id },
+        { attempts: 3, backoff: { type: 'exponential', delay: 10_000 }, removeOnComplete: 1_000 },
+      );
+    } catch (err) {
+      this.logger.warn({ err, makeId: (saved as Make).id }, 'failed to enqueue make logo fetch');
+    }
+    return saved;
   }
   updateMake(id: string, dto: UpsertMakeDto, actor: AuthenticatedUser) {
     return this.update(this.makes, id, dto, 'make', actor);

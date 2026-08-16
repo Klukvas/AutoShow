@@ -34,8 +34,11 @@ import {
 export class CatalogAdminController {
   constructor(private readonly admin: CatalogAdminService) {}
 
+  // Editors create listings and must not be blocked by an unknown make/model —
+  // these two POSTs are opened to them; the rest of the catalog stays admin.
   @Post('makes')
-  @ApiOperation({ summary: 'Create a vehicle make' })
+  @Roles('admin', 'editor')
+  @ApiOperation({ summary: 'Create a vehicle make (logo is auto-fetched in background)' })
   createMake(@Body() dto: UpsertMakeDto, @CurrentUser() user: AuthenticatedUser) {
     return this.admin.createMake(dto, user);
   }
@@ -54,6 +57,7 @@ export class CatalogAdminController {
   }
 
   @Post('models')
+  @Roles('admin', 'editor')
   createModel(@Body() dto: UpsertModelDto, @CurrentUser() user: AuthenticatedUser) {
     return this.admin.createModel(dto, user);
   }

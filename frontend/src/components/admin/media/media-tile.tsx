@@ -113,7 +113,13 @@ export function MediaTile({
             interactive ? 'bottom-1.5 left-1.5' : 'right-1.5 top-1.5',
           )}
         >
-          <svg viewBox="0 0 12 13" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.3">
+          <svg
+            viewBox="0 0 12 13"
+            className="h-3 w-3"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.3"
+          >
             <path d="M1 3h10M4.5 3V1.5h3V3M2.5 3l.6 8h5.8l.6-8M4.8 5.5v3.5M7.2 5.5v3.5" />
           </svg>
         </button>
@@ -158,11 +164,19 @@ export function MediaTile({
       )}
 
       {tile.phase === 'failed' && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 border border-danger-line bg-danger-bg">
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center gap-1 border border-danger-line bg-danger-bg px-2 text-center"
+          title={tile.failureReason ?? undefined}
+        >
           <span aria-hidden className="text-[15px] leading-none text-danger">
             ✕
           </span>
           <span className="text-[10px] font-semibold text-danger">{t('statusFailed')}</span>
+          {tile.failureReason && (
+            <span className="line-clamp-2 text-[9px] font-medium leading-tight text-danger/80">
+              {tile.failureReason}
+            </span>
+          )}
           {tile.canRetry && (
             <button
               type="button"

@@ -13,6 +13,20 @@ interface Utm {
   content?: string;
 }
 
+/**
+ * Structured payload of sell_request/credit leads. Kept as typed jsonb (not
+ * folded into the message text) so filters, analytics and CRM exports never
+ * have to parse a human-readable string back apart.
+ */
+export interface LeadDetails {
+  carMake?: string;
+  carModel?: string;
+  carYear?: number;
+  carMileageKm?: number;
+  creditDownPayment?: number;
+  creditTermMonths?: number;
+}
+
 @Entity('leads')
 @Index('ix_leads_status_created', ['status', 'createdAt', 'id'])
 @Index('ix_leads_created', ['createdAt', 'id'])
@@ -42,6 +56,9 @@ export class Lead extends BaseEntity {
 
   @Column({ type: 'text', nullable: true })
   message!: string | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  details!: LeadDetails | null;
 
   @Column({
     type: 'varchar',

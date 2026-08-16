@@ -20,6 +20,31 @@ export interface SeoDefaults {
   ogImage?: string;
 }
 
+export interface TelegramChannel {
+  /** `@channelname` or a numeric chat id (`-100…`). */
+  chatId: string;
+  /** Human label for the admin UI only. */
+  label?: string;
+}
+
+/**
+ * Telegram publishing config. Lives in site_settings (admin-editable, no
+ * redeploy) — NEVER returned by the public branding endpoint and masked in
+ * audit diffs: botToken is a live credential.
+ */
+export interface TelegramSettings {
+  botToken: string | null;
+  channels: TelegramChannel[];
+  /** Post automatically on a listing's FIRST publish. */
+  autoPublish: boolean;
+  /**
+   * Chat that receives internal new-lead alerts (a private manager group or a
+   * DM with the bot). Separate from `channels` (public listing posts). When
+   * unset, lead alerts are silently skipped — the same bot token is reused.
+   */
+  leadChatId?: string | null;
+}
+
 /**
  * Singleton row holding the site's branding and the base currency used for
  * price normalization. The partial unique index on a constant expression
@@ -66,4 +91,7 @@ export class SiteSettings extends BaseEntity {
 
   @Column({ name: 'default_currency', type: 'varchar', length: 3, default: 'USD' })
   defaultCurrency!: Currency;
+
+  @Column({ type: 'jsonb', nullable: true })
+  telegram!: TelegramSettings | null;
 }

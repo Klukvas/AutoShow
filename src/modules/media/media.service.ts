@@ -123,17 +123,7 @@ export class MediaService {
       // reclaim a confirmed-but-still-queued upload.
       media.status = 'processing';
       await this.media.save(media);
-      await this.queue.add(
-        'process',
-        { mediaId: media.id },
-        {
-          attempts: 3,
-          backoff: { type: 'exponential', delay: 5_000 },
-          jobId: jobIdFor(media.id),
-          removeOnComplete: 1_000,
-          removeOnFail: 5_000,
-        },
-      );
+      await this.enqueueProcess(media.id);
     } else {
       // Don't trust the client Content-Type alone: sniff the container's magic
       // bytes before marking a video ready.
@@ -160,6 +150,56 @@ export class MediaService {
       diff: { listingId: media.listingId, type: media.type },
     });
     return media;
+  }
+
+  /**
+   * Re-run rendition processing for an image that ended in 'failed' (transient
+   * worker error, sharp hiccup). Videos aren't reprocessable — a failed video
+   * failed magic-byte validation and needs a fresh upload. Verifies the
+   * original is still in storage before requeuing.
+   */
+  async retry(mediaId: string, actor: AuthenticatedUser): Promise<ListingMedia> {
+    const media = await this.media.findOne({ where: { id: mediaId, deletedAt: IsNull() } });
+    if (!media) throw new NotFoundException('Media not found');
+    if (media.type !== 'image') {
+      throw new BadRequestException('only image media can be reprocessed');
+    }
+    if (media.status !== 'failed') {
+      throw new BadRequestException('only failed media can be retried');
+    }
+    const head = await this.storage.head(media.originalS3Key);
+    if (!head) {
+      throw new BadRequestException('original upload is no longer in storage — re-upload the file');
+    }
+    media.status = 'processing';
+    media.failureReason = null;
+    await this.media.save(media);
+    // A prior failed job may still linger (removeOnFail keeps it briefly);
+    // drop it so the same jobId can be re-added.
+    await this.queue.remove(jobIdFor(media.id)).catch(() => undefined);
+    await this.enqueueProcess(media.id);
+    await this.audit.record({
+      action: 'media.retry',
+      entityType: 'listing_media',
+      entityId: media.id,
+      actorId: actor.id,
+      actorRole: actor.role,
+    });
+    return media;
+  }
+
+  private async enqueueProcess(mediaId: string): Promise<void> {
+    await this.queue.add(
+      'process',
+      { mediaId },
+      {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5_000 },
+        jobId: jobIdFor(mediaId),
+        removeOnComplete: 1_000,
+        removeOnFail: 5_000,
+      },
+    );
   }
 
   async reorder(listingId: string, ids: string[], actor: AuthenticatedUser): Promise<void> {

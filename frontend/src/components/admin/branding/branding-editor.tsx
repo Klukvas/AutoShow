@@ -7,13 +7,14 @@ import { cn } from '@/lib/cn';
 import { adminApi } from '@/lib/api/admin';
 import { ApiClientError } from '@/lib/api/client';
 import { fetchAccessToken } from '@/lib/auth/use-access-token';
-import type { Branding, Currency } from '@/lib/api/types';
+import type { Branding, Currency, TelegramSettings } from '@/lib/api/types';
 import { deriveHoverHex, isValidHex } from '@/lib/admin/derive-hover';
 import { compactHours, DAYS, expandHours, type DayHours } from '@/lib/admin/working-hours-form';
 import { dayLabel } from '@/lib/working-hours';
 import { Banner } from '@/components/admin/ui/banner';
 import { SectionCard } from '@/components/admin/ui/section-card';
 import { TextField, inputCls } from '@/components/admin/ui/field';
+import { useToast } from '@/components/admin/ui/toast';
 import { BrandPreview } from './brand-preview';
 
 /** Handoff swatch set; «+» opens the custom picker. */
@@ -25,15 +26,33 @@ interface BrandingEditorProps {
   initial: Branding;
 }
 
+/**
+ * Trim inputs and normalize to the API shape: an empty section becomes null
+ * (feature dormant), an empty token string becomes null so the backend's
+ * token-format validation only fires on an actual value.
+ */
+function compactTelegram(telegram: TelegramSettings): TelegramSettings | null {
+  const channels = telegram.channels
+    .map((c) => ({ chatId: c.chatId.trim(), label: c.label?.trim() || undefined }))
+    .filter((c) => c.chatId.length > 0);
+  const botToken = telegram.botToken?.trim() || null;
+  const leadChatId = telegram.leadChatId?.trim() || null;
+  if (!botToken && channels.length === 0 && !leadChatId) return null;
+  return { botToken, channels, autoPublish: telegram.autoPublish, leadChatId };
+}
+
 /** Handoff 1h: two-column editor with a live re-tinting preview. */
 export function BrandingEditor({ initial }: BrandingEditorProps) {
   const t = useTranslations('admin');
   const router = useRouter();
   const [form, setForm] = useState(initial);
   const [hours, setHours] = useState<DayHours>(() => expandHours(initial.workingHours));
+  const [telegram, setTelegram] = useState<TelegramSettings>(
+    () => initial.telegram ?? { botToken: null, channels: [], autoPublish: true, leadChatId: null },
+  );
+  const { toast } = useToast();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   const update = <K extends keyof Branding>(key: K, value: Branding[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -56,7 +75,6 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
     if (pending) return;
     setPending(true);
     setError(null);
-    setSuccess(false);
     try {
       const accessToken = await fetchAccessToken();
       if (!accessToken) {
@@ -78,10 +96,11 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
           socialLinks: form.socialLinks,
           seoDefaults: form.seoDefaults,
           defaultCurrency: form.defaultCurrency,
+          telegram: compactTelegram(telegram),
         },
         { accessToken },
       );
-      setSuccess(true);
+      toast(t('branding.saved'));
       router.refresh();
     } catch (err) {
       if (err instanceof ApiClientError && err.status === 429) setError(t('common.rateLimited'));
@@ -110,11 +129,6 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
       {error && (
         <Banner tone="error" className="mb-4">
           {error}
-        </Banner>
-      )}
-      {success && (
-        <Banner tone="success" className="mb-4">
-          {t('branding.saved')}
         </Banner>
       )}
 
@@ -356,6 +370,109 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                     ...(form.seoDefaults ?? {}),
                     description: e.target.value || undefined,
                   })
+                }
+              />
+            </div>
+          </SectionCard>
+
+          <SectionCard title={t('branding.telegramTitle')}>
+            <div className="flex flex-col gap-3.5">
+              <TextField
+                label={t('branding.telegramToken')}
+                hint={t('branding.telegramTokenHint')}
+                value={telegram.botToken ?? ''}
+                placeholder="123456789:AA…"
+                onChange={(e) =>
+                  setTelegram((prev) => ({ ...prev, botToken: e.target.value || null }))
+                }
+              />
+
+              <div>
+                <div className="mb-2 text-[12px] font-semibold text-ink-2">
+                  {t('branding.telegramChannels')}
+                </div>
+                <div className="flex flex-col gap-2">
+                  {telegram.channels.map((channel, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        aria-label={t('branding.telegramChatId')}
+                        value={channel.chatId}
+                        placeholder="@channel"
+                        onChange={(e) =>
+                          setTelegram((prev) => ({
+                            ...prev,
+                            channels: prev.channels.map((c, i) =>
+                              i === idx ? { ...c, chatId: e.target.value } : c,
+                            ),
+                          }))
+                        }
+                        className={cn(inputCls(false), 'h-9 flex-1 text-[13px]')}
+                      />
+                      <input
+                        aria-label={t('branding.telegramChatLabel')}
+                        value={channel.label ?? ''}
+                        placeholder={t('branding.telegramChatLabel')}
+                        onChange={(e) =>
+                          setTelegram((prev) => ({
+                            ...prev,
+                            channels: prev.channels.map((c, i) =>
+                              i === idx ? { ...c, label: e.target.value || undefined } : c,
+                            ),
+                          }))
+                        }
+                        className={cn(inputCls(false), 'h-9 flex-1 text-[13px]')}
+                      />
+                      <button
+                        type="button"
+                        aria-label={t('branding.telegramRemoveChannel')}
+                        onClick={() =>
+                          setTelegram((prev) => ({
+                            ...prev,
+                            channels: prev.channels.filter((_, i) => i !== idx),
+                          }))
+                        }
+                        className="focus-ring h-9 flex-none rounded-[9px] border border-line-input px-3 text-[13px] font-semibold text-ink-3 hover:border-line-hover"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setTelegram((prev) => ({
+                          ...prev,
+                          channels: [...prev.channels, { chatId: '' }],
+                        }))
+                      }
+                      className="focus-ring inline-flex h-9 items-center rounded-[9px] border border-line-input bg-surface px-3.5 text-[12.5px] font-semibold text-ink hover:border-line-hover"
+                    >
+                      {t('branding.telegramAddChannel')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <label className="inline-flex cursor-pointer items-center gap-2 text-[13px] font-medium text-ink-2">
+                <input
+                  type="checkbox"
+                  checked={telegram.autoPublish}
+                  onChange={(e) =>
+                    setTelegram((prev) => ({ ...prev, autoPublish: e.target.checked }))
+                  }
+                  className="h-4 w-4 accent-[rgb(var(--accent))]"
+                />
+                {t('branding.telegramAutoPublish')}
+              </label>
+
+              <TextField
+                label={t('branding.telegramLeadChat')}
+                hint={t('branding.telegramLeadChatHint')}
+                value={telegram.leadChatId ?? ''}
+                placeholder="-100123456789"
+                onChange={(e) =>
+                  setTelegram((prev) => ({ ...prev, leadChatId: e.target.value || null }))
                 }
               />
             </div>

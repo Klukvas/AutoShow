@@ -28,6 +28,8 @@ import {
 } from '@/components/admin/ui/field';
 import { SectionCard } from '@/components/admin/ui/section-card';
 import { Dialog } from '@/components/admin/ui/dialog';
+import { useToast } from '@/components/admin/ui/toast';
+import { CatalogCombobox } from './catalog-combobox';
 import { TransitionMenu } from './transition-menu';
 
 export interface ListingCatalog {
@@ -63,11 +65,16 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
   const formRef = useRef<HTMLFormElement>(null);
   const isEdit = Boolean(initial);
 
+  const { toast } = useToast();
   const [pending, setPending] = useState<null | 'save' | 'publish'>(null);
   const [conflict, setConflict] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, FieldIssue>>({});
   const [makeId, setMakeId] = useState(initial?.makeId ?? '');
+  const [modelId, setModelId] = useState(initial?.modelId ?? '');
+  // Makes/models created inline from the combobox this session.
+  const [extraMakes, setExtraMakes] = useState<CatalogMake[]>([]);
+  const [extraModels, setExtraModels] = useState<CatalogModel[]>([]);
   const [confirmPublish, setConfirmPublish] = useState(false);
   // Consignment section: seller/fee kind drive which detail fields render.
   const [sellerType, setSellerType] = useState<SellerType>(initial?.sellerType ?? 'own');
@@ -80,10 +87,53 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
   const [optSaving, setOptSaving] = useState(false);
   const [optError, setOptError] = useState<string | null>(null);
 
+  const makes = useMemo(() => [...catalog.makes, ...extraMakes], [catalog.makes, extraMakes]);
   const models = useMemo(
-    () => catalog.models.filter((m) => !makeId || m.makeId === makeId),
-    [catalog.models, makeId],
+    () => [...catalog.models, ...extraModels].filter((m) => !makeId || m.makeId === makeId),
+    [catalog.models, extraModels, makeId],
   );
+
+  /** Inline make creation from the combobox; the logo arrives asynchronously. */
+  const createMake = async (name: string): Promise<CatalogMake | null> => {
+    try {
+      const accessToken = await fetchAccessToken();
+      if (!accessToken) {
+        setError(t('common.sessionExpired'));
+        return null;
+      }
+      const created = await adminApi.createCatalogMake(
+        { nameUk: name, slug: slugify(name) },
+        { accessToken },
+      );
+      setExtraMakes((prev) => [...prev, created]);
+      toast(t('form.makeCreated', { name }));
+      return created;
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : t('form.catalogCreateFailed'));
+      return null;
+    }
+  };
+
+  const createModel = async (name: string): Promise<CatalogModel | null> => {
+    if (!makeId) return null;
+    try {
+      const accessToken = await fetchAccessToken();
+      if (!accessToken) {
+        setError(t('common.sessionExpired'));
+        return null;
+      }
+      const created = await adminApi.createCatalogModel(
+        { nameUk: name, slug: slugify(name), makeId },
+        { accessToken },
+      );
+      setExtraModels((prev) => [...prev, created]);
+      toast(t('form.modelCreated', { name }));
+      return created;
+    } catch (e) {
+      setError(e instanceof ApiClientError ? e.message : t('form.catalogCreateFailed'));
+      return null;
+    }
+  };
   const optionGroups = useMemo(() => {
     const normalized = (c: string) => (CATEGORY_ORDER.includes(c) ? c : 'other');
     const all = [...catalog.options, ...extraOptions];
@@ -229,6 +279,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
           accessToken: publishToken,
         });
       }
+      toast(publish ? t('form.publishedToast') : t('form.savedToast'));
       if (isEdit && initial) {
         router.refresh();
       } else {
@@ -249,7 +300,10 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
   const primaryBtn =
     'focus-ring inline-flex h-10 items-center rounded-[9px] bg-accent px-[18px] text-[13px] font-bold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50';
 
-  const canPublish = !initial || initial.status !== 'published';
+  // Publish requires at least one processed photo (backend 422s otherwise) and
+  // photos are uploaded on the edit screen — so a brand-new listing is always
+  // saved as a draft first.
+  const canPublish = isEdit && initial?.status !== 'published';
 
   return (
     <form
@@ -341,22 +395,27 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
         {/* Автомобіль */}
         <SectionCard title={t('form.groupVehicle')}>
           <div className={gridCls}>
-            <SelectField
+            <CatalogCombobox
               label={t('form.make')}
               name="makeId"
               required
+              items={makes}
               value={makeId}
-              onChange={(e) => setMakeId(e.target.value)}
+              onSelect={(id) => {
+                setMakeId(id);
+                // Models belong to a make — a make switch invalidates the pick.
+                setModelId('');
+              }}
               error={err('makeId')}
-            >
-              <option value="">{t('form.selectPlaceholder')}</option>
-              {catalog.makes.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nameUk}
-                </option>
-              ))}
-            </SelectField>
-            <SelectField
+              placeholder={t('form.selectPlaceholder')}
+              showLogos
+              onCreate={createMake}
+              unknownHint={(name) => t('form.makeUnknown', { name })}
+              createLabel={(name) => t('form.makeCreate', { name })}
+              creatingLabel={t('common.saving')}
+              emptyLabel={t('form.comboNoMatch')}
+            />
+            <CatalogCombobox
               label={
                 <>
                   {t('form.model')}{' '}
@@ -365,16 +424,17 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
               }
               name="modelId"
               required
-              defaultValue={initial?.modelId ?? ''}
+              items={models}
+              value={modelId}
+              onSelect={setModelId}
               error={err('modelId')}
-            >
-              <option value="">{t('form.selectPlaceholder')}</option>
-              {models.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.nameUk}
-                </option>
-              ))}
-            </SelectField>
+              placeholder={makeId ? t('form.selectPlaceholder') : t('form.modelPickMakeFirst')}
+              onCreate={makeId ? createModel : undefined}
+              unknownHint={(name) => t('form.modelUnknown', { name })}
+              createLabel={(name) => t('form.modelCreate', { name })}
+              creatingLabel={t('common.saving')}
+              emptyLabel={makeId ? t('form.comboNoMatch') : t('form.modelPickMakeFirst')}
+            />
             <TextField
               label={t('form.year')}
               name="year"

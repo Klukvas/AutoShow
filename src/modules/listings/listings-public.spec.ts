@@ -25,6 +25,7 @@ describe('ListingsService public detail', () => {
       empty, // fx
       empty, // slug
       empty, // audit
+      empty, // telegram
       empty, // config
     );
 

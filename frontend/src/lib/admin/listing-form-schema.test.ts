@@ -28,6 +28,8 @@ const VALID: Record<string, unknown> = {
   description: 'Еталонний Carrera S у комплектації Sport Chrono, один власник.',
   locationCity: 'Київ',
   optionIds: ['o-1', 'o-2'],
+  sellerType: 'own',
+  feeType: 'none',
 };
 
 describe('listing form schema', () => {
@@ -66,5 +68,54 @@ describe('listing form schema', () => {
     expect(body.vin).toBeUndefined();
     expect(body.optionIds).toEqual(['o-1', 'o-2']);
     expect(body.vinVisible).toBe(true);
+  });
+
+  it('requires the fee rate matching the chosen fee type', () => {
+    expect(parseListingForm({ ...VALID, feeType: 'percent' }).errors.feePercent?.key).toBe(
+      'vRequired',
+    );
+    expect(
+      parseListingForm({ ...VALID, feeType: 'percent', feePercent: '0' }).errors.feePercent?.key,
+    ).toBe('vRequired');
+    expect(parseListingForm({ ...VALID, feeType: 'fixed' }).errors.feeFixedAmount?.key).toBe(
+      'vRequired',
+    );
+    expect(
+      parseListingForm({ ...VALID, feeType: 'percent', feePercent: '5' }).errors.feePercent,
+    ).toBeUndefined();
+  });
+
+  it('requires a callback phone for client cars', () => {
+    expect(parseListingForm({ ...VALID, sellerType: 'client' }).errors.sellerPhone?.key).toBe(
+      'vRequired',
+    );
+    expect(
+      parseListingForm({ ...VALID, sellerType: 'client', sellerPhone: '+380501234567' }).errors
+        .sellerPhone,
+    ).toBeUndefined();
+  });
+
+  it('scopes consignment fields to the relevant seller/fee type in the API body', () => {
+    const { values } = parseListingForm({
+      ...VALID,
+      sellerType: 'client',
+      sellerName: 'Іван',
+      sellerPhone: '+380501234567',
+      feeType: 'percent',
+      feePercent: '7.5',
+      feeFixedAmount: '999',
+    });
+    const body = listingBodyFromValues(values!);
+    expect(body.sellerName).toBe('Іван');
+    expect(body.sellerPhone).toBe('+380501234567');
+    expect(body.feePercent).toBe(7.5);
+    expect(body.feeFixedAmount).toBeUndefined();
+
+    const own = parseListingForm(VALID);
+    const ownBody = listingBodyFromValues(own.values!);
+    expect(ownBody.sellerName).toBeUndefined();
+    expect(ownBody.sellerPhone).toBeUndefined();
+    expect(ownBody.feePercent).toBeUndefined();
+    expect(ownBody.feeFixedAmount).toBeUndefined();
   });
 });

@@ -55,9 +55,14 @@ export class ListingsPublicController {
   @ApiOperation({ summary: 'Record a listing view (client beacon; IP-deduped)' })
   async trackView(@Param('id', ParseUUIDPipe) id: string, @Req() req: Request) {
     // Fired directly from the visitor's browser, so req.ip is the real client
-    // (dedup is per real IP). Best-effort — never fail the beacon.
-    void this.views.track(id, req.ip).catch((err) => {
-      this.logger.warn({ err, listingId: id }, 'failed to track listing view');
-    });
+    // (dedup is per real IP). Best-effort — never fail the beacon. The target
+    // must be a live public listing, otherwise any random UUID would inflate
+    // the Redis pending hash with garbage entries.
+    void this.listings
+      .existsPublic(id)
+      .then((visible) => (visible ? this.views.track(id, req.ip) : undefined))
+      .catch((err) => {
+        this.logger.warn({ err, listingId: id }, 'failed to track listing view');
+      });
   }
 }

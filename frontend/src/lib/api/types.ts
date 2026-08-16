@@ -84,6 +84,19 @@ export interface CursorPage<T> {
   total?: number;
 }
 
+export interface TelegramChannel {
+  chatId: string;
+  label?: string;
+}
+
+export interface TelegramSettings {
+  botToken: string | null;
+  channels: TelegramChannel[];
+  autoPublish: boolean;
+  /** Manager chat for new-lead alerts (@name or numeric id). */
+  leadChatId?: string | null;
+}
+
 export interface Branding {
   id: string;
   logoUrl: string | null;
@@ -99,9 +112,21 @@ export interface Branding {
   socialLinks: Record<string, string> | null;
   seoDefaults: { titleTemplate?: string; description?: string; ogImage?: string } | null;
   defaultCurrency: Currency;
+  /** Admin-only: absent on the public endpoint and for editor tokens. */
+  telegram?: TelegramSettings | null;
 }
 
-export interface CatalogMake extends CatalogRef {}
+export interface AdminTelegramPost {
+  chatId: string;
+  label: string | null;
+  postedAt: string;
+  soldMarkedAt: string | null;
+}
+
+export interface CatalogMake extends CatalogRef {
+  /** Manufacturer logo (auto-fetched from Wikipedia); null until found. */
+  logoUrl?: string | null;
+}
 export interface CatalogModel extends CatalogRef {
   makeId: string;
   make?: CatalogMake;

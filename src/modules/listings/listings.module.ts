@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { BrandingModule } from '../branding/branding.module';
+import { TelegramModule } from '../telegram/telegram.module';
 import { BodyType } from '../catalog/entities/body-type.entity';
 import { Color } from '../catalog/entities/color.entity';
 import { DriveType } from '../catalog/entities/drive-type.entity';
@@ -39,6 +40,7 @@ import { MediaRendition } from './entities/media-rendition.entity';
     AuditModule,
     AuthModule,
     BrandingModule,
+    TelegramModule,
   ],
   controllers: [ListingsPublicController, ListingsAdminController],
   providers: [ListingsService, ListingsMapper],
