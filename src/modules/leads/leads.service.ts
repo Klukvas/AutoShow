@@ -6,11 +6,13 @@ import { RedisService } from '../../common/redis/redis.service';
 import { CursorPage, decodeCursor, encodeCursor } from '../../common/pagination/cursor';
 import type { AppConfig } from '../../config/config.module';
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { AdminUser } from '../admin-users/entities/admin-user.entity';
 import { AuditLogService } from '../audit/audit-log.service';
 import { NotificationService } from '../notifications/notification.service';
 import { Listing } from '../listings/entities/listing.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { Lead, type LeadDetails, type LeadStatus } from './entities/lead.entity';
+import { LeadNote } from './entities/lead-note.entity';
 
 const RATE_PREFIX = 'leads:rate:';
 
@@ -20,6 +22,8 @@ export class LeadsService {
 
   constructor(
     @InjectRepository(Lead) private readonly leads: Repository<Lead>,
+    @InjectRepository(LeadNote) private readonly notes: Repository<LeadNote>,
+    @InjectRepository(AdminUser) private readonly adminUsers: Repository<AdminUser>,
     @InjectRepository(Listing) private readonly listings: Repository<Listing>,
     private readonly redis: RedisService,
     private readonly notifications: NotificationService,
@@ -165,6 +169,90 @@ export class LeadsService {
       actorRole: actor.role,
     });
     return saved;
+  }
+
+  /** Assign a lead to a team member, or pass null to unassign. */
+  async assign(id: string, assigneeId: string | null, actor: AuthenticatedUser): Promise<Lead> {
+    const lead = await this.leads.findOne({ where: { id, deletedAt: IsNull() } });
+    if (!lead) throw new NotFoundException('Lead not found');
+    if (assigneeId) {
+      const user = await this.adminUsers.findOne({
+        where: { id: assigneeId, isActive: true, deletedAt: IsNull() },
+        select: ['id'],
+      });
+      if (!user) throw new NotFoundException('Assignee not found or inactive');
+    }
+    const previous = lead.assigneeId;
+    const saved = await this.leads.save({ ...lead, assigneeId });
+    await this.audit.record({
+      action: 'lead.assign',
+      entityType: 'lead',
+      entityId: id,
+      diff: { from: previous, to: assigneeId },
+      actorId: actor.id,
+      actorRole: actor.role,
+    });
+    return saved;
+  }
+
+  /** Schedule (or clear, with null) a follow-up time for a lead. */
+  async setFollowUp(id: string, followUpAt: Date | null, actor: AuthenticatedUser): Promise<Lead> {
+    const lead = await this.leads.findOne({ where: { id, deletedAt: IsNull() } });
+    if (!lead) throw new NotFoundException('Lead not found');
+    const saved = await this.leads.save({ ...lead, followUpAt });
+    await this.audit.record({
+      action: 'lead.follow_up',
+      entityType: 'lead',
+      entityId: id,
+      diff: { followUpAt: followUpAt?.toISOString() ?? null },
+      actorId: actor.id,
+      actorRole: actor.role,
+    });
+    return saved;
+  }
+
+  /** Append an immutable note to the lead's touch history. */
+  async addNote(id: string, text: string, actor: AuthenticatedUser): Promise<LeadNote> {
+    const lead = await this.leads.findOne({
+      where: { id, deletedAt: IsNull() },
+      select: ['id'],
+    });
+    if (!lead) throw new NotFoundException('Lead not found');
+    const note = await this.notes.save(
+      this.notes.create({ leadId: id, authorId: actor.id, authorRole: actor.role, text }),
+    );
+    await this.audit.record({
+      action: 'lead.note',
+      entityType: 'lead',
+      entityId: id,
+      diff: { noteId: note.id },
+      actorId: actor.id,
+      actorRole: actor.role,
+    });
+    return note;
+  }
+
+  /**
+   * Active team members a lead can be assigned to (minimal projection so this
+   * is safe for editors, who can't list full admin_users). id/email/role only.
+   */
+  async listAssignees(): Promise<{ id: string; email: string; role: string }[]> {
+    const users = await this.adminUsers.find({
+      where: { isActive: true, deletedAt: IsNull() },
+      select: ['id', 'email', 'role'],
+      order: { email: 'ASC' },
+    });
+    return users.map((u) => ({ id: u.id, email: u.email, role: u.role }));
+  }
+
+  /** Note thread for a lead, newest first. */
+  async listNotes(id: string): Promise<LeadNote[]> {
+    const lead = await this.leads.findOne({
+      where: { id, deletedAt: IsNull() },
+      select: ['id'],
+    });
+    if (!lead) throw new NotFoundException('Lead not found');
+    return this.notes.find({ where: { leadId: id }, order: { createdAt: 'DESC' } });
   }
 
   /**

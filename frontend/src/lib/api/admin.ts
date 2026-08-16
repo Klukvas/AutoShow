@@ -27,6 +27,23 @@ export interface AdminLead {
   listingId: string | null;
   listing?: { id: string; slug: string; title: string };
   sourceUrl: string | null;
+  assigneeId: string | null;
+  followUpAt: string | null;
+}
+
+export interface LeadAssignee {
+  id: string;
+  email: string;
+  role: AdminRole;
+}
+
+export interface AdminLeadNote {
+  id: string;
+  leadId: string;
+  authorId: string | null;
+  authorRole: string | null;
+  text: string;
+  createdAt: string;
 }
 
 export type ListingStatus = 'draft' | 'published' | 'reserved' | 'sold' | 'archived';
@@ -394,6 +411,39 @@ export const adminApi = {
     return apiFetch<AdminLead>(`/admin/leads/${id}/status`, {
       method: 'PATCH',
       body: { status },
+      accessToken: opts.accessToken,
+    });
+  },
+  listLeadAssignees(opts: AdminCallOpts) {
+    return apiFetch<LeadAssignee[]>('/admin/leads/assignees', {
+      accessToken: opts.accessToken,
+      cache: 'no-store',
+    });
+  },
+  assignLead(id: string, assigneeId: string | null, opts: AdminCallOpts) {
+    return apiFetch<AdminLead>(`/admin/leads/${id}/assign`, {
+      method: 'PATCH',
+      body: { assigneeId },
+      accessToken: opts.accessToken,
+    });
+  },
+  setLeadFollowUp(id: string, followUpAt: string | null, opts: AdminCallOpts) {
+    return apiFetch<AdminLead>(`/admin/leads/${id}/follow-up`, {
+      method: 'PATCH',
+      body: { followUpAt },
+      accessToken: opts.accessToken,
+    });
+  },
+  listLeadNotes(id: string, opts: AdminCallOpts) {
+    return apiFetch<AdminLeadNote[]>(`/admin/leads/${id}/notes`, {
+      accessToken: opts.accessToken,
+      cache: 'no-store',
+    });
+  },
+  addLeadNote(id: string, text: string, opts: AdminCallOpts) {
+    return apiFetch<AdminLeadNote>(`/admin/leads/${id}/notes`, {
+      method: 'POST',
+      body: { text },
       accessToken: opts.accessToken,
     });
   },

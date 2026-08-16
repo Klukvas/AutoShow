@@ -10,6 +10,7 @@ import { Model } from '../modules/catalog/entities/model.entity';
 import { Transmission } from '../modules/catalog/entities/transmission.entity';
 import { VehicleOption } from '../modules/catalog/entities/vehicle-option.entity';
 import { Lead } from '../modules/leads/entities/lead.entity';
+import { LeadNote } from '../modules/leads/entities/lead-note.entity';
 import { ListingMedia } from '../modules/listings/entities/listing-media.entity';
 import { ListingOption } from '../modules/listings/entities/listing-option.entity';
 import { Listing } from '../modules/listings/entities/listing.entity';
@@ -33,6 +34,7 @@ export const ALL_ENTITIES = [
   MediaRendition,
   ListingOption,
   Lead,
+  LeadNote,
   Reservation,
   Review,
   AuditLog,

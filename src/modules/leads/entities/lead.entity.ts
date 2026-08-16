@@ -75,4 +75,12 @@ export class Lead extends BaseEntity {
 
   @Column({ name: 'ip_hash', type: 'varchar', length: 64, nullable: true })
   ipHash!: string | null;
+
+  /** Team member responsible for this lead (admin_users.id); null = unassigned. */
+  @Column({ name: 'assignee_id', type: 'uuid', nullable: true })
+  assigneeId!: string | null;
+
+  /** Scheduled follow-up time ("связаться до"); null = none scheduled. */
+  @Column({ name: 'follow_up_at', type: 'timestamptz', nullable: true })
+  followUpAt!: Date | null;
 }

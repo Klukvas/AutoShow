@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { getLocale, getTranslations } from 'next-intl/server';
 import { cn } from '@/lib/cn';
-import { adminApi, type AdminLead } from '@/lib/api/admin';
+import { adminApi, type AdminLead, type AdminLeadNote, type LeadAssignee } from '@/lib/api/admin';
 import { requireServerToken } from '@/lib/auth/refresh';
 import { formatRelativeDay, formatRelativeDateTime } from '@/lib/admin/relative-date';
 import { LeadTypeBadge } from '@/components/admin/ui/badges';
 import { EmptyState } from '@/components/admin/ui/empty-state';
 import { LeadStatusSegments } from '@/components/admin/leads/lead-status-segments';
+import { LeadCrmPanel } from '@/components/admin/leads/lead-crm-panel';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,6 +53,16 @@ export default async function AdminLeadsPage({
   // A bookmarked ?id= may point at a lead outside the current cursor window —
   // the detail pane must say so instead of the neutral "select a lead" state.
   const selectedMissing = Boolean(params.id) && !selected;
+
+  // CRM data for the detail pane: assignable teammates (both roles) and the
+  // selected lead's note thread. Best-effort — a failure just hides the panel
+  // data rather than breaking the inbox.
+  const [assignees, notes]: [LeadAssignee[], AdminLeadNote[]] = await Promise.all([
+    adminApi.listLeadAssignees({ accessToken: auth.accessToken }).catch(() => []),
+    selected
+      ? adminApi.listLeadNotes(selected.id, { accessToken: auth.accessToken }).catch(() => [])
+      : Promise.resolve([]),
+  ]);
   const labels = { today: t('common.today'), yesterday: t('common.yesterday') };
 
   const listPane = (
@@ -143,7 +154,14 @@ export default async function AdminLeadsPage({
       )}
     >
       {selected ? (
-        <LeadDetail lead={selected} locale={locale} labels={labels} backHref="/admin/leads" />
+        <LeadDetail
+          lead={selected}
+          locale={locale}
+          labels={labels}
+          backHref="/admin/leads"
+          assignees={assignees}
+          notes={notes}
+        />
       ) : selectedMissing ? (
         <EmptyState
           title={t('leads.notFoundTitle')}
@@ -190,11 +208,15 @@ async function LeadDetail({
   locale,
   labels,
   backHref,
+  assignees,
+  notes,
 }: {
   lead: AdminLead;
   locale: string;
   labels: { today: string; yesterday: string };
   backHref: string;
+  assignees: LeadAssignee[];
+  notes: AdminLeadNote[];
 }) {
   const t = await getTranslations('admin');
   const source = lead.sourceUrl ? stripOrigin(lead.sourceUrl) : null;
@@ -275,6 +297,12 @@ async function LeadDetail({
           {t('leads.call')}
         </a>
       </div>
+
+      <LeadCrmPanel
+        lead={{ id: lead.id, assigneeId: lead.assigneeId, followUpAt: lead.followUpAt }}
+        assignees={assignees}
+        initialNotes={notes}
+      />
     </div>
   );
 }
