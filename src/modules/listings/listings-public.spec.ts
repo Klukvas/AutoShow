@@ -21,6 +21,7 @@ describe('ListingsService public detail', () => {
       empty, // colors
       empty, // options
       empty, // media
+      empty, // priceHistory
       empty, // branding
       empty, // fx
       empty, // slug

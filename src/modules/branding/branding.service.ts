@@ -50,6 +50,17 @@ export class BrandingService {
       for (const update of priceUpdates) {
         await em.update(Listing, { id: update.id }, update.patch);
       }
+      if (baseChanged) {
+        // The "price dropped" badge compares previous_price_normalized to the
+        // current one; both must be in the same base. A base switch invalidates
+        // stored previous values, so clear them (badge resets until next edit).
+        await em
+          .createQueryBuilder()
+          .update(Listing)
+          .set({ previousPriceNormalized: null, priceChangedAt: null })
+          .where('deleted_at IS NULL')
+          .execute();
+      }
       return em.save(SiteSettings, { ...current, ...patch });
     });
 

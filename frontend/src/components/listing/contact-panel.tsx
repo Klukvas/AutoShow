@@ -39,7 +39,14 @@ export function ContactPanel({ listing, branding }: ContactPanelProps) {
 
   return (
     <div className="rounded-card border border-line bg-surface p-6 shadow-panel">
-      <div className="tabular font-heading text-price-lg font-extrabold text-ink">{price}</div>
+      <div className="flex items-center gap-2.5">
+        <div className="tabular font-heading text-price-lg font-extrabold text-ink">{price}</div>
+        {listing.price.priceDrop && (
+          <span className="inline-flex items-center rounded-full bg-ok/10 px-2 py-0.5 text-[12px] font-bold text-ok">
+            {t('priceDropped')} ↓{listing.price.priceDrop.dropPct}%
+          </span>
+        )}
+      </div>
       {priceNote && <p className="mt-1 text-sub text-ink-2">{priceNote}</p>}
       <p className="mt-2 text-sub font-semibold text-ink-2">{sellerLine}</p>
 

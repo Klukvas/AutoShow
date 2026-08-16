@@ -73,6 +73,8 @@ export interface PublicListing {
     currency: 'USD' | 'UAH' | 'EUR';
     normalized: string;
     isNegotiable: boolean;
+    /** Set when the current price is below the previous one (base currency). */
+    priceDrop: { previousNormalized: string; dropPct: number; since: string | null } | null;
   };
   location: { city: string; region: string | null };
   /**
@@ -98,6 +100,26 @@ interface CatalogRef {
   slug: string;
   nameUk: string;
   nameEn: string | null;
+}
+
+/**
+ * "Price dropped" descriptor for the storefront badge. Only a genuine decrease
+ * (previous normalized > current normalized) qualifies; both are in the base
+ * currency and are reset on a base-currency change, so the comparison is valid.
+ */
+function priceDropOf(
+  listing: Listing,
+): { previousNormalized: string; dropPct: number; since: string | null } | null {
+  const prev = listing.previousPriceNormalized;
+  if (prev == null) return null;
+  const prevN = Number(prev);
+  const curN = Number(listing.priceNormalized);
+  if (!(prevN > curN) || prevN <= 0) return null;
+  return {
+    previousNormalized: prev,
+    dropPct: Math.round(((prevN - curN) / prevN) * 100),
+    since: listing.priceChangedAt ? listing.priceChangedAt.toISOString() : null,
+  };
 }
 
 @Injectable()
@@ -149,6 +171,7 @@ export class ListingsMapper {
         currency: listing.priceCurrency,
         normalized: listing.priceNormalized,
         isNegotiable: listing.isNegotiable,
+        priceDrop: priceDropOf(listing),
       },
       location: { city: listing.locationCity, region: listing.locationRegion },
       seller: {

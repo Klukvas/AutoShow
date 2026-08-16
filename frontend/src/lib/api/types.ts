@@ -63,6 +63,7 @@ export interface PublicListing {
     currency: Currency;
     normalized: string;
     isNegotiable: boolean;
+    priceDrop: { previousNormalized: string; dropPct: number; since: string | null } | null;
   };
   location: { city: string; region: string | null };
   publishedAt: string | null;

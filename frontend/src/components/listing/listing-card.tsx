@@ -96,8 +96,19 @@ export function ListingCard({
           {formatYear(listing.year)} · {formatMileage(listing.mileageKm)}
         </p>
         <div className="mt-2.5 flex items-baseline justify-between gap-3">
-          <span className="tabular font-heading text-price-sm font-extrabold text-ink">
-            {price}
+          <span className="flex items-baseline gap-1.5">
+            <span className="tabular font-heading text-price-sm font-extrabold text-ink">
+              {price}
+            </span>
+            {listing.price.priceDrop && (
+              <span
+                className="inline-flex items-center rounded-full bg-ok/10 px-1.5 py-0.5 text-[11px] font-bold text-ok"
+                title={t('priceDropped')}
+                aria-label={t('priceDropped')}
+              >
+                ↓{listing.price.priceDrop.dropPct}%
+              </span>
+            )}
           </span>
           <span className="inline-flex items-center gap-1 text-sub text-ink-2">
             <span aria-hidden>📍</span>

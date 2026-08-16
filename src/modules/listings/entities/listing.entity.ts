@@ -155,6 +155,21 @@ export class Listing extends BaseEntity {
   @Column({ name: 'fx_rate_at', type: 'timestamptz', nullable: true })
   fxRateAt!: Date | null;
 
+  // Denormalized cache of the price before the last change (base currency), so
+  // the storefront renders a "price dropped" badge without a history subquery.
+  // Cleared on a base-currency change (would otherwise mix currency bases).
+  @Column({
+    name: 'previous_price_normalized',
+    type: 'numeric',
+    precision: 14,
+    scale: 2,
+    nullable: true,
+  })
+  previousPriceNormalized!: string | null;
+
+  @Column({ name: 'price_changed_at', type: 'timestamptz', nullable: true })
+  priceChangedAt!: Date | null;
+
   @Column({ name: 'is_negotiable', type: 'boolean', default: false })
   isNegotiable!: boolean;
 

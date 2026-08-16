@@ -19,6 +19,7 @@ import { ListingsService } from './listings.service';
 import { Listing } from './entities/listing.entity';
 import { ListingMedia } from './entities/listing-media.entity';
 import { ListingOption } from './entities/listing-option.entity';
+import { ListingPriceHistory } from './entities/listing-price-history.entity';
 import { MediaRendition } from './entities/media-rendition.entity';
 
 @Module({
@@ -27,6 +28,7 @@ import { MediaRendition } from './entities/media-rendition.entity';
       Listing,
       ListingMedia,
       ListingOption,
+      ListingPriceHistory,
       MediaRendition,
       Make,
       Model,

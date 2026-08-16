@@ -13,6 +13,7 @@ import { Lead } from '../modules/leads/entities/lead.entity';
 import { LeadNote } from '../modules/leads/entities/lead-note.entity';
 import { ListingMedia } from '../modules/listings/entities/listing-media.entity';
 import { ListingOption } from '../modules/listings/entities/listing-option.entity';
+import { ListingPriceHistory } from '../modules/listings/entities/listing-price-history.entity';
 import { Listing } from '../modules/listings/entities/listing.entity';
 import { MediaRendition } from '../modules/listings/entities/media-rendition.entity';
 import { Reservation } from '../modules/reservations/entities/reservation.entity';
@@ -33,6 +34,7 @@ export const ALL_ENTITIES = [
   ListingMedia,
   MediaRendition,
   ListingOption,
+  ListingPriceHistory,
   Lead,
   LeadNote,
   Reservation,

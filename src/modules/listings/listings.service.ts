@@ -30,6 +30,7 @@ import { ListListingsQuery } from './dto/list-listings.query';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { ListingMedia } from './entities/listing-media.entity';
 import { ListingOption } from './entities/listing-option.entity';
+import { ListingPriceHistory } from './entities/listing-price-history.entity';
 import { MediaRendition } from './entities/media-rendition.entity';
 import { Listing, type ListingStatus } from './entities/listing.entity';
 import { Make } from '../catalog/entities/make.entity';
@@ -108,6 +109,8 @@ export class ListingsService {
     @InjectRepository(VehicleOption) private readonly options: Repository<VehicleOption>,
     @InjectRepository(ListingMedia)
     private readonly media: Repository<ListingMedia>,
+    @InjectRepository(ListingPriceHistory)
+    private readonly priceHistory: Repository<ListingPriceHistory>,
     private readonly branding: BrandingService,
     private readonly fx: FxRateProvider,
     private readonly slug: SlugService,
@@ -385,6 +388,14 @@ export class ListingsService {
       if (dto.optionIds?.length) {
         await this.replaceOptions(em, created.id, dto.optionIds);
       }
+      // Baseline price-history row (no "previous" on create).
+      await em.save(ListingPriceHistory, {
+        listingId: created.id,
+        priceAmount: created.priceAmount,
+        priceCurrency: created.priceCurrency,
+        priceNormalized: created.priceNormalized,
+        actorId: actor.id,
+      });
       return created;
     });
 
@@ -496,12 +507,26 @@ export class ListingsService {
       patch.priceNormalized = fx.value;
       patch.fxRate = fx.rate;
       patch.fxRateAt = fx.asOf;
+      // Remember the pre-edit normalized price so the storefront can flag a
+      // drop (mapper compares previous vs current). Same base as current, so
+      // the comparison is valid until the next base-currency change clears it.
+      patch.previousPriceNormalized = current.priceNormalized;
+      patch.priceChangedAt = new Date();
     }
 
     await this.listings.manager.transaction(async (em) => {
       await this.updateWithVersion(current.id, current.version, patch, em);
       if (dto.optionIds !== undefined) {
         await this.replaceOptions(em, current.id, dto.optionIds);
+      }
+      if (patch.priceNormalized !== undefined) {
+        await em.save(ListingPriceHistory, {
+          listingId: current.id,
+          priceAmount: patch.priceAmount,
+          priceCurrency: patch.priceCurrency,
+          priceNormalized: patch.priceNormalized,
+          actorId: actor.id,
+        });
       }
     });
 
