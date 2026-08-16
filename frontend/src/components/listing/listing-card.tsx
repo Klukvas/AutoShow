@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { FavoriteButton } from '@/components/listing/favorite-button';
+import { CompareButton } from '@/components/listing/compare-button';
 import { MediaPicture } from '@/components/ui/media-picture';
 import { MediaPlaceholder } from '@/components/ui/media-placeholder';
 import { ConditionBadge, StatusBadge } from '@/components/ui/status-badge';
@@ -67,6 +68,7 @@ export function ListingCard({
           )}
         </div>
         <FavoriteButton slug={listing.slug} className="absolute right-2.5 top-2.5" />
+        <CompareButton slug={listing.slug} className="absolute right-2.5 top-[52px]" />
         {listing.status === 'reserved' && (
           <StatusBadge status="reserved" className="absolute bottom-3 left-3 backdrop-blur-sm">
             {tl('statusReserved')}
