@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ListingCard } from '@/components/listing/listing-card';
 import { publicApi } from '@/lib/api/public';
 import { getSiteBranding } from '@/lib/branding/resolve';
-import { COLLECTIONS, collectionByKey, collectionCatalogHref } from '@/lib/collections';
+import { collectionCatalogHref } from '@/lib/collections';
 
 interface PageProps {
   params: Promise<{ key: string }>;
@@ -14,17 +14,22 @@ interface PageProps {
 
 export const revalidate = 300;
 
-export function generateStaticParams() {
-  return COLLECTIONS.map((c) => ({ key: c.key }));
+export async function generateStaticParams() {
+  try {
+    const collections = await publicApi.listCollections();
+    return collections.map((c) => ({ key: c.key }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { key } = await params;
-  const preset = collectionByKey(key);
+  const preset = await publicApi.getCollection(key).catch(() => null);
   if (!preset) return {};
   return {
     title: preset.titleUk,
-    description: preset.descriptionUk,
+    description: preset.descriptionUk ?? undefined,
     alternates: { canonical: `/collections/${preset.key}` },
   };
 }
@@ -32,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 /** Curated SEO landing: a filter preset with its own copy and URL. */
 export default async function CollectionPage({ params }: PageProps) {
   const { key } = await params;
-  const preset = collectionByKey(key);
+  const preset = await publicApi.getCollection(key).catch(() => null);
   if (!preset) notFound();
 
   const [t, branding] = await Promise.all([getTranslations('catalog'), getSiteBranding()]);
@@ -81,7 +86,7 @@ export default async function CollectionPage({ params }: PageProps) {
       )}
 
       <div className="mt-10">
-        <Button as="link" href={collectionCatalogHref(preset)} variant="outline" size="lg">
+        <Button as="link" href={collectionCatalogHref(preset.query)} variant="outline" size="lg">
           {t('collectionAllFilters')} →
         </Button>
       </div>

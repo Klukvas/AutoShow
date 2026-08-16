@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Repository } from 'typeorm';
 import type { AppConfig } from '../../config/config.module';
+import { CollectionsService } from '../collections/collections.service';
 import { Listing } from '../listings/entities/listing.entity';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class SitemapService {
 
   constructor(
     @InjectRepository(Listing) private readonly listings: Repository<Listing>,
+    private readonly collections: CollectionsService,
     @Inject('APP_CONFIG') config: AppConfig,
   ) {
     this.siteUrl = config.PUBLIC_SITE_URL.replace(/\/+$/, '');
@@ -18,12 +20,17 @@ export class SitemapService {
   async build(): Promise<string> {
     // Every publicly reachable detail page: reserved/sold stay live with a
     // status badge, so they belong in the sitemap too.
-    const items = await this.listings.find({
-      where: { status: In(['published', 'reserved', 'sold']), deletedAt: IsNull() },
-      select: ['slug', 'updatedAt'],
-      order: { publishedAt: 'DESC' },
-      take: 50_000,
-    });
+    const [items, collectionRows] = await Promise.all([
+      this.listings.find({
+        where: { status: In(['published', 'reserved', 'sold']), deletedAt: IsNull() },
+        select: ['slug', 'updatedAt'],
+        order: { publishedAt: 'DESC' },
+        take: 50_000,
+      }),
+      // Single source of truth — the same rows drive the storefront pages, so
+      // sitemap and pages can no longer drift out of sync.
+      this.collections.listPublished(),
+    ]);
     const urls = items
       .map((l) => {
         const loc = `${this.siteUrl}/cars/${l.slug}`;
@@ -31,10 +38,8 @@ export class SitemapService {
         return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod></url>`;
       })
       .join('\n');
-    // Curated SEO collections — keep in sync with the storefront's
-    // frontend/src/lib/collections.ts preset keys.
-    const collections = ['family', 'budget', 'electric', 'business', 'suv']
-      .map((key) => `  <url><loc>${this.siteUrl}/collections/${key}</loc></url>`)
+    const collections = collectionRows
+      .map((c) => `  <url><loc>${this.siteUrl}/collections/${c.key}</loc></url>`)
       .join('\n');
     return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

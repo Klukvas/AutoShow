@@ -193,6 +193,18 @@ export interface PublicStats {
   views: number;
 }
 
+export interface Collection {
+  id: string;
+  key: string;
+  emoji: string | null;
+  titleUk: string;
+  descriptionUk: string | null;
+  /** Filter preset — a subset of ListingsQuery. */
+  query: Partial<ListingsQuery>;
+  position: number;
+  isPublished: boolean;
+}
+
 export interface ApiError {
   statusCode: number;
   error: string;

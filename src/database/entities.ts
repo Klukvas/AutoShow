@@ -2,6 +2,7 @@ import { AdminUser } from '../modules/admin-users/entities/admin-user.entity';
 import { AuditLog } from '../modules/audit/entities/audit-log.entity';
 import { SiteSettings } from '../modules/branding/entities/site-settings.entity';
 import { BodyType } from '../modules/catalog/entities/body-type.entity';
+import { Collection } from '../modules/collections/entities/collection.entity';
 import { Color } from '../modules/catalog/entities/color.entity';
 import { DriveType } from '../modules/catalog/entities/drive-type.entity';
 import { FuelType } from '../modules/catalog/entities/fuel-type.entity';
@@ -40,4 +41,5 @@ export const ALL_ENTITIES = [
   Reservation,
   Review,
   AuditLog,
+  Collection,
 ];

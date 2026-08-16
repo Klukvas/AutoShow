@@ -16,6 +16,7 @@ import { SiteSettings } from '../../modules/branding/entities/site-settings.enti
 import { AdminUser } from '../../modules/admin-users/entities/admin-user.entity';
 import { Listing } from '../../modules/listings/entities/listing.entity';
 import { ListingOption } from '../../modules/listings/entities/listing-option.entity';
+import { Collection } from '../../modules/collections/entities/collection.entity';
 
 loadDotenv();
 
@@ -154,6 +155,77 @@ async function upsertSimple<T extends { slug: string }>(
     const existing = await repo.findOne({ where: { slug: row.slug } });
     if (!existing) await repo.save(repo.create(row));
   }
+}
+
+/**
+ * The five original curated collections (previously hardcoded in the frontend
+ * and sitemap). Backfilled idempotently by key — safe to re-run; existing rows
+ * (possibly admin-edited) are left untouched.
+ */
+const collections: Array<{
+  key: string;
+  emoji: string;
+  titleUk: string;
+  descriptionUk: string;
+  query: Collection['query'];
+  position: number;
+}> = [
+  {
+    key: 'family',
+    emoji: '👨‍👩‍👧',
+    titleUk: 'Сімейні авто',
+    descriptionUk:
+      'Просторі та безпечні автомобілі для родини — кросовери й універсали з перевіреною історією.',
+    query: { bodyType: 'suv' },
+    position: 0,
+  },
+  {
+    key: 'budget',
+    emoji: '💰',
+    titleUk: 'Бюджетні до $25 000',
+    descriptionUk:
+      'Перевірені автомобілі з найкращим співвідношенням ціни та стану — до 25 тисяч доларів.',
+    query: { priceMax: 25000 },
+    position: 1,
+  },
+  {
+    key: 'electric',
+    emoji: '⚡',
+    titleUk: 'Електро та гібриди',
+    descriptionUk: 'Електромобілі та гібриди — мінімальні витрати на паливо й обслуговування.',
+    query: { fuelType: 'electric' },
+    position: 2,
+  },
+  {
+    key: 'business',
+    emoji: '💼',
+    titleUk: 'Бізнес-клас',
+    descriptionUk:
+      'Седани бізнес-класу для комфортних поїздок — представницький вигляд і багата комплектація.',
+    query: { bodyType: 'sedan', priceMin: 30000 },
+    position: 3,
+  },
+  {
+    key: 'suv',
+    emoji: '🚙',
+    titleUk: 'Позашляховики та кросовери',
+    descriptionUk:
+      'Повний привід і високий кліренс — упевненість на будь-якій дорозі в будь-яку погоду.',
+    query: { bodyType: 'suv', driveType: 'awd' },
+    position: 4,
+  },
+];
+
+async function ensureCollections(ds: DataSource) {
+  const repo = ds.getRepository(Collection);
+  let created = 0;
+  for (const c of collections) {
+    const existing = await repo.findOne({ where: { key: c.key, deletedAt: IsNull() } });
+    if (existing) continue;
+    await repo.save(repo.create({ ...c, isPublished: true }));
+    created += 1;
+  }
+  if (created > 0) console.log(`Seeded ${created} collections`);
 }
 
 async function ensureSiteSettings(ds: DataSource) {
@@ -336,6 +408,7 @@ async function main() {
   await ds.initialize();
   try {
     await upsertCatalog(ds);
+    await ensureCollections(ds);
     await ensureSiteSettings(ds);
     await ensureAdminUsers(ds);
     // Demo listings/media are dev-only fixtures; never seed them into production.

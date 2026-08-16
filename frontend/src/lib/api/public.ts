@@ -3,6 +3,7 @@ import type {
   Branding,
   CatalogMake,
   CatalogModel,
+  Collection,
   CursorPage,
   CreateLeadBody,
   ListingsQuery,
@@ -37,6 +38,20 @@ export const publicApi = {
     return apiFetch<Branding>('/branding', {
       method: 'GET',
       next: { revalidate: opts.revalidate ?? 300, tags: ['branding'] },
+    });
+  },
+
+  listCollections(opts: PublicOpts = {}) {
+    return apiFetch<Collection[]>('/collections', {
+      method: 'GET',
+      next: { revalidate: opts.revalidate ?? 300, tags: ['collections'] },
+    });
+  },
+
+  getCollection(key: string, opts: PublicOpts = {}) {
+    return apiFetch<Collection>(`/collections/${encodeURIComponent(key)}`, {
+      method: 'GET',
+      next: { revalidate: opts.revalidate ?? 300, tags: ['collections', `collection:${key}`] },
     });
   },
 

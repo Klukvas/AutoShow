@@ -15,6 +15,7 @@ import { JwtAuthGuard } from './modules/auth/jwt.guard';
 import { RolesGuard } from './modules/auth/roles.guard';
 import { BrandingModule } from './modules/branding/branding.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
+import { CollectionsModule } from './modules/collections/collections.module';
 import { FxModule } from './modules/fx/fx.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { LeadsModule } from './modules/leads/leads.module';
@@ -50,6 +51,7 @@ import { ViewsModule } from './modules/views/views.module';
     NotificationModule,
     AuditModule,
     CatalogModule,
+    CollectionsModule,
     AdminUsersModule,
     AuthModule,
     BrandingModule,

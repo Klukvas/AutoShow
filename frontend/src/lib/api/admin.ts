@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { CursorPage, VehicleOption } from './types';
+import type { Collection, CursorPage, VehicleOption } from './types';
 
 export type AdminRole = 'admin' | 'editor';
 
@@ -283,6 +283,34 @@ export const adminApi = {
   },
   deleteReview(id: string, opts: AdminCallOpts) {
     return apiFetch<void>(`/admin/reviews/${id}`, {
+      method: 'DELETE',
+      accessToken: opts.accessToken,
+    });
+  },
+
+  // Collections (curated SEO landings)
+  listCollections(opts: AdminCallOpts) {
+    return apiFetch<Collection[]>('/admin/collections', {
+      accessToken: opts.accessToken,
+      cache: 'no-store',
+    });
+  },
+  createCollection(body: Record<string, unknown>, opts: AdminCallOpts) {
+    return apiFetch<Collection>('/admin/collections', {
+      method: 'POST',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  updateCollection(id: string, body: Record<string, unknown>, opts: AdminCallOpts) {
+    return apiFetch<Collection>(`/admin/collections/${id}`, {
+      method: 'PATCH',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  deleteCollection(id: string, opts: AdminCallOpts) {
+    return apiFetch<void>(`/admin/collections/${id}`, {
       method: 'DELETE',
       accessToken: opts.accessToken,
     });
