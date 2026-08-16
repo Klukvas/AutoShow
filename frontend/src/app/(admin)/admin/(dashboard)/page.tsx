@@ -83,6 +83,7 @@ export default async function AdminDashboardPage() {
   const currency = branding?.defaultCurrency ?? 'USD';
   const money = (v: string) => formatMoney(v, currency);
   const maxMonthCommission = Math.max(1, ...summary.salesByMonth.map((m) => Number(m.commission)));
+  const attributionCounts = summary.attribution.map((r) => r.count);
 
   return (
     <div className="mx-auto max-w-[1100px]">
@@ -134,7 +135,7 @@ export default async function AdminDashboardPage() {
           ) : (
             <div className="flex flex-col gap-2">
               {summary.attribution.map((row) => {
-                const max = Math.max(1, ...summary.attribution.map((r) => r.count));
+                const max = Math.max(1, ...attributionCounts);
                 return (
                   <div key={row.source} className="flex items-center gap-3">
                     <span className="w-[96px] flex-none truncate text-[12px] font-semibold text-ink-2">

@@ -58,7 +58,7 @@ export default function ComparePage() {
           try {
             return await publicApi.getListingBySlug(slug, { revalidate: 0 });
           } catch {
-            remove(slug);
+            if (!cancelled) remove(slug); // prune a deleted/unpublished slug
             return null;
           }
         }),
@@ -73,6 +73,13 @@ export default function ComparePage() {
     // Not keyed on slugs: removing a column shouldn't refetch the whole grid.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready]);
+
+  // Remove must drop the visible column too — `items` is intentionally not
+  // keyed on `slugs`, so the context update alone wouldn't re-render the table.
+  const removeColumn = (slug: string) => {
+    remove(slug);
+    setItems((prev) => prev?.filter((l) => l.slug !== slug) ?? prev);
+  };
 
   if (items !== null && items.length === 0) {
     return (
@@ -124,7 +131,7 @@ export default function ComparePage() {
                         </Link>
                         <button
                           type="button"
-                          onClick={() => remove(l.slug)}
+                          onClick={() => removeColumn(l.slug)}
                           className="focus-ring self-start text-[12px] font-semibold text-ink-3 hover:text-danger"
                         >
                           {t('remove')}

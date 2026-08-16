@@ -3,12 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  adminApi,
-  type AdminLead,
-  type AdminLeadNote,
-  type LeadAssignee,
-} from '@/lib/api/admin';
+import { adminApi, type AdminLead, type AdminLeadNote, type LeadAssignee } from '@/lib/api/admin';
 import { ApiClientError } from '@/lib/api/client';
 import { fetchAccessToken } from '@/lib/auth/use-access-token';
 
@@ -74,8 +69,8 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
 
   const clearFollowUp = () =>
     void run(async (token) => {
-      setFollowUp('');
       await adminApi.setLeadFollowUp(lead.id, null, { accessToken: token });
+      setFollowUp(''); // only clear the input after the server confirms
       router.refresh();
     });
 

@@ -53,6 +53,10 @@ export class BrandingAdminController {
         ...(c.label ? { label: c.label } : {}),
       })),
       autoPublish: dto.autoPublish,
+      // The telegram block is replaced wholesale on each PATCH, so leadChatId
+      // must be carried through here — otherwise saving any telegram setting
+      // silently wipes the lead-alert chat and the alerts never fire.
+      leadChatId: dto.leadChatId ?? null,
     };
   }
 }

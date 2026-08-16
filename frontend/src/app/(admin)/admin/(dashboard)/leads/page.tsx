@@ -299,6 +299,7 @@ async function LeadDetail({
       </div>
 
       <LeadCrmPanel
+        key={lead.id}
         lead={{ id: lead.id, assigneeId: lead.assigneeId, followUpAt: lead.followUpAt }}
         assignees={assignees}
         initialNotes={notes}

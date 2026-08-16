@@ -25,6 +25,7 @@ export interface CollectionQuery {
 
 @Entity('collections')
 @Index('ix_collections_published_position', ['isPublished', 'position'])
+@Index('uq_collections_key_alive', ['key'], { unique: true, where: 'deleted_at IS NULL' })
 export class Collection extends BaseEntity {
   @Column({ type: 'varchar', length: 64 })
   key!: string;

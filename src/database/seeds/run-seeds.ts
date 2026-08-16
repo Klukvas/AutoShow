@@ -220,7 +220,10 @@ async function ensureCollections(ds: DataSource) {
   const repo = ds.getRepository(Collection);
   let created = 0;
   for (const c of collections) {
-    const existing = await repo.findOne({ where: { key: c.key, deletedAt: IsNull() } });
+    // Match in ANY state (withDeleted): if an admin deliberately deleted a
+    // seeded collection, a later seed:prod (runs every deploy) must not
+    // resurrect it — and must not create a second row alongside the deleted one.
+    const existing = await repo.findOne({ where: { key: c.key }, withDeleted: true });
     if (existing) continue;
     await repo.save(repo.create({ ...c, isPublished: true }));
     created += 1;

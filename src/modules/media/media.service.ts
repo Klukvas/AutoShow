@@ -177,7 +177,17 @@ export class MediaService {
     // A prior failed job may still linger (removeOnFail keeps it briefly);
     // drop it so the same jobId can be re-added.
     await this.queue.remove(jobIdFor(media.id)).catch(() => undefined);
-    await this.enqueueProcess(media.id);
+    try {
+      await this.enqueueProcess(media.id);
+    } catch (err) {
+      // If enqueue fails (Redis/BullMQ down) after we flipped to 'processing',
+      // the row would be stuck forever (retry requires status='failed', and the
+      // orphan sweep ignores 'processing'). Roll back so it can be retried.
+      media.status = 'failed';
+      media.failureReason = 'failed to schedule reprocessing';
+      await this.media.save(media);
+      throw err;
+    }
     await this.audit.record({
       action: 'media.retry',
       entityType: 'listing_media',

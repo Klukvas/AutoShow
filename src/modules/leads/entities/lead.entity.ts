@@ -31,6 +31,8 @@ export interface LeadDetails {
 @Index('ix_leads_status_created', ['status', 'createdAt', 'id'])
 @Index('ix_leads_created', ['createdAt', 'id'])
 @Index('ix_leads_listing', ['listingId'])
+@Index('ix_leads_assignee', ['assigneeId'])
+@Index('ix_leads_follow_up', ['followUpAt'], { where: 'follow_up_at IS NOT NULL' })
 export class Lead extends BaseEntity {
   @Column({ name: 'listing_id', type: 'uuid', nullable: true })
   listingId!: string | null;
