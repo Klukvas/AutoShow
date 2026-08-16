@@ -7,7 +7,9 @@ function makeChannel(settings: Partial<SiteSettings> | null) {
   const repo = {
     findOne: jest.fn().mockResolvedValue(settings),
   } as unknown as Repository<SiteSettings>;
-  const api = { sendMessage: jest.fn().mockResolvedValue(undefined) } as unknown as TelegramApiClient;
+  const api = {
+    sendMessage: jest.fn().mockResolvedValue(undefined),
+  } as unknown as TelegramApiClient;
   const channel = new TelegramLeadChannel(repo, api);
   return { channel, api };
 }

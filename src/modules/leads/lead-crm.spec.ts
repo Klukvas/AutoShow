@@ -63,9 +63,7 @@ describe('LeadsService CRM', () => {
         expect.objectContaining({ leadId: 'l1', authorId: 'u1', authorRole: 'editor' }),
       );
       expect(note).toMatchObject({ id: 'n1', text: 'Called, will call back' });
-      expect(audit.record).toHaveBeenCalledWith(
-        expect.objectContaining({ action: 'lead.note' }),
-      );
+      expect(audit.record).toHaveBeenCalledWith(expect.objectContaining({ action: 'lead.note' }));
     });
 
     it('404s when adding a note to a missing lead', async () => {

@@ -63,7 +63,11 @@ export class CollectionsService {
     return saved;
   }
 
-  async update(id: string, dto: UpdateCollectionDto, actor: AuthenticatedUser): Promise<Collection> {
+  async update(
+    id: string,
+    dto: UpdateCollectionDto,
+    actor: AuthenticatedUser,
+  ): Promise<Collection> {
     const current = await this.repo.findOne({ where: { id, deletedAt: IsNull() } });
     if (!current) throw new NotFoundException('Collection not found');
     const merged = this.repo.merge(current, {

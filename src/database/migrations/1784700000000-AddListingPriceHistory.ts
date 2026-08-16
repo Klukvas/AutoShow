@@ -16,9 +16,7 @@ export class AddListingPriceHistory1784700000000 implements MigrationInterface {
   name = 'AddListingPriceHistory1784700000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.query(
-      `ALTER TABLE "listings" ADD "previous_price_normalized" numeric(14,2)`,
-    );
+    await queryRunner.query(`ALTER TABLE "listings" ADD "previous_price_normalized" numeric(14,2)`);
     await queryRunner.query(
       `ALTER TABLE "listings" ADD "price_changed_at" TIMESTAMP WITH TIME ZONE`,
     );
