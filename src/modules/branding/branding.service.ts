@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { EntityManager, IsNull, Repository } from 'typeorm';
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import type { Currency } from '../../common/types/currency';
 import { AuditLogService } from '../audit/audit-log.service';
@@ -46,9 +46,18 @@ export class BrandingService {
       ? await this.computeRenormalizedPrices(patch.defaultCurrency as Currency)
       : [];
 
+    // The bot token is a live credential — the audit log keeps only the fact
+    // that it changed, never the value.
+    const auditPatch = patch.telegram?.botToken
+      ? { ...patch, telegram: { ...patch.telegram, botToken: '***' } }
+      : patch;
+
     const saved = await this.repo.manager.transaction(async (em) => {
-      for (const update of priceUpdates) {
-        await em.update(Listing, { id: update.id }, update.patch);
+      // One multi-row UPDATE applies the JS-computed values (exact same numbers,
+      // no SQL rounding change) instead of N per-row round-trips holding the
+      // write lock open across the whole catalog.
+      if (priceUpdates.length) {
+        await this.applyRenormalized(em, priceUpdates);
       }
       if (baseChanged) {
         // The "price dropped" badge compares previous_price_normalized to the
@@ -61,22 +70,21 @@ export class BrandingService {
           .where('deleted_at IS NULL')
           .execute();
       }
-      return em.save(SiteSettings, { ...current, ...patch });
+      const settings = await em.save(SiteSettings, { ...current, ...patch });
+      await this.audit.record(
+        {
+          action: 'branding.update',
+          entityType: 'site_settings',
+          entityId: settings.id,
+          diff: { patch: auditPatch },
+          actorId: actor.id,
+          actorRole: actor.role,
+        },
+        em,
+      );
+      return settings;
     });
 
-    // The bot token is a live credential — the audit log keeps only the fact
-    // that it changed, never the value.
-    const auditPatch = patch.telegram?.botToken
-      ? { ...patch, telegram: { ...patch.telegram, botToken: '***' } }
-      : patch;
-    await this.audit.record({
-      action: 'branding.update',
-      entityType: 'site_settings',
-      entityId: saved.id,
-      diff: { patch: auditPatch },
-      actorId: actor.id,
-      actorRole: actor.role,
-    });
     if (baseChanged) {
       this.logger.log(
         { count: priceUpdates.length, base: patch.defaultCurrency },
@@ -100,5 +108,33 @@ export class BrandingService {
       });
     }
     return updates;
+  }
+
+  /**
+   * Apply the precomputed renormalized prices in a single UPDATE ... FROM
+   * (VALUES ...) — the values are exactly those computed by FxRateProvider, so
+   * there's no rounding change, just one round-trip instead of N.
+   */
+  private async applyRenormalized(em: EntityManager, updates: PriceUpdate[]): Promise<void> {
+    const rows: string[] = [];
+    const params: unknown[] = [];
+    updates.forEach((u, i) => {
+      const b = i * 4;
+      // Cast the first row's placeholders so the VALUES columns get their types;
+      // later rows inherit them.
+      rows.push(
+        i === 0
+          ? `($${b + 1}::uuid, $${b + 2}::numeric, $${b + 3}::numeric, $${b + 4}::timestamptz)`
+          : `($${b + 1}, $${b + 2}, $${b + 3}, $${b + 4})`,
+      );
+      params.push(u.id, u.patch.priceNormalized, u.patch.fxRate, u.patch.fxRateAt);
+    });
+    await em.query(
+      `UPDATE listings AS l
+         SET price_normalized = v.pn, fx_rate = v.fr, fx_rate_at = v.fa
+         FROM (VALUES ${rows.join(', ')}) AS v(id, pn, fr, fa)
+         WHERE l.id = v.id`,
+      params,
+    );
   }
 }

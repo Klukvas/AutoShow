@@ -49,7 +49,13 @@ function buildService(listing: ListingStub) {
     enqueueAutoPost: jest.fn().mockResolvedValue(undefined),
     enqueueMarkSold: jest.fn().mockResolvedValue(undefined),
   };
-  const listingsRepo = { createQueryBuilder: jest.fn(() => qb) };
+  // transition() now wraps the write + audit in a transaction; the em exposes
+  // the same query-builder stub so updateWithVersion still hits `execute`.
+  const em = { createQueryBuilder: jest.fn(() => qb) };
+  const listingsRepo = {
+    createQueryBuilder: jest.fn(() => qb),
+    manager: { transaction: jest.fn(async (cb: (m: typeof em) => Promise<unknown>) => cb(em)) },
+  };
   const empty = {} as never;
   const svc = new ListingsService(
     listingsRepo as never, // listings
@@ -89,6 +95,7 @@ describe('ListingsService.transition', () => {
     expect(execute).toHaveBeenCalled();
     expect(audit.record).toHaveBeenCalledWith(
       expect.objectContaining({ action: 'listing.publish' }),
+      expect.anything(),
     );
   });
 

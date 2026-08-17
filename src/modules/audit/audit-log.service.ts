@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { AuditLog } from './entities/audit-log.entity';
 
 export interface AuditEntry {
@@ -20,8 +20,15 @@ export class AuditLogService {
     private readonly repo: Repository<AuditLog>,
   ) {}
 
-  async record(entry: AuditEntry): Promise<void> {
-    await this.repo.insert({
+  /**
+   * Append an audit entry. Pass the caller's `em` to write it inside the same
+   * transaction as the mutation — then a crash can't leave the change committed
+   * without its audit row (or vice versa). Without `em` it writes standalone
+   * (the post-commit best-effort path used by low-frequency mutations).
+   */
+  async record(entry: AuditEntry, em?: EntityManager): Promise<void> {
+    const repo = em ? em.getRepository(AuditLog) : this.repo;
+    await repo.insert({
       actorId: entry.actorId ?? null,
       actorRole: entry.actorRole ?? null,
       action: entry.action,

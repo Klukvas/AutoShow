@@ -396,16 +396,18 @@ export class ListingsService {
         priceNormalized: created.priceNormalized,
         actorId: actor.id,
       });
+      await this.audit.record(
+        {
+          action: 'listing.create',
+          entityType: 'listing',
+          entityId: created.id,
+          diff: { after: { slug, status: created.status, title: created.title } },
+          actorId: actor.id,
+          actorRole: actor.role,
+        },
+        em,
+      );
       return created;
-    });
-
-    await this.audit.record({
-      action: 'listing.create',
-      entityType: 'listing',
-      entityId: saved.id,
-      diff: { after: { slug, status: saved.status, title: saved.title } },
-      actorId: actor.id,
-      actorRole: actor.role,
     });
 
     return this.adminFindById(saved.id);
@@ -528,15 +530,17 @@ export class ListingsService {
           actorId: actor.id,
         });
       }
-    });
-
-    await this.audit.record({
-      action: 'listing.update',
-      entityType: 'listing',
-      entityId: current.id,
-      diff: { patch },
-      actorId: actor.id,
-      actorRole: actor.role,
+      await this.audit.record(
+        {
+          action: 'listing.update',
+          entityType: 'listing',
+          entityId: current.id,
+          diff: { patch },
+          actorId: actor.id,
+          actorRole: actor.role,
+        },
+        em,
+      );
     });
 
     return this.adminFindById(current.id);
@@ -555,13 +559,16 @@ export class ListingsService {
         await em.softDelete(ListingMedia, { id: In(mediaIds) });
         await em.softDelete(MediaRendition, { mediaId: In(mediaIds) });
       }
-    });
-    await this.audit.record({
-      action: 'listing.delete',
-      entityType: 'listing',
-      entityId: id,
-      actorId: actor.id,
-      actorRole: actor.role,
+      await this.audit.record(
+        {
+          action: 'listing.delete',
+          entityType: 'listing',
+          entityId: id,
+          actorId: actor.id,
+          actorRole: actor.role,
+        },
+        em,
+      );
     });
   }
 
@@ -638,15 +645,21 @@ export class ListingsService {
       patch.commissionAmount = this.commissionFor(current, salePrice).toFixed(2);
     }
 
-    await this.updateWithVersion(current.id, current.version, patch);
-
-    await this.audit.record({
-      action: `listing.${target}`,
-      entityType: 'listing',
-      entityId: current.id,
-      diff: { from, to },
-      actorId: actor.id,
-      actorRole: actor.role,
+    // Status commit + audit in one transaction: a crash can't leave the
+    // listing in its new status without the matching audit row.
+    await this.listings.manager.transaction(async (em) => {
+      await this.updateWithVersion(current.id, current.version, patch, em);
+      await this.audit.record(
+        {
+          action: `listing.${target}`,
+          entityType: 'listing',
+          entityId: current.id,
+          diff: { from, to },
+          actorId: actor.id,
+          actorRole: actor.role,
+        },
+        em,
+      );
     });
 
     // Telegram side effects AFTER the transition is committed. Both enqueue
