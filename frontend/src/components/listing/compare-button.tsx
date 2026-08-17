@@ -34,7 +34,9 @@ export function CompareButton({ slug, variant = 'overlay', className }: CompareB
         toggle(slug);
       }}
       className={cn(
-        'focus-ring inline-flex items-center justify-center transition-colors disabled:opacity-40',
+        // Respond on press, not release (§1): the chip dips instantly under the
+        // finger. Motion-reduce users get no scale, only the colour change.
+        'focus-ring inline-flex items-center justify-center transition-[transform,background-color,border-color,color] duration-100 disabled:opacity-40 motion-safe:active:scale-[0.9]',
         variant === 'overlay' &&
           'h-9 w-9 rounded-full bg-surface/85 shadow-sm backdrop-blur-sm hover:bg-surface',
         variant === 'inline' &&

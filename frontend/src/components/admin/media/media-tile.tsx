@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- object-URL previews of local
    uploads can't go through next/image */
 
+import { motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/cn';
 import { CarThumb } from '@/components/admin/ui/car-thumb';
@@ -38,9 +39,15 @@ export function MediaTile({
 }: MediaTileProps) {
   const t = useTranslations('admin.media');
   const interactive = tile.phase === 'ready';
+  const reduce = useReducedMotion();
 
   return (
-    <div
+    <motion.div
+      // Reorders happen on drop/keyboard, so `layout` springs each tile into
+      // its new grid slot instead of snapping (§6). The dragged tile isn't
+      // layout-animated mid-gesture (reorder only fires on release).
+      layout={reduce ? false : 'position'}
+      transition={reduce ? { duration: 0 } : { type: 'spring', bounce: 0.16, duration: 0.35 }}
       data-media-tile={index}
       className={cn(
         'relative h-24 select-none overflow-hidden rounded-[10px] border bg-ph-a',
@@ -188,6 +195,6 @@ export function MediaTile({
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
