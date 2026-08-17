@@ -62,7 +62,7 @@ export function ListingCard({
             {t(`condition.${listing.condition}`)}
           </ConditionBadge>
           {fresh && (
-            <span className="rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-on-accent">
+            <span className="rounded-full bg-accent px-2 py-0.5 text-label font-bold text-on-accent">
               {t('badgeNew')}
             </span>
           )}
@@ -77,7 +77,7 @@ export function ListingCard({
         {(photoCount > 0 || hasVideo) && (
           <span
             aria-label={t('photoCount', { count: photoCount })}
-            className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-md bg-black/55 px-1.5 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm"
+            className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-chip bg-black/55 px-1.5 py-0.5 text-label font-bold text-white backdrop-blur-sm"
           >
             {hasVideo && <span aria-hidden>🎬</span>}
             {photoCount > 0 && (
@@ -104,7 +104,7 @@ export function ListingCard({
             </span>
             {listing.price.priceDrop && (
               <span
-                className="inline-flex items-center rounded-full bg-ok/10 px-1.5 py-0.5 text-[11px] font-bold text-ok"
+                className="inline-flex items-center rounded-full bg-ok/10 px-1.5 py-0.5 text-label font-bold text-ok"
                 title={t('priceDropped')}
                 aria-label={t('priceDropped')}
               >

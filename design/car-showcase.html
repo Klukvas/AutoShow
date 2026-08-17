@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AutoFlow — BMW 5 Series 530i xDrive · 2021</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#EFE8D9;        /* warm cream */
+    --paper-2:#E6DCC8;
+    --ink:#181410;          /* warm near-black */
+    --ink-2:#3A322A;
+    --muted:#7C7365;
+    --accent:#B7390E;       /* burnt sienna / oxblood */
+    --accent-deep:#7C260A;
+    --line:rgba(24,20,16,.16);
+    --line-soft:rgba(24,20,16,.09);
+    --easing:cubic-bezier(.22,1,.36,1);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Instrument Sans",system-ui,sans-serif;
+    line-height:1.5;
+    overflow-x:hidden;
+    cursor:none;
+  }
+  /* faint architectural grid + warm vignette over the paper */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      linear-gradient(var(--line-soft) 1px,transparent 1px) 0 0/100% 46px,
+      linear-gradient(90deg,var(--line-soft) 1px,transparent 1px) 0 0/46px 100%,
+      radial-gradient(120% 80% at 50% -10%,transparent 55%,rgba(24,20,16,.10) 100%);
+    mask:radial-gradient(140% 100% at 50% 0,#000 60%,transparent 100%);
+    opacity:.7;
+  }
+  /* film grain */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.06;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap{position:relative;z-index:2;max-width:1240px;margin:0 auto;padding:0 40px}
+
+  /* ---------- top bar ---------- */
+  header{position:relative;z-index:3;display:flex;align-items:baseline;justify-content:space-between;
+    padding:26px 40px 0;max-width:1240px;margin:0 auto}
+  .word{font-family:"IBM Plex Mono",monospace;font-weight:600;letter-spacing:.42em;font-size:13px;text-transform:uppercase}
+  .word b{color:var(--accent)}
+  nav{display:flex;gap:26px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  nav a{color:inherit;text-decoration:none;position:relative;transition:color .3s var(--easing)}
+  nav a::after{content:"";position:absolute;left:0;bottom:-5px;height:1px;width:0;background:var(--accent);transition:width .35s var(--easing)}
+  nav a:hover{color:var(--ink)}nav a:hover::after{width:100%}
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;padding:40px 0 30px;display:grid;grid-template-columns:1.02fr .98fr;gap:34px;align-items:end}
+  .kicker{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--accent);
+    display:flex;align-items:center;gap:12px}
+  .kicker::before{content:"";width:34px;height:1px;background:var(--accent)}
+  h1{font-family:"Fraunces",serif;font-optical-sizing:auto;font-weight:400;font-size:clamp(52px,8.6vw,124px);
+    line-height:.9;letter-spacing:-.02em;margin:20px 0 0}
+  h1 .make{display:block;font-weight:300;font-style:italic;color:var(--ink-2)}
+  h1 .model{display:block;font-weight:600}
+  h1 em{font-style:italic;color:var(--accent)}
+  .subline{margin-top:22px;max-width:30ch;color:var(--ink-2);font-size:17px}
+
+  /* image frame, offset + oversized index numeral behind */
+  .frame{position:relative}
+  .frame .idx{position:absolute;top:-64px;right:-8px;font-family:"Fraunces",serif;font-weight:300;font-size:210px;
+    line-height:1;color:transparent;-webkit-text-stroke:1.2px var(--line);z-index:0;user-select:none;pointer-events:none}
+  .shot{position:relative;z-index:1;aspect-ratio:4/3.05;border:1px solid var(--ink);border-radius:2px;overflow:hidden;
+    background:linear-gradient(135deg,#2b2620,#171310);box-shadow:22px 26px 0 -1px var(--paper),24px 28px 0 0 var(--line)}
+  .shot img{width:100%;height:100%;object-fit:cover;
+    /* warm duotone so any photo obeys the palette */
+    filter:grayscale(1) contrast(1.06) brightness(.96)}
+  .shot .duo{position:absolute;inset:0;background:var(--accent);mix-blend-mode:color;opacity:.34}
+  .shot .grade{position:absolute;inset:0;background:linear-gradient(180deg,transparent 55%,rgba(20,15,10,.55));z-index:2}
+  .shot .tag{position:absolute;left:14px;bottom:12px;z-index:3;font-family:"IBM Plex Mono",monospace;font-size:11px;
+    letter-spacing:.18em;text-transform:uppercase;color:#EFE8D9;display:flex;gap:10px;align-items:center}
+  .shot .tag i{width:6px;height:6px;border-radius:50%;background:#5ecb7a;box-shadow:0 0 0 3px rgba(94,203,122,.25);font-style:normal}
+
+  /* price ticket */
+  .ticket{margin-top:28px;display:inline-flex;align-items:flex-end;gap:16px;border-top:2px solid var(--ink);padding-top:12px}
+  .ticket .cur{font-family:"IBM Plex Mono",monospace;font-size:13px;letter-spacing:.1em;color:var(--muted);padding-bottom:9px}
+  .ticket .num{font-family:"Fraunces",serif;font-weight:500;font-size:56px;line-height:.9;letter-spacing:-.02em}
+  .ticket .note{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);padding-bottom:11px}
+
+  /* ---------- spec ledger ---------- */
+  .ledger{margin-top:76px;border-top:1px solid var(--ink)}
+  .ledger .head{display:flex;justify-content:space-between;align-items:baseline;padding:14px 0}
+  .ledger .head span{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+  .specs{display:grid;grid-template-columns:repeat(4,1fr)}
+  .spec{padding:26px 22px 26px 0;border-top:1px solid var(--line);position:relative}
+  .spec:nth-child(4n){padding-right:0}
+  .spec .k{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .spec .v{font-family:"Fraunces",serif;font-weight:500;font-size:34px;letter-spacing:-.01em;margin-top:10px;line-height:1}
+  .spec .v small{font-family:"Instrument Sans";font-weight:500;font-size:14px;color:var(--muted);letter-spacing:0}
+
+  /* ---------- statement ---------- */
+  .statement{margin:82px 0 30px;display:grid;grid-template-columns:1fr 1.35fr;gap:40px;align-items:start}
+  .statement .lbl{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+  .statement p{font-family:"Fraunces",serif;font-weight:340;font-size:clamp(24px,3vw,34px);line-height:1.28;letter-spacing:-.01em}
+  .statement p b{font-weight:600}
+  .statement p .hl{color:var(--accent);font-style:italic}
+
+  /* ---------- cta ---------- */
+  .cta{margin:60px 0 110px;border-top:2px solid var(--ink);padding-top:34px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px}
+  .cta .who{max-width:34ch}
+  .cta .who .n{font-family:"Fraunces",serif;font-size:22px;font-weight:500}
+  .cta .who .r{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+  .btn{position:relative;display:inline-flex;align-items:center;gap:16px;background:var(--ink);color:var(--paper);
+    font-family:"IBM Plex Mono",monospace;font-size:13px;letter-spacing:.14em;text-transform:uppercase;
+    padding:20px 30px;border-radius:2px;text-decoration:none;overflow:hidden;transition:color .4s var(--easing)}
+  .btn span{position:relative;z-index:1}
+  .btn .arw{position:relative;z-index:1;transition:transform .4s var(--easing)}
+  .btn::before{content:"";position:absolute;inset:0;background:var(--accent);transform:translateY(101%);transition:transform .45s var(--easing);z-index:0}
+  .btn:hover::before{transform:translateY(0)}
+  .btn:hover .arw{transform:translateX(6px)}
+
+  /* ---------- custom cursor ---------- */
+  .cursor{position:fixed;top:0;left:0;z-index:60;pointer-events:none;mix-blend-mode:difference}
+  .cursor .dot{position:absolute;width:7px;height:7px;border-radius:50%;background:#fff;transform:translate(-50%,-50%)}
+  .cursor .ring{position:absolute;width:34px;height:34px;border:1px solid rgba(255,255,255,.7);border-radius:50%;
+    transform:translate(-50%,-50%);transition:width .3s var(--easing),height .3s var(--easing)}
+  body.hot .cursor .ring{width:58px;height:58px}
+
+  /* ---------- entrance ---------- */
+  .rise{opacity:0;transform:translateY(26px);animation:rise 1s var(--easing) forwards}
+  .clip{clip-path:inset(0 0 100% 0);animation:clip 1.15s var(--easing) forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+  @keyframes clip{to{clip-path:inset(0 0 -2% 0)}}
+  .d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.28s}.d4{animation-delay:.4s}
+  .d5{animation-delay:.52s}.d6{animation-delay:.64s}.d7{animation-delay:.76s}
+  .reveal{opacity:0;transform:translateY(30px);transition:opacity .9s var(--easing),transform .9s var(--easing)}
+  .reveal.in{opacity:1;transform:none}
+  .spec{transition-delay:calc(var(--i,0)*70ms)}
+
+  @media (max-width:900px){
+    .wrap,header{padding-left:22px;padding-right:22px}
+    .hero{grid-template-columns:1fr;gap:24px}
+    .frame .idx{font-size:130px;top:-40px}
+    .specs{grid-template-columns:repeat(2,1fr)}
+    .spec:nth-child(4n){padding-right:22px}
+    .statement{grid-template-columns:1fr}
+    nav{display:none}
+    body{cursor:auto}.cursor{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .rise,.clip,.reveal,.spec{animation:none!important;transition:none!important;opacity:1!important;transform:none!important;clip-path:none!important}
+  }
+</style>
+</head>
+<body>
+  <div class="cursor" aria-hidden="true"><div class="ring"></div><div class="dot"></div></div>
+
+  <header>
+    <div class="word rise d1">AUTO<b>FLOW</b></div>
+    <nav class="rise d1">
+      <a href="#">Каталог</a><a href="#">Про нас</a><a href="#">Контакти</a>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <section class="hero">
+      <div class="lede">
+        <div class="kicker rise d2">Перевірене авто · Наявність</div>
+        <h1>
+          <span class="make clip d2">BMW</span>
+          <span class="model clip d3">5 Series</span>
+          <span class="clip d4"><em>530i</em> xDrive</span>
+        </h1>
+        <p class="subline rise d5">Один власник, повна історія обслуговування, без ДТП. Розмитнений, готовий до передачі.</p>
+
+        <div class="ticket rise d6">
+          <span class="cur">$</span>
+          <span class="num">38&thinsp;500</span>
+          <span class="note">торг доречний</span>
+        </div>
+      </div>
+
+      <div class="frame rise d4">
+        <div class="idx">01</div>
+        <div class="shot">
+          <img src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1100&q=80"
+               alt="BMW 5 Series" onerror="this.style.display='none'"/>
+          <div class="duo"></div>
+          <div class="grade"></div>
+          <div class="tag"><i></i> В наявності · Київ</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- spec ledger -->
+    <section class="ledger">
+      <div class="head reveal">
+        <span>Технічні дані</span><span>2021 — 42 000 км</span>
+      </div>
+      <div class="specs">
+        <div class="spec reveal" style="--i:0"><div class="k">Рік випуску</div><div class="v">2021</div></div>
+        <div class="spec reveal" style="--i:1"><div class="k">Пробіг</div><div class="v">42<small> тис. км</small></div></div>
+        <div class="spec reveal" style="--i:2"><div class="k">Двигун</div><div class="v">2.0<small> л · бензин</small></div></div>
+        <div class="spec reveal" style="--i:3"><div class="k">Потужність</div><div class="v">248<small> к.с.</small></div></div>
+        <div class="spec reveal" style="--i:4"><div class="k">Коробка</div><div class="v">Автомат</div></div>
+        <div class="spec reveal" style="--i:5"><div class="k">Привід</div><div class="v">Повний</div></div>
+        <div class="spec reveal" style="--i:6"><div class="k">Власників</div><div class="v">1</div></div>
+        <div class="spec reveal" style="--i:7"><div class="k">Стан</div><div class="v">Без ДТП</div></div>
+      </div>
+    </section>
+
+    <!-- statement -->
+    <section class="statement">
+      <div class="lbl reveal">№ 02 — Про автомобіль</div>
+      <p class="reveal">Седан бізнес-класу з <b>повним приводом xDrive</b> та рядним турбомотором. Кураторський відбір: <span class="hl">кожне авто проходить перевірку</span> перед тим, як потрапити у вітрину.</p>
+    </section>
+
+    <!-- cta -->
+    <section class="cta reveal">
+      <div class="who">
+        <div class="n">AutoFlow, Київ</div>
+        <div class="r">Пн–Пт 09:00–19:00 · Сб 10:00–17:00</div>
+      </div>
+      <a class="btn" href="tel:+380441234567">
+        <span>Зателефонувати</span>
+        <svg class="arw" width="26" height="10" viewBox="0 0 26 10" fill="none"><path d="M0 5h24M20 1l4 4-4 4" stroke="currentColor" stroke-width="1.4"/></svg>
+      </a>
+    </section>
+  </div>
+
+<script>
+  // custom cursor with soft trailing ring
+  const cur = document.querySelector('.cursor');
+  const dot = cur.querySelector('.dot'), ring = cur.querySelector('.ring');
+  let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+  addEventListener('pointermove',e=>{mx=e.clientX;my=e.clientY;dot.style.left=mx+'px';dot.style.top=my+'px';},{passive:true});
+  (function loop(){ rx+=(mx-rx)*.16; ry+=(my-ry)*.16; ring.style.left=rx+'px'; ring.style.top=ry+'px'; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a,.btn,.shot').forEach(el=>{
+    el.addEventListener('pointerenter',()=>document.body.classList.add('hot'));
+    el.addEventListener('pointerleave',()=>document.body.classList.remove('hot'));
+  });
+
+  // subtle parallax on the hero shot
+  const shot=document.querySelector('.shot');
+  addEventListener('pointermove',e=>{
+    const x=(e.clientX/innerWidth-.5), y=(e.clientY/innerHeight-.5);
+    shot.style.transform=`translate(${x*-10}px,${y*-8}px)`;
+  },{passive:true});
+
+  // scroll reveals
+  const io=new IntersectionObserver((es)=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');io.unobserve(en.target);}}),{threshold:.18});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
