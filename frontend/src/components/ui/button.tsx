@@ -21,7 +21,8 @@ const VARIANT: Record<Variant, string> = {
     'bg-accent text-on-accent border border-accent hover:bg-accent-hover hover:border-accent-hover',
   outline: 'bg-surface text-ink border-[1.5px] border-ink hover:bg-ink/[0.04]',
   solid: 'bg-ink text-surface border border-ink hover:opacity-90',
-  ghost: 'bg-transparent text-ink-2 border border-line-input hover:border-line-hover hover:text-ink',
+  ghost:
+    'bg-transparent text-ink-2 border border-line-input hover:border-line-hover hover:text-ink',
 };
 
 const SIZE = {
@@ -30,12 +31,15 @@ const SIZE = {
   lg: 'h-[50px] px-6 text-[15px] rounded',
 } as const;
 
+// `af-cta` is a styling-free marker so the storefront (.theme-vitrina-paper)
+// can add letterpress tracking to buttons without touching the admin.
 const BASE =
-  'inline-flex items-center justify-center gap-2 font-semibold select-none transition-colors focus-ring disabled:cursor-not-allowed disabled:opacity-50';
+  'af-cta inline-flex items-center justify-center gap-2 font-semibold select-none transition-colors focus-ring disabled:cursor-not-allowed disabled:opacity-50';
 
 type ButtonProps = BaseProps & React.ButtonHTMLAttributes<HTMLButtonElement> & { as?: 'button' };
 
-type AnchorProps = BaseProps & React.AnchorHTMLAttributes<HTMLAnchorElement> & { as: 'a'; href: string };
+type AnchorProps = BaseProps &
+  React.AnchorHTMLAttributes<HTMLAnchorElement> & { as: 'a'; href: string };
 
 type LinkProps = BaseProps & {
   as: 'link';

@@ -125,7 +125,7 @@ export default function ComparePage() {
                         </Link>
                         <Link
                           href={`/cars/${l.slug}`}
-                          className="focus-ring text-left text-sub font-bold text-ink hover:text-accent"
+                          className="focus-ring text-left text-sub font-bold text-ink hover:text-lot-gold"
                         >
                           {l.make.nameUk} {l.model.nameUk}
                         </Link>

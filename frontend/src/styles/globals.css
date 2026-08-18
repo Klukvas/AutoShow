@@ -20,6 +20,18 @@
    html-level theme attribute. ---------- */
 :root,
 [data-theme='light'] {
+  /* Radius scale — structural, var-backed so the public storefront can sharpen
+     to an editorial/print scale (.theme-vitrina-paper) while admin keeps these
+     defaults. Consumed by tailwind borderRadius (rounded-card, rounded-btn…). */
+  --radius-chip: 8px;
+  --radius-btn: 9px;
+  --radius-input: 11px;
+  --radius-default: 13px;
+  --radius-card: 14px;
+  --radius-window: 15px;
+  --radius-hero: 18px;
+  --radius-sheet: 22px;
+
   /* Canvas & surfaces */
   --bg: 245 245 242; /* #F5F5F2 page background */
   --canvas: 237 237 232; /* #EDEDE8 outer canvas */
@@ -68,6 +80,12 @@
 
   /* Shadow colour channel — alpha is baked into the boxShadow tokens */
   --shadow: 20 22 27;
+
+  /* ---- Paper Lot — the one bespoke card accent that isn't already a semantic
+     token: a gold catalogue-number ink. The card's surface / ink / line /
+     accent now ride the storefront's warm semantic tokens (see
+     .theme-vitrina-paper) instead of a parallel palette. ---- */
+  --lot-gold: 124 100 45; /* #7C642D lot number + section index (AA on paper) */
 
   /* ---- Admin backoffice ---- */
   /* Sidebar is a DARK surface in both themes (admin handoff). */
@@ -124,6 +142,9 @@
 
   --focus: 14 158 158; /* teal survives both themes */
 
+  /* Paper Lot gold — dark (walnut) value. */
+  --lot-gold: 197 169 110; /* #C5A96E */
+
   --ok: 61 190 118; /* #3DBE76 */
   --ok-bg: 16 44 30; /* #102C1E */
   --warn: 240 163 60; /* #F0A33C */
@@ -171,6 +192,84 @@
   --thead: 20 23 28; /* #14171C — below surface, like light's #F5F5F2 */
 
   color-scheme: dark;
+}
+
+/* ---------- Paper Lot — warm editorial re-skin of the PUBLIC storefront.
+   Scoped to a wrapper class on the (public) layout so it overrides the
+   semantic tokens for the whole vitrina subtree WITHOUT touching the admin
+   area (which keeps the :root / [data-theme] values). Accent moves to
+   terracotta with a gold focus ring — this INTENTIONALLY overrides the
+   per-tenant brand accent inside the storefront (full "Paper Lot" look).
+   Dark = walnut, mirroring the listing card's --lot-* tokens. ---------- */
+.theme-vitrina-paper {
+  --bg: 242 237 225; /* #F2EDE1 warm paper page */
+  --canvas: 233 227 213; /* #E9E3D5 outer canvas */
+  --surface: 251 248 241; /* #FBF8F1 cards / panels */
+  --surface-2: 247 242 231; /* #F7F2E7 filter rail */
+  --surface-warm: 246 240 226; /* #F6F0E2 editorial hero */
+  --ink: 33 29 22; /* #211D16 primary text */
+  --ink-2: 109 104 87; /* #6D6857 secondary */
+  --ink-3: 148 140 121; /* #948C79 tertiary / placeholder */
+  --line: 228 222 207; /* #E4DECF */
+  --line-input: 216 209 189; /* #D8D1BD */
+  --line-strong: 205 196 172; /* #CDC4AC */
+  --line-hover: 201 190 159; /* #C9BE9F */
+  --accent: 180 69 60; /* #B4453C terracotta */
+  --accent-hover: 154 58 50; /* #9A3A32 */
+  --on-accent: 251 248 241; /* #FBF8F1 cream on terracotta */
+  --focus: 138 111 58; /* #8A6F3A gold focus ring */
+  --shadow: 33 29 22; /* warm shadow channel */
+
+  /* Warm the media placeholders + skeletons so loading states don't flash
+     cool grey on the cream cards. */
+  --ph-a: 239 233 220; /* #EFE9DC gradient start */
+  --ph-b: 228 220 203; /* #E4DCCB gradient end */
+  --ph-glyph: 197 187 165; /* #C5BBA5 car glyph */
+  --skeleton: 235 229 216; /* #EBE5D8 */
+  --skeleton-hi: 244 239 229; /* #F4EFE5 */
+
+  /* Editorial/print radius scale — crisp corners across the whole storefront. */
+  --radius-chip: 2px;
+  --radius-btn: 4px;
+  --radius-input: 4px;
+  --radius-default: 5px;
+  --radius-card: 6px;
+  --radius-window: 7px;
+  --radius-hero: 8px;
+  --radius-sheet: 12px;
+}
+
+/* Letterpress CTAs — subtle tracking on storefront buttons only (admin keeps
+   its own). Hook: the harmless `af-cta` marker class on the Button base. */
+.theme-vitrina-paper .af-cta {
+  letter-spacing: 0.04em;
+}
+
+[data-theme='dark'] .theme-vitrina-paper {
+  --bg: 23 20 15; /* #17140F walnut-black page */
+  --canvas: 16 14 10; /* #100E0A */
+  --surface: 32 29 24; /* #201D18 walnut paper */
+  --surface-2: 28 25 20; /* #1C1914 */
+  --surface-warm: 26 23 18; /* #1A1712 */
+  --ink: 240 236 225; /* #F0ECE1 */
+  --ink-2: 165 158 140; /* #A59E8C */
+  --ink-3: 122 115 97; /* #7A7361 */
+  --line: 60 54 44; /* #3C362C */
+  --line-input: 74 67 53; /* #4A4335 */
+  --line-strong: 87 78 61; /* #574E3D */
+  --line-hover: 102 91 69; /* #665B45 */
+  --accent: 224 123 112; /* #E07B70 light terracotta */
+  --accent-hover: 201 106 96; /* #C96A60 */
+  --on-accent: 32 29 24; /* #201D18 dark text on salmon */
+  --focus: 197 169 110; /* #C5A96E gold */
+  --shadow: 0 0 0;
+
+  /* Warm-dark (walnut) placeholders + skeletons. */
+  --ph-a: 42 37 30; /* #2A251E */
+  --ph-b: 32 28 22; /* #201C16 */
+  --ph-glyph: 82 74 60; /* #524A3C */
+  --skeleton: 40 35 28; /* #28231C */
+  --skeleton-hi: 52 46 37; /* #342E25 */
 }
 
 /* ---------- Legacy tokens (frozen) — the admin area and a shrinking set of
@@ -272,5 +371,48 @@ html.lenis body {
 @media (prefers-reduced-motion: reduce) {
   .skeleton {
     animation: none;
+  }
+}
+
+/* Paper Lot photo plate — car photos sit slightly matte/warm at rest so they
+   read as printed plates, then bloom to full colour on card hover. Applied to
+   the photo container; only affects <img> (placeholders are gradients). */
+.plate-photo img {
+  filter: saturate(0.9) contrast(1.03) sepia(0.06);
+  transition: filter 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.group:hover .plate-photo img {
+  filter: none;
+}
+
+/* Editorial rule that draws itself in — used by SectionHeading in place of a
+   static bottom border. Plays once on mount (cheap; not scroll-tied). */
+.rule-draw {
+  position: relative;
+}
+.rule-draw::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 1px;
+  background: rgb(var(--line));
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: rule-draw 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes rule-draw {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plate-photo img {
+    transition: none;
+  }
+  .rule-draw::after {
+    animation: none;
+    transform: scaleX(1);
   }
 }

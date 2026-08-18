@@ -14,13 +14,14 @@ interface ScrollRevealProps {
 
 /**
  * Single, disciplined reveal primitive: fade + small translateY on enter.
- * Used for editorial slabs and listing cards (§7). Anything more elaborate
- * starts reading as "AI-generated" — strictly one-shot, no infinite hover.
+ * Tuned for the "Paper Lot" editorial storefront — a short, restrained settle
+ * (small offset, quick ease-out, no overshoot) reads like print laying down
+ * rather than springy/bouncy motion. Strictly one-shot, no infinite hover.
  */
 export function ScrollReveal({
   children,
   delay = 0,
-  offset = 24,
+  offset = 12,
   className,
   as = 'div',
 }: ScrollRevealProps) {
@@ -33,7 +34,7 @@ export function ScrollReveal({
       opacity: 1,
       y: 0,
       transition: {
-        duration: reduceMotion ? 0 : 0.7,
+        duration: reduceMotion ? 0 : 0.55,
         ease: [0.22, 1, 0.36, 1],
         delay,
       },

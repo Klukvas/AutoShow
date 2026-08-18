@@ -33,7 +33,7 @@ export function FavoriteButton({ slug, variant = 'overlay', className }: Favorit
       className={cn(
         'focus-ring inline-flex items-center justify-center transition-colors',
         variant === 'overlay' &&
-          'h-9 w-9 rounded-full bg-surface/85 shadow-sm backdrop-blur-sm hover:bg-surface',
+          'h-9 w-9 rounded-btn bg-surface/85 shadow-sm backdrop-blur-sm hover:bg-surface',
         variant === 'inline' &&
           'h-[38px] gap-2 rounded-btn border border-line-input bg-surface px-3 text-sub font-semibold text-ink hover:border-line-hover',
         className,

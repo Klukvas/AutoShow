@@ -17,15 +17,18 @@ const config: Config = {
   darkMode: ['selector', '[data-theme="dark"]'],
   theme: {
     borderRadius: {
+      // Var-backed so the public storefront can sharpen to an editorial/print
+      // radius scale (see .theme-vitrina-paper) while admin keeps the :root
+      // defaults. Defaults below live in globals.css :root.
       none: '0',
-      chip: '8px', // rectangular chips
-      btn: '9px', // compact buttons / selects (header CTA, rail selects)
-      input: '11px', // roomier inputs
-      DEFAULT: '13px',
-      card: '14px', // cards / panels (13–15 band)
-      window: '15px', // window chrome / gallery main photo
-      hero: '18px', // editorial large photo
-      sheet: '22px', // mobile bottom sheet
+      chip: 'var(--radius-chip)', // rectangular chips
+      btn: 'var(--radius-btn)', // compact buttons / selects (header CTA, rail selects)
+      input: 'var(--radius-input)', // roomier inputs
+      DEFAULT: 'var(--radius-default)',
+      card: 'var(--radius-card)', // cards / panels (13–15 band)
+      window: 'var(--radius-window)', // window chrome / gallery main photo
+      hero: 'var(--radius-hero)', // editorial large photo
+      sheet: 'var(--radius-sheet)', // mobile bottom sheet
       pill: '9999px',
       full: '9999px',
     },
@@ -40,6 +43,8 @@ const config: Config = {
       // Headings/numerals — Schibsted Grotesk has no cyrillic, so Ukrainian
       // glyphs fall through to Onest (var(--font-sans)) per the handoff stack.
       heading: ['var(--font-display)', 'var(--font-sans)', 'system-ui', 'sans-serif'],
+      // Numeric/label mono — Paper Lot spec strips, lot numbers, media counts.
+      mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
     },
     fontSize: {
       /* ---- Handoff scale (weights applied via font-* utilities) ---- */
@@ -140,6 +145,10 @@ const config: Config = {
         // Hairlines carry a baked alpha — used without an /opacity modifier.
         'hairline-dark': 'var(--hairline-dark)',
         'hairline-light': 'var(--hairline-light)',
+
+        /* ---- Paper Lot — gold catalogue-number ink (light + walnut dark).
+           Card surface/ink/line/accent ride the semantic tokens. ---- */
+        'lot-gold': 'rgb(var(--lot-gold) / <alpha-value>)',
       },
       letterSpacing: {
         tight: '-0.015em',

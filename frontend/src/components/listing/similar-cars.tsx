@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { ListingCard } from '@/components/listing/listing-card';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { publicApi } from '@/lib/api/public';
 import type { Currency, PublicListing } from '@/lib/api/types';
 
@@ -23,8 +24,8 @@ export async function SimilarCars({ listing, baseCurrency }: SimilarCarsProps) {
 
   return (
     <section className="mt-12">
-      <h2 className="font-heading text-section font-bold text-ink">{t('similarTitle')}</h2>
-      <div className="mt-4 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
+      <SectionHeading title={t('similarTitle')} />
+      <div className="mt-6 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
         {similar.map((item) => (
           <ListingCard key={item.id} listing={item} baseCurrency={baseCurrency} />
         ))}

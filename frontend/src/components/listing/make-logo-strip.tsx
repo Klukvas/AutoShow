@@ -33,7 +33,7 @@ export function MakeLogoStrip({ makes, activeMake, label }: MakeLogoStripProps) 
             href={active ? '/cars' : `/cars?make=${encodeURIComponent(make.slug)}`}
             aria-current={active ? 'true' : undefined}
             className={cn(
-              'focus-ring flex flex-none items-center gap-2 rounded-full border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
+              'focus-ring flex flex-none items-center gap-2 rounded-btn border px-3.5 py-1.5 text-[13px] font-semibold transition-colors',
               active
                 ? 'border-accent bg-accent/10 text-accent'
                 : 'border-line bg-surface text-ink hover:border-line-hover',

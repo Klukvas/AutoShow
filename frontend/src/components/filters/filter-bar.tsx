@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useState, useTransition } from 'react';
 import { FilterChip } from '@/components/ui/filter-chip';
+import { Eyebrow } from '@/components/ui/eyebrow';
 import { ActiveChipsRow, type ActiveFilter } from '@/components/filters/active-chips';
 import { FilterSheet } from '@/components/filters/filter-sheet';
 import { RangeField, SearchField, SelectField } from '@/components/filters/filter-fields';
@@ -168,7 +169,7 @@ export function FilterBar({
   if (city)
     active.push({
       id: 'city',
-      label: `📍 ${city}`,
+      label: city,
       onRemove: () => update({ city: undefined }),
     });
 
@@ -342,7 +343,7 @@ export function FilterBar({
       <select
         value={currentSort}
         onChange={(e) => update({ sort: e.target.value })}
-        className="focus-ring h-10 appearance-none rounded-btn border border-line-input bg-surface px-3 pr-7 text-sub font-medium text-ink bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27 xmlns=%27http://www.w3.org/2000/svg%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%238C929E%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E')] bg-[position:right_10px_center] bg-no-repeat"
+        className="focus-ring h-10 appearance-none rounded-btn border border-line-input bg-surface px-3 pr-7 text-sub font-medium text-ink bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27 xmlns=%27http://www.w3.org/2000/svg%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%23948C79%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E')] bg-[position:right_10px_center] bg-no-repeat"
       >
         {SORT_VALUES.map((s) => (
           <option key={s} value={s}>
@@ -365,9 +366,9 @@ export function FilterBar({
             clearLabel={t('search.clear')}
             onCommit={(v) => update({ q: v })}
           />
-          <div className="pt-1 text-label font-semibold uppercase tracking-label-wide text-ink-3">
+          <Eyebrow as="div" className="pt-1">
             {t('filterTitle')}
-          </div>
+          </Eyebrow>
           {fields}
         </div>
       </aside>
@@ -398,7 +399,7 @@ export function FilterBar({
               {active.length > 0 && (
                 <span
                   aria-hidden
-                  className="flex h-5 min-w-5 items-center justify-center rounded-pill bg-accent px-1.5 text-[11px] font-bold text-on-accent"
+                  className="flex h-5 min-w-5 items-center justify-center rounded-chip bg-accent px-1.5 text-[11px] font-bold text-on-accent"
                 >
                   {active.length}
                 </span>

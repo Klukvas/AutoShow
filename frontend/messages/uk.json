@@ -82,6 +82,7 @@
     "brands": "Марки",
     "badgeNew": "Новинка",
     "priceDropped": "Ціна знижена",
+    "priceLabel": "Ціна",
     "photoCount": "{count, plural, one {# фото} other {# фото}}",
     "filterTitle": "Фільтри",
     "filtersOpen": "Фільтри",

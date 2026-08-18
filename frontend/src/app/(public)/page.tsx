@@ -6,6 +6,7 @@ import { ReviewsSection } from '@/components/home/reviews-section';
 import { SellCarSection } from '@/components/home/sell-car-section';
 import { StatsBand } from '@/components/home/stats-band';
 import { ListingCard } from '@/components/listing/listing-card';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { ScrollReveal } from '@/components/motion/scroll-reveal';
 import { publicApi } from '@/lib/api/public';
 import { getSiteBranding } from '@/lib/branding/resolve';
@@ -35,14 +36,15 @@ export default async function HomePage() {
 
       {/* Fresh arrivals */}
       <section className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 className="font-heading text-title-lg font-extrabold text-ink">
-            {t('freshArrivals')}
-          </h2>
-          <Button as="link" href="/cars" variant="ghost" size="sm">
-            {t('viewAll')} →
-          </Button>
-        </div>
+        <SectionHeading
+          index="01"
+          title={t('freshArrivals')}
+          action={
+            <Button as="link" href="/cars" variant="ghost" size="sm">
+              {t('viewAll')} →
+            </Button>
+          }
+        />
 
         <div className="mt-6 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
           {rest.map((listing, idx) => (
@@ -64,9 +66,7 @@ export default async function HomePage() {
       {/* Trust block */}
       <section className="border-t border-line bg-surface">
         <div className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
-          <p className="text-label font-semibold uppercase tracking-label-wide text-ink-3">
-            {t('trustEyebrow')}
-          </p>
+          <SectionHeading index="03" title={t('trustEyebrow')} />
           <div className="mt-6 grid grid-cols-1 gap-[18px] md:grid-cols-3">
             {[
               { title: t('trust1Title'), body: t('trust1Body') },

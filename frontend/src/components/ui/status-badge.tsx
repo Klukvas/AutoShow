@@ -22,7 +22,7 @@ export function StatusBadge({ status, children, className }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-pill px-3 py-1 text-sub font-semibold',
+        'inline-flex items-center gap-1.5 rounded-chip px-3 py-1 text-sub font-semibold',
         AVAILABILITY[status],
         className,
       )}
