@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/cn';
+import { Eyebrow } from '@/components/ui/eyebrow';
 
 export interface SelectOption {
   label: string;
@@ -128,14 +129,14 @@ export function SelectField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-label font-semibold uppercase text-ink-2">{label}</span>
+      <Eyebrow className="mb-1.5 block">{label}</Eyebrow>
       <select
         value={value ?? ''}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value || undefined)}
         className={cn(
           'focus-ring h-10 w-full appearance-none rounded-btn border border-line-input bg-surface px-3 pr-8 text-sub transition-colors',
-          'bg-[url("data:image/svg+xml;charset=utf-8,%3Csvg width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%238C929E%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E")] bg-[position:right_12px_center] bg-no-repeat',
+          'bg-[url("data:image/svg+xml;charset=utf-8,%3Csvg width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%23948C79%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E")] bg-[position:right_12px_center] bg-no-repeat',
           value ? 'text-ink' : 'text-ink-3',
           disabled && 'cursor-not-allowed opacity-50',
         )}
@@ -171,7 +172,7 @@ export function RangeField({
 }) {
   return (
     <div>
-      <span className="mb-1.5 block text-label font-semibold uppercase text-ink-2">{label}</span>
+      <Eyebrow className="mb-1.5 block">{label}</Eyebrow>
       <div className="flex items-center gap-2">
         <RangeInput value={fromValue} placeholder={fromPlaceholder} onChange={onFromChange} />
         {onToChange && (

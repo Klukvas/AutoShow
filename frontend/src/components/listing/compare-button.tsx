@@ -38,7 +38,7 @@ export function CompareButton({ slug, variant = 'overlay', className }: CompareB
         // finger. Motion-reduce users get no scale, only the colour change.
         'focus-ring inline-flex items-center justify-center transition-[transform,background-color,border-color,color] duration-100 disabled:opacity-40 motion-safe:active:scale-[0.9]',
         variant === 'overlay' &&
-          'h-9 w-9 rounded-full bg-surface/85 shadow-sm backdrop-blur-sm hover:bg-surface',
+          'h-9 w-9 rounded-btn bg-surface/85 shadow-sm backdrop-blur-sm hover:bg-surface',
         variant === 'inline' &&
           'h-[38px] gap-2 rounded-btn border px-3 text-sub font-semibold hover:border-line-hover',
         variant === 'inline' &&

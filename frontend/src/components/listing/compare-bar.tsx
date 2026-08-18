@@ -42,20 +42,20 @@ export function CompareBar() {
           }
           style={{ willChange: 'transform, opacity' }}
         >
-          <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-line bg-surface/95 px-4 py-2.5 shadow-panel backdrop-blur-sm">
+          <div className="pointer-events-auto flex items-center gap-3 rounded-card border border-line bg-surface/95 px-4 py-2.5 shadow-panel backdrop-blur-sm">
             <span className="text-sub font-semibold text-ink">
               {t('trayCount', { count: slugs.length, max: MAX_COMPARE })}
             </span>
             <Link
               href="/compare"
-              className="focus-ring inline-flex h-9 items-center rounded-full bg-accent px-4 text-sub font-bold text-on-accent transition-[background-color,transform] duration-100 hover:bg-accent-hover active:scale-[0.97]"
+              className="focus-ring inline-flex h-9 items-center rounded-btn bg-accent px-4 text-sub font-bold text-on-accent transition-[background-color,transform] duration-100 hover:bg-accent-hover active:scale-[0.97]"
             >
               {t('open')}
             </Link>
             <button
               type="button"
               onClick={clear}
-              className="focus-ring inline-flex h-9 items-center rounded-full px-2 text-sub font-semibold text-ink-3 transition-colors hover:text-ink-2"
+              className="focus-ring inline-flex h-9 items-center rounded-btn px-2 text-sub font-semibold text-ink-3 transition-colors hover:text-ink-2"
             >
               {t('clear')}
             </button>
