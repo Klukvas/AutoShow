@@ -42,7 +42,7 @@ export function ContactPanel({ listing, branding }: ContactPanelProps) {
       <div className="flex items-center gap-2.5">
         <div className="tabular font-heading text-price-lg font-extrabold text-ink">{price}</div>
         {listing.price.priceDrop && (
-          <span className="inline-flex items-center rounded-full bg-ok/10 px-2 py-0.5 text-[12px] font-bold text-ok">
+          <span className="inline-flex items-center rounded-chip bg-ok/10 px-2 py-0.5 text-[12px] font-bold text-ok">
             {t('priceDropped')} ↓{listing.price.priceDrop.dropPct}%
           </span>
         )}
@@ -89,7 +89,7 @@ export function ContactPanel({ listing, branding }: ContactPanelProps) {
           {phone && phoneHref && (
             <a
               href={phoneHref}
-              className="focus-ring tabular font-heading text-[17px] font-bold text-ink transition-colors hover:text-accent-hover dark:hover:text-accent"
+              className="focus-ring tabular font-heading text-[17px] font-bold text-ink transition-colors hover:text-lot-gold"
             >
               {phone}
             </a>

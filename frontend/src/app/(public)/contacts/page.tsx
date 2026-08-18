@@ -28,7 +28,7 @@ export default async function ContactsPage() {
                 <div>
                   <a
                     href={phoneHref}
-                    className="focus-ring tabular font-heading text-title-sm font-bold text-ink transition-colors hover:text-accent-hover dark:hover:text-accent"
+                    className="focus-ring tabular font-heading text-title-sm font-bold text-ink transition-colors hover:text-lot-gold"
                   >
                     {phone}
                   </a>
@@ -38,7 +38,7 @@ export default async function ContactsPage() {
                 <div>
                   <a
                     href={`mailto:${branding.contactEmail}`}
-                    className="focus-ring font-heading text-section font-bold text-ink transition-colors hover:text-accent-hover dark:hover:text-accent"
+                    className="focus-ring font-heading text-section font-bold text-ink transition-colors hover:text-lot-gold"
                   >
                     {branding.contactEmail}
                   </a>

@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { SellCarForm } from '@/components/lead/sell-car-form';
+import { Eyebrow } from '@/components/ui/eyebrow';
 
 /**
  * Consignment funnel: the showroom's second lead source — owners bringing
@@ -17,15 +18,19 @@ export async function SellCarSection() {
     <section id="sell" className="scroll-mt-20 border-t border-line bg-surface">
       <div className="mx-auto grid max-w-[1200px] gap-10 px-5 py-12 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:px-8 md:py-16">
         <div>
-          <p className="text-label font-semibold uppercase tracking-label-wide text-ink-3">
-            {t('eyebrow')}
+          <Eyebrow tone="gold" as="p">
+            №05 · {t('eyebrow')}
+          </Eyebrow>
+          <h2 className="mt-2 font-heading text-title-lg font-extrabold tracking-editorial text-ink">
+            {t('title')}
+          </h2>
+          <p className="mt-3 max-w-[440px] text-body-md leading-relaxed text-ink-2">
+            {t('subtitle')}
           </p>
-          <h2 className="mt-2 font-heading text-title-lg font-extrabold text-ink">{t('title')}</h2>
-          <p className="mt-3 max-w-[440px] text-body-md leading-relaxed text-ink-2">{t('subtitle')}</p>
           <ol className="mt-6 space-y-4">
             {steps.map((step, idx) => (
               <li key={step.title} className="flex gap-3.5">
-                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-accent text-[13.5px] font-extrabold text-on-accent">
+                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-chip bg-accent text-[13.5px] font-extrabold text-on-accent">
                   {idx + 1}
                 </span>
                 <div>

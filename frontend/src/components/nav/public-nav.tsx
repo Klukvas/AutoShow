@@ -76,7 +76,7 @@ export function PublicNav({ branding }: PublicNavProps) {
                   {active && (
                     <span
                       aria-hidden
-                      className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-accent"
+                      className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-lot-gold"
                     />
                   )}
                 </Link>
@@ -132,7 +132,7 @@ export function PublicNav({ branding }: PublicNavProps) {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="focus-ring border-b border-line py-4 font-heading text-title-sm font-bold text-ink hover:text-accent-hover dark:hover:text-accent"
+                  className="focus-ring border-b border-line py-4 font-heading text-title-sm font-bold text-ink hover:text-lot-gold"
                 >
                   {t(link.key)}
                 </Link>

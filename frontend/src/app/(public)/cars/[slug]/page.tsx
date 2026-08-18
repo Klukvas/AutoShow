@@ -15,6 +15,7 @@ import { ShareButton } from '@/components/listing/share-button';
 import { SimilarCars } from '@/components/listing/similar-cars';
 import { SpecTable } from '@/components/listing/spec-table';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { SectionHeading } from '@/components/ui/section-heading';
 import { ViewBeacon } from '@/components/listing/view-beacon';
 import { LeadForm } from '@/components/lead/lead-form';
 import { CreditCalculator } from '@/components/listing/credit-calculator';
@@ -167,15 +168,15 @@ export default async function ListingPage({ params }: PageProps) {
           </div>
 
           <section className="mt-8">
-            <h2 className="font-heading text-section font-bold text-ink">{t('specsTitle')}</h2>
-            <div className="mt-3">
+            <SectionHeading size="sm" title={t('specsTitle')} />
+            <div className="mt-4">
               <SpecTable listing={listing} t={t} />
             </div>
           </section>
 
           {listing.options.length > 0 && (
             <section className="mt-8">
-              <h2 className="font-heading text-section font-bold text-ink">{t('optionsTitle')}</h2>
+              <SectionHeading size="sm" title={t('optionsTitle')} />
               <div className="mt-4">
                 <OptionsByCategory options={listing.options} t={t} />
               </div>
@@ -184,10 +185,8 @@ export default async function ListingPage({ params }: PageProps) {
 
           {listing.description && (
             <section className="mt-8">
-              <h2 className="font-heading text-section font-bold text-ink">
-                {t('descriptionTitle')}
-              </h2>
-              <p className="mt-3 max-w-[640px] whitespace-pre-wrap text-body-md leading-[1.75] text-ink-2">
+              <SectionHeading size="sm" title={t('descriptionTitle')} />
+              <p className="mt-4 max-w-[640px] whitespace-pre-wrap text-body-md leading-[1.75] text-ink-2">
                 {listing.description}
               </p>
             </section>
