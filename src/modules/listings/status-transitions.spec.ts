@@ -68,6 +68,7 @@ function buildService(listing: ListingStub) {
     empty, // driveTypes
     empty, // colors
     empty, // options
+    empty, // tags
     empty, // media
     empty, // priceHistory
     empty, // branding

@@ -11,6 +11,7 @@ import { Make } from './entities/make.entity';
 import { Model } from './entities/model.entity';
 import { Transmission } from './entities/transmission.entity';
 import { VehicleOption } from './entities/vehicle-option.entity';
+import { Tag } from './entities/tag.entity';
 
 const CACHE_PREFIX = 'catalog:';
 const CACHE_TTL = 600;
@@ -28,6 +29,7 @@ export class CatalogService {
     @InjectRepository(Color) private readonly colors: Repository<Color>,
     @InjectRepository(VehicleOption)
     private readonly options: Repository<VehicleOption>,
+    @InjectRepository(Tag) private readonly tags: Repository<Tag>,
     private readonly redis: RedisService,
   ) {}
 
@@ -67,6 +69,12 @@ export class CatalogService {
   listOptions() {
     return this.cached('options', () =>
       this.options.find({ order: { category: 'ASC', nameUk: 'ASC' } }),
+    );
+  }
+  /** Storefront-visible tags only (the filter facet); admin sees all via CatalogAdminService. */
+  listTags() {
+    return this.cached('tags', () =>
+      this.tags.find({ where: { isPublished: true }, order: { position: 'ASC', nameUk: 'ASC' } }),
     );
   }
 

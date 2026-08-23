@@ -15,6 +15,7 @@ import {
   UpsertModelDto,
   UpsertOptionDto,
   UpsertSimpleCatalogDto,
+  UpsertTagDto,
 } from './dto/upsert-catalog.dto';
 import { BodyType } from './entities/body-type.entity';
 import { Color } from './entities/color.entity';
@@ -24,6 +25,8 @@ import { Make } from './entities/make.entity';
 import { Model } from './entities/model.entity';
 import { Transmission } from './entities/transmission.entity';
 import { VehicleOption } from './entities/vehicle-option.entity';
+import { Tag } from './entities/tag.entity';
+import { ListingTag } from '../listings/entities/listing-tag.entity';
 
 @Injectable()
 export class CatalogAdminService {
@@ -38,6 +41,9 @@ export class CatalogAdminService {
     @InjectRepository(Color) private readonly colors: Repository<Color>,
     @InjectRepository(VehicleOption)
     private readonly options: Repository<VehicleOption>,
+    @InjectRepository(Tag) private readonly tags: Repository<Tag>,
+    @InjectRepository(ListingTag)
+    private readonly listingTags: Repository<ListingTag>,
     @InjectRepository(Listing) private readonly listings: Repository<Listing>,
     private readonly catalog: CatalogService,
     private readonly audit: AuditLogService,
@@ -107,6 +113,28 @@ export class CatalogAdminService {
   }
   createOption(dto: UpsertOptionDto, actor: AuthenticatedUser) {
     return this.create(this.options, dto, 'vehicle_option', actor);
+  }
+
+  /* tags */
+  listTags() {
+    // Admin management view: ALL tags, including unpublished/staged ones (the
+    // public list in CatalogService returns published only).
+    return this.tags.find({ order: { position: 'ASC', nameUk: 'ASC' } });
+  }
+  createTag(dto: UpsertTagDto, actor: AuthenticatedUser) {
+    return this.create(this.tags, dto, 'tag', actor);
+  }
+  updateTag(id: string, dto: UpsertTagDto, actor: AuthenticatedUser) {
+    return this.update(this.tags, id, dto, 'tag', actor);
+  }
+  async deleteTag(id: string, actor: AuthenticatedUser) {
+    // A soft-delete would orphan the RESTRICT join rows (still shown as badges),
+    // so block deletion while the tag is attached — same guard as deleteMake.
+    const inUse = await this.listingTags.count({ where: { tagId: id } });
+    if (inUse > 0) {
+      throw new ConflictException('tag is in use by listings and cannot be deleted');
+    }
+    return this.softDelete(this.tags, id, 'tag', actor);
   }
 
   private async create<T extends { id?: string }>(

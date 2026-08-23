@@ -63,4 +63,10 @@ export class CatalogPublicController {
   options() {
     return this.catalog.listOptions();
   }
+
+  @Get('tags')
+  @ApiOperation({ summary: 'List published storefront tags (badge/filter facet)' })
+  tags() {
+    return this.catalog.listTags();
+  }
 }

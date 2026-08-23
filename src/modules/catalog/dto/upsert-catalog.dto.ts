@@ -1,5 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsHexColor, IsOptional, IsString, IsUUID, MaxLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsEnum,
+  IsHexColor,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class UpsertMakeDto {
   @ApiProperty() @IsString() @MaxLength(128) nameUk!: string;
@@ -36,4 +46,21 @@ export class UpsertOptionDto {
   @ApiProperty() @IsString() @MaxLength(128) nameUk!: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(128) nameEn?: string;
   @ApiProperty() @IsString() @MaxLength(64) slug!: string;
+}
+
+export class UpsertTagDto {
+  @ApiProperty() @IsString() @MaxLength(64) nameUk!: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(64) nameEn?: string;
+  @ApiProperty() @IsString() @MaxLength(64) slug!: string;
+
+  @ApiPropertyOptional({ description: 'Sort order in the tag list (ascending)' })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  position?: number;
+
+  @ApiPropertyOptional({ description: 'Hidden from the storefront (filter + badges) when false' })
+  @IsOptional()
+  @IsBoolean()
+  isPublished?: boolean;
 }

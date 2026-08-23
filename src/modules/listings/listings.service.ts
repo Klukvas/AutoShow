@@ -30,6 +30,7 @@ import { ListListingsQuery } from './dto/list-listings.query';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { ListingMedia } from './entities/listing-media.entity';
 import { ListingOption } from './entities/listing-option.entity';
+import { ListingTag } from './entities/listing-tag.entity';
 import { ListingPriceHistory } from './entities/listing-price-history.entity';
 import { MediaRendition } from './entities/media-rendition.entity';
 import { Listing, type ListingStatus } from './entities/listing.entity';
@@ -41,6 +42,7 @@ import { Transmission } from '../catalog/entities/transmission.entity';
 import { DriveType } from '../catalog/entities/drive-type.entity';
 import { Color } from '../catalog/entities/color.entity';
 import { VehicleOption } from '../catalog/entities/vehicle-option.entity';
+import { Tag } from '../catalog/entities/tag.entity';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -75,6 +77,7 @@ const NON_NULLABLE_UPDATE_KEYS = [
   'locationCity',
   'isNegotiable',
   'optionIds',
+  'tagIds',
   'sellerType',
   'feeType',
 ] as const;
@@ -107,6 +110,7 @@ export class ListingsService {
     @InjectRepository(DriveType) private readonly driveTypes: Repository<DriveType>,
     @InjectRepository(Color) private readonly colors: Repository<Color>,
     @InjectRepository(VehicleOption) private readonly options: Repository<VehicleOption>,
+    @InjectRepository(Tag) private readonly tags: Repository<Tag>,
     @InjectRepository(ListingMedia)
     private readonly media: Repository<ListingMedia>,
     @InjectRepository(ListingPriceHistory)
@@ -136,6 +140,15 @@ export class ListingsService {
       .leftJoinAndSelect('l.transmission', 'transmission')
       .leftJoinAndSelect('l.driveType', 'driveType')
       .leftJoinAndSelect('l.color', 'color')
+      // Tags feed the card badges. Only published, live tags render — an
+      // unpublished tag has its badge join resolve to NULL (dropped by the
+      // mapper) rather than leaking onto the storefront.
+      .leftJoinAndSelect('l.tags', 'listingTags')
+      .leftJoinAndSelect(
+        'listingTags.tag',
+        'tag',
+        'tag.is_published = true AND tag.deleted_at IS NULL',
+      )
       .leftJoinAndSelect('l.media', 'media', "media.status = 'ready'")
       .leftJoinAndSelect('media.renditions', 'renditions')
       // Reserved cars stay in the catalog (with a badge) — buyers can still
@@ -192,6 +205,24 @@ export class ListingsService {
           .andWhere(`opt${idx}.slug = :optSlug${idx}`)
           .getQuery();
         qb.andWhere(`EXISTS ${sub}`, { [`optSlug${idx}`]: slug });
+      });
+    }
+
+    if (query.tags?.length) {
+      // Same AND-across-all shape as options; only published, live tags match so
+      // an unpublished slug filters to nothing (consistent with the badge join).
+      query.tags.forEach((slug, idx) => {
+        const sub = qb
+          .subQuery()
+          .select('1')
+          .from(ListingTag, `lt${idx}`)
+          .innerJoin('catalog_tags', `tg${idx}`, `lt${idx}.tag_id = tg${idx}.id`)
+          .where(`lt${idx}.listing_id = l.id`)
+          .andWhere(`tg${idx}.slug = :tagSlug${idx}`)
+          .andWhere(`tg${idx}.is_published = true`)
+          .andWhere(`tg${idx}.deleted_at IS NULL`)
+          .getQuery();
+        qb.andWhere(`EXISTS ${sub}`, { [`tagSlug${idx}`]: slug });
       });
     }
 
@@ -255,6 +286,13 @@ export class ListingsService {
       .leftJoinAndSelect('media.renditions', 'renditions')
       .leftJoinAndSelect('l.options', 'options')
       .leftJoinAndSelect('options.option', 'option')
+      // Badges: only published, live tags (see findPublishedPage).
+      .leftJoinAndSelect('l.tags', 'listingTags')
+      .leftJoinAndSelect(
+        'listingTags.tag',
+        'tag',
+        'tag.is_published = true AND tag.deleted_at IS NULL',
+      )
       .where('l.slug = :slug', { slug })
       // A sold car's page stays alive ("Продано" badge) — killing it would
       // 404 indexed URLs and hide social proof.
@@ -338,7 +376,7 @@ export class ListingsService {
   async adminFindById(id: string): Promise<Listing> {
     const listing = await this.listings.findOne({
       where: { id, deletedAt: IsNull() },
-      relations: LIST_RELATIONS.concat(['options', 'options.option']),
+      relations: LIST_RELATIONS.concat(['options', 'options.option', 'tags', 'tags.tag']),
     });
     if (!listing) throw new NotFoundException('Listing not found');
     return listing;
@@ -387,6 +425,9 @@ export class ListingsService {
       );
       if (dto.optionIds?.length) {
         await this.replaceOptions(em, created.id, dto.optionIds);
+      }
+      if (dto.tagIds?.length) {
+        await this.replaceTags(em, created.id, dto.tagIds);
       }
       // Baseline price-history row (no "previous" on create).
       await em.save(ListingPriceHistory, {
@@ -520,6 +561,9 @@ export class ListingsService {
       await this.updateWithVersion(current.id, current.version, patch, em);
       if (dto.optionIds !== undefined) {
         await this.replaceOptions(em, current.id, dto.optionIds);
+      }
+      if (dto.tagIds !== undefined) {
+        await this.replaceTags(em, current.id, dto.tagIds);
       }
       if (patch.priceNormalized !== undefined) {
         await em.save(ListingPriceHistory, {
@@ -884,6 +928,13 @@ export class ListingsService {
         throw new NotFoundException('one or more options not found');
       }
     }
+
+    if (dto.tagIds?.length) {
+      const found = await this.tags.count({ where: { id: In(dto.tagIds) } });
+      if (found !== new Set(dto.tagIds).size) {
+        throw new NotFoundException('one or more tags not found');
+      }
+    }
   }
 
   private async replaceOptions(
@@ -899,6 +950,18 @@ export class ListingsService {
       .insert()
       .into(ListingOption)
       .values(unique.map((optionId) => ({ listingId, optionId })))
+      .execute();
+  }
+
+  private async replaceTags(em: EntityManager, listingId: string, tagIds: string[]): Promise<void> {
+    await em.delete(ListingTag, { listingId });
+    if (!tagIds.length) return;
+    const unique = Array.from(new Set(tagIds));
+    await em
+      .createQueryBuilder()
+      .insert()
+      .into(ListingTag)
+      .values(unique.map((tagId) => ({ listingId, tagId })))
       .execute();
   }
 

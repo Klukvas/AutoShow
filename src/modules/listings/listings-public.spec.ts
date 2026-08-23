@@ -20,6 +20,7 @@ describe('ListingsService public detail', () => {
       empty, // driveTypes
       empty, // colors
       empty, // options
+      empty, // tags
       empty, // media
       empty, // priceHistory
       empty, // branding

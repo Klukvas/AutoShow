@@ -8,12 +8,14 @@ import { DriveType } from '../modules/catalog/entities/drive-type.entity';
 import { FuelType } from '../modules/catalog/entities/fuel-type.entity';
 import { Make } from '../modules/catalog/entities/make.entity';
 import { Model } from '../modules/catalog/entities/model.entity';
+import { Tag } from '../modules/catalog/entities/tag.entity';
 import { Transmission } from '../modules/catalog/entities/transmission.entity';
 import { VehicleOption } from '../modules/catalog/entities/vehicle-option.entity';
 import { Lead } from '../modules/leads/entities/lead.entity';
 import { LeadNote } from '../modules/leads/entities/lead-note.entity';
 import { ListingMedia } from '../modules/listings/entities/listing-media.entity';
 import { ListingOption } from '../modules/listings/entities/listing-option.entity';
+import { ListingTag } from '../modules/listings/entities/listing-tag.entity';
 import { ListingPriceHistory } from '../modules/listings/entities/listing-price-history.entity';
 import { Listing } from '../modules/listings/entities/listing.entity';
 import { MediaRendition } from '../modules/listings/entities/media-rendition.entity';
@@ -31,10 +33,12 @@ export const ALL_ENTITIES = [
   DriveType,
   Color,
   VehicleOption,
+  Tag,
   Listing,
   ListingMedia,
   MediaRendition,
   ListingOption,
+  ListingTag,
   ListingPriceHistory,
   Lead,
   LeadNote,

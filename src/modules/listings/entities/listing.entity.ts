@@ -11,6 +11,7 @@ import type { Currency } from '../../../common/types/currency';
 import { Lead } from '../../leads/entities/lead.entity';
 import { ListingMedia } from './listing-media.entity';
 import { ListingOption } from './listing-option.entity';
+import { ListingTag } from './listing-tag.entity';
 
 export type ListingStatus = 'draft' | 'published' | 'reserved' | 'sold' | 'archived';
 export type ListingCondition = 'new' | 'used' | 'damaged';
@@ -262,4 +263,10 @@ export class Listing extends BaseEntity {
   // listing_id is ON DELETE CASCADE for hard deletes.
   @OneToMany(() => ListingOption, (lo) => lo.listing, { cascade: ['insert', 'update'] })
   options?: ListingOption[];
+
+  // Same cascade caveat as options: ListingTag has no delete-date column, so a
+  // soft-remove of the listing must not cascade here (listing_id is ON DELETE
+  // CASCADE for hard deletes; the join rows are invisible once soft-deleted).
+  @OneToMany(() => ListingTag, (lt) => lt.listing, { cascade: ['insert', 'update'] })
+  tags?: ListingTag[];
 }

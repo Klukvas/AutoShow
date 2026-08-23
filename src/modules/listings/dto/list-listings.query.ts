@@ -75,6 +75,13 @@ export class ListListingsQuery {
   @IsString({ each: true })
   options?: string[];
 
+  @ApiPropertyOptional({ isArray: true, type: String })
+  @IsOptional()
+  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
   @ApiPropertyOptional({
     enum: ['price_asc', 'price_desc', 'year_desc', 'year_asc', 'mileage_asc', 'newest'],
     default: 'newest',

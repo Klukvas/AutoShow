@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   Param,
   ParseUUIDPipe,
@@ -24,6 +25,7 @@ import {
   UpsertModelDto,
   UpsertOptionDto,
   UpsertSimpleCatalogDto,
+  UpsertTagDto,
 } from './dto/upsert-catalog.dto';
 
 @ApiTags('admin:catalog')
@@ -107,5 +109,30 @@ export class CatalogAdminController {
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.admin.createOption(dto, user);
+  }
+
+  // Editors attach tags while creating listings, so listing is opened to them
+  // (like makes/models); curating the dictionary stays admin-only.
+  @Get('tags')
+  @Roles('admin', 'editor')
+  @ApiOperation({ summary: 'List all tags (including unpublished) for management/pickers' })
+  listTags() {
+    return this.admin.listTags();
+  }
+  @Post('tags') createTag(@Body() dto: UpsertTagDto, @CurrentUser() user: AuthenticatedUser) {
+    return this.admin.createTag(dto, user);
+  }
+  @Patch('tags/:id')
+  updateTag(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpsertTagDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.admin.updateTag(id, dto, user);
+  }
+  @Delete('tags/:id')
+  @HttpCode(204)
+  deleteTag(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.admin.deleteTag(id, user);
   }
 }

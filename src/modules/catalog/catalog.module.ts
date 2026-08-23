@@ -19,13 +19,25 @@ import { Make } from './entities/make.entity';
 import { Model } from './entities/model.entity';
 import { Transmission } from './entities/transmission.entity';
 import { VehicleOption } from './entities/vehicle-option.entity';
+import { Tag } from './entities/tag.entity';
 import { Listing } from '../listings/entities/listing.entity';
+import { ListingTag } from '../listings/entities/listing-tag.entity';
 
-const ENTITIES = [Make, Model, BodyType, FuelType, Transmission, DriveType, Color, VehicleOption];
+const ENTITIES = [
+  Make,
+  Model,
+  BodyType,
+  FuelType,
+  Transmission,
+  DriveType,
+  Color,
+  VehicleOption,
+  Tag,
+];
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([...ENTITIES, Listing]),
+    TypeOrmModule.forFeature([...ENTITIES, Listing, ListingTag]),
     // Logo fetches ride the maintenance queue: enqueued on make creation,
     // executed by MaintenanceWorker in the worker process.
     BullModule.registerQueue({ name: MAINTENANCE_QUEUE }),

@@ -12,10 +12,12 @@ import { Transmission } from '../../modules/catalog/entities/transmission.entity
 import { DriveType } from '../../modules/catalog/entities/drive-type.entity';
 import { Color } from '../../modules/catalog/entities/color.entity';
 import { VehicleOption } from '../../modules/catalog/entities/vehicle-option.entity';
+import { Tag } from '../../modules/catalog/entities/tag.entity';
 import { SiteSettings } from '../../modules/branding/entities/site-settings.entity';
 import { AdminUser } from '../../modules/admin-users/entities/admin-user.entity';
 import { Listing } from '../../modules/listings/entities/listing.entity';
 import { ListingOption } from '../../modules/listings/entities/listing-option.entity';
+import { ListingTag } from '../../modules/listings/entities/listing-tag.entity';
 import { Collection } from '../../modules/collections/entities/collection.entity';
 
 loadDotenv();
@@ -121,6 +123,15 @@ const options: Array<{
   { slug: 'led-headlights', nameUk: 'LED-фари', nameEn: 'LED headlights', category: 'exterior' },
 ];
 
+// Curated marketing/deal tags — the storefront badge + filter facet. Positioned
+// so the most common deal terms surface first. Backfilled idempotently by slug.
+const tags: Array<{ slug: string; nameUk: string; nameEn: string; position: number }> = [
+  { slug: 'obmin', nameUk: 'Обмін', nameEn: 'Trade-in', position: 10 },
+  { slug: 'urgent', nameUk: 'Терміновий продаж', nameEn: 'Urgent sale', position: 20 },
+  { slug: 'installments', nameUk: 'Розстрочка', nameEn: 'Installments', position: 30 },
+  { slug: 'credit', nameUk: 'Кредит', nameEn: 'Credit', position: 40 },
+];
+
 async function upsertCatalog(ds: DataSource) {
   const makeRepo = ds.getRepository(Make);
   const modelRepo = ds.getRepository(Model);
@@ -145,6 +156,7 @@ async function upsertCatalog(ds: DataSource) {
   await upsertSimple(ds.getRepository(DriveType), driveTypes);
   await upsertSimple(ds.getRepository(Color), colors);
   await upsertSimple(ds.getRepository(VehicleOption), options);
+  await upsertSimple(ds.getRepository(Tag), tags);
 }
 
 async function upsertSimple<T extends { slug: string }>(
@@ -324,6 +336,9 @@ async function ensureDemoListings(ds: DataSource) {
   const white = await refBySlug(ds.getRepository(Color), 'white');
   const leather = await refBySlug(ds.getRepository(VehicleOption), 'leather');
   const cruise = await refBySlug(ds.getRepository(VehicleOption), 'cruise');
+  const obmin = await refBySlug(ds.getRepository(Tag), 'obmin');
+  const urgent = await refBySlug(ds.getRepository(Tag), 'urgent');
+  const installmentsRef = await refBySlug(ds.getRepository(Tag), 'installments');
 
   const demos = [
     {
@@ -341,6 +356,7 @@ async function ensureDemoListings(ds: DataSource) {
       engineVolumeL: '2.0',
       city: 'Київ',
       options: [leather, cruise],
+      tags: [obmin, urgent],
     },
     {
       make: audi,
@@ -357,6 +373,7 @@ async function ensureDemoListings(ds: DataSource) {
       engineVolumeL: '2.0',
       city: 'Львів',
       options: [leather],
+      tags: [installmentsRef],
     },
   ];
 
@@ -397,6 +414,12 @@ async function ensureDemoListings(ds: DataSource) {
       const linkRepo = ds.getRepository(ListingOption);
       await linkRepo.save(
         demo.options.map((opt) => linkRepo.create({ listingId: saved.id, optionId: opt.id })),
+      );
+    }
+    if (demo.tags.length) {
+      const tagLinkRepo = ds.getRepository(ListingTag);
+      await tagLinkRepo.save(
+        demo.tags.map((tag) => tagLinkRepo.create({ listingId: saved.id, tagId: tag.id })),
       );
     }
     // No seed media: a phantom S3 key would render as a broken image. Real

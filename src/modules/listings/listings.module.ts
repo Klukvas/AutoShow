@@ -12,6 +12,7 @@ import { Make } from '../catalog/entities/make.entity';
 import { Model } from '../catalog/entities/model.entity';
 import { Transmission } from '../catalog/entities/transmission.entity';
 import { VehicleOption } from '../catalog/entities/vehicle-option.entity';
+import { Tag } from '../catalog/entities/tag.entity';
 import { ListingsAdminController } from './listings-admin.controller';
 import { ListingsPublicController } from './listings-public.controller';
 import { ListingsMapper } from './listings.mapper';
@@ -19,6 +20,7 @@ import { ListingsService } from './listings.service';
 import { Listing } from './entities/listing.entity';
 import { ListingMedia } from './entities/listing-media.entity';
 import { ListingOption } from './entities/listing-option.entity';
+import { ListingTag } from './entities/listing-tag.entity';
 import { ListingPriceHistory } from './entities/listing-price-history.entity';
 import { MediaRendition } from './entities/media-rendition.entity';
 
@@ -28,6 +30,7 @@ import { MediaRendition } from './entities/media-rendition.entity';
       Listing,
       ListingMedia,
       ListingOption,
+      ListingTag,
       ListingPriceHistory,
       MediaRendition,
       Make,
@@ -38,6 +41,7 @@ import { MediaRendition } from './entities/media-rendition.entity';
       DriveType,
       Color,
       VehicleOption,
+      Tag,
     ]),
     AuditModule,
     AuthModule,

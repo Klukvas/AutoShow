@@ -128,4 +128,11 @@ export class CreateListingDto {
   @ArrayUnique()
   @IsUUID('all', { each: true })
   optionIds?: string[];
+
+  @ApiPropertyOptional({ isArray: true })
+  @IsOptional()
+  @IsArray()
+  @ArrayUnique()
+  @IsUUID('all', { each: true })
+  tagIds?: string[];
 }

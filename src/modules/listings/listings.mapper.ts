@@ -87,6 +87,7 @@ export interface PublicListing {
   viewsCount: number;
   media: PublicListingMedia[];
   options: Array<{ slug: string; nameUk: string; category: string }>;
+  tags: Array<{ slug: string; nameUk: string }>;
   seo: {
     metaTitle: string | null;
     metaDescription: string | null;
@@ -189,6 +190,11 @@ export class ListingsMapper {
         nameUk: lo.option?.nameUk ?? '',
         category: lo.option?.category ?? 'other',
       })),
+      // The public query joins only published, live tags, so a join row whose
+      // tag is absent (unpublished/deleted) is dropped rather than rendered blank.
+      tags: (listing.tags ?? []).flatMap((lt) =>
+        lt.tag ? [{ slug: lt.tag.slug, nameUk: lt.tag.nameUk }] : [],
+      ),
       seo: {
         metaTitle: listing.metaTitle,
         metaDescription: listing.metaDescription,
