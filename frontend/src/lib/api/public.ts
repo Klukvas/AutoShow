@@ -3,6 +3,7 @@ import type {
   Branding,
   CatalogMake,
   CatalogModel,
+  CatalogTag,
   Collection,
   CursorPage,
   CreateLeadBody,
@@ -74,6 +75,13 @@ export const publicApi = {
     return apiFetch<VehicleOption[]>('/catalog/options', {
       method: 'GET',
       next: { revalidate: 600, tags: ['catalog:options'] },
+    });
+  },
+
+  listTags() {
+    return apiFetch<CatalogTag[]>('/catalog/tags', {
+      method: 'GET',
+      next: { revalidate: 600, tags: ['catalog:tags'] },
     });
   },
 

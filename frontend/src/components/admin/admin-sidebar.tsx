@@ -19,6 +19,7 @@ export interface AdminNavLink {
     | 'leads'
     | 'reviews'
     | 'collections'
+    | 'tags'
     | 'team'
     | 'branding'
     | 'audit';
@@ -94,6 +95,18 @@ const ICONS: Record<AdminNavLink['key'], React.ReactNode> = {
       <rect x="9.2" y="1.8" width="5" height="5" rx="1" />
       <rect x="1.8" y="9.2" width="5" height="5" rx="1" />
       <rect x="9.2" y="9.2" width="5" height="5" rx="1" />
+    </svg>
+  ),
+  tags: (
+    <svg
+      viewBox="0 0 16 16"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path d="M2 2.5h5.2L14 9.3l-4.7 4.7L2.5 7.7V2.5Z" />
+      <circle cx="5.1" cy="5.1" r="0.9" fill="currentColor" stroke="none" />
     </svg>
   ),
   team: (

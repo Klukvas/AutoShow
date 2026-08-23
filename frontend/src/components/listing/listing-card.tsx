@@ -135,6 +135,20 @@ export function ListingCard({
           <span className="min-w-0 truncate">{listing.location.city}</span>
         </div>
 
+        {/* Deal tags — curated marketing labels, single neutral chip style */}
+        {listing.tags.length > 0 && (
+          <ul className="mt-2.5 flex flex-wrap gap-1.5">
+            {listing.tags.map((tag) => (
+              <li
+                key={tag.slug}
+                className="rounded-[2px] border border-line px-1.5 py-0.5 font-mono text-[0.5625rem] font-bold uppercase tracking-[0.12em] text-ink-2"
+              >
+                {tag.nameUk}
+              </li>
+            ))}
+          </ul>
+        )}
+
         {/* Price — hero numeral. The label + drop share a micro-row above so
             the numeral keeps the full card width even for 7-digit prices. */}
         <div className="mt-3">

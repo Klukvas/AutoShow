@@ -133,7 +133,8 @@
       "yearMin": "Рік від",
       "yearMax": "Рік до",
       "mileageMax": "Пробіг до",
-      "options": "Опції"
+      "options": "Опції",
+      "tags": "Ярлики"
     },
     "loadMore": "Показати ще",
     "loading": "Завантаження…",
@@ -174,6 +175,7 @@
     "specsTitle": "Характеристики",
     "descriptionTitle": "Опис",
     "optionsTitle": "Опції та комплектація",
+    "tagsTitle": "Ярлики",
     "optionCategories": {
       "comfort": "Комфорт",
       "safety": "Безпека",
@@ -263,6 +265,7 @@
       "leads": "Заявки",
       "reviews": "Відгуки",
       "collections": "Колекції",
+      "tags": "Ярлики",
       "team": "Команда",
       "branding": "Брендинг",
       "audit": "Аудит-лог",
@@ -380,6 +383,7 @@
       "groupSpecs": "Характеристики",
       "groupPrice": "Ціна та локація",
       "groupOptions": "Опції (мультивибір)",
+      "groupTags": "Ярлики (мультивибір)",
       "groupDescription": "Опис",
       "make": "Марка",
       "model": "Модель",
@@ -722,6 +726,24 @@
         "yearMin": "Рік від",
         "mileageMax": "Пробіг до"
       }
+    },
+    "tags": {
+      "title": "Ярлики",
+      "subtitle": "Курований словник позначок (обмін, терміновий продаж) — бейджі та фільтр на вітрині",
+      "add": "Додати ярлик",
+      "editTitle": "Редагувати ярлик",
+      "addTitle": "Новий ярлик",
+      "nameField": "Назва",
+      "slug": "Слаг (URL)",
+      "slugHint": "Латиниця, малі літери й дефіси: obmin, urgent",
+      "positionLabel": "Порядок",
+      "publishedField": "Опубліковано",
+      "published": "Опубліковано",
+      "hidden": "Приховано",
+      "delete": "Видалити",
+      "deleteConfirmTitle": "Видалити ярлик?",
+      "deleteConfirmBody": "Ярлик «{title}» буде видалено. Це можливо лише якщо він не призначений жодному авто.",
+      "empty": "Поки немає ярликів — додайте перший."
     }
   },
   "sell": {

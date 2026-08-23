@@ -70,6 +70,8 @@ export interface PublicListing {
   viewsCount: number;
   media: PublicMedia[];
   options: Array<{ slug: string; nameUk: string; category: string }>;
+  /** Curated marketing/deal labels shown as storefront badges. */
+  tags: Array<{ slug: string; nameUk: string }>;
   seo: {
     metaTitle: string | null;
     metaDescription: string | null;
@@ -135,6 +137,10 @@ export interface CatalogModel extends CatalogRef {
 export interface VehicleOption extends CatalogRef {
   category: 'comfort' | 'safety' | 'multimedia' | 'interior' | 'exterior' | 'other';
 }
+export interface CatalogTag extends CatalogRef {
+  position: number;
+  isPublished: boolean;
+}
 
 export interface ListingsQuery {
   q?: string;
@@ -152,6 +158,7 @@ export interface ListingsQuery {
   yearMax?: number;
   mileageMax?: number;
   options?: string[];
+  tags?: string[];
   sort?: 'price_asc' | 'price_desc' | 'year_desc' | 'year_asc' | 'mileage_asc' | 'newest';
   cursor?: string;
   limit?: number;

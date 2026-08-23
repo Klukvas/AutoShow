@@ -13,6 +13,7 @@ import type {
   CatalogMake,
   CatalogModel,
   CatalogRef,
+  CatalogTag,
   Currency,
   VehicleOption,
 } from '@/lib/api/types';
@@ -25,6 +26,7 @@ interface FilterBarProps {
   transmissions: CatalogRef[];
   driveTypes: CatalogRef[];
   options: VehicleOption[];
+  tags: CatalogTag[];
   resultCount?: number;
   baseCurrency?: Currency;
   /** Catalog H1 (rendered inside the results column per handoff 1a). */
@@ -59,6 +61,7 @@ export function FilterBar({
   transmissions,
   driveTypes,
   options,
+  tags,
   resultCount,
   baseCurrency,
   title,
@@ -101,6 +104,12 @@ export function FilterBar({
     const cur = currentArray('options');
     const next = cur.includes(slug) ? cur.filter((s) => s !== slug) : [...cur, slug];
     update({ options: next });
+  };
+
+  const toggleTag = (slug: string) => {
+    const cur = currentArray('tags');
+    const next = cur.includes(slug) ? cur.filter((s) => s !== slug) : [...cur, slug];
+    update({ tags: next });
   };
 
   const resetAll = () => {
@@ -212,6 +221,13 @@ export function FilterBar({
       id: `opt:${slug}`,
       label: options.find((o) => o.slug === slug)?.nameUk ?? slug,
       onRemove: () => toggleOption(slug),
+    });
+  }
+  for (const slug of currentArray('tags')) {
+    active.push({
+      id: `tag:${slug}`,
+      label: tags.find((tg) => tg.slug === slug)?.nameUk ?? slug,
+      onRemove: () => toggleTag(slug),
     });
   }
 
@@ -329,6 +345,24 @@ export function FilterBar({
                 onClick={() => toggleOption(opt.slug)}
               >
                 {opt.nameUk}
+              </FilterChip>
+            ))}
+          </div>
+        </div>
+      )}
+      {tags.length > 0 && (
+        <div>
+          <span className="mb-2 block text-label font-semibold uppercase text-ink-2">
+            {t('filter.tags')}
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <FilterChip
+                key={tag.slug}
+                active={currentArray('tags').includes(tag.slug)}
+                onClick={() => toggleTag(tag.slug)}
+              >
+                {tag.nameUk}
               </FilterChip>
             ))}
           </div>

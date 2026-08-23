@@ -99,6 +99,7 @@ export const listingFormSchema = z.object({
     .min(2, { message: issue('vMinLength', { min: 2 }) })
     .max(128, { message: issue('vMaxLength', { max: 128 }) }),
   optionIds: z.array(z.string()),
+  tagIds: z.array(z.string()),
   // Consignment economics
   sellerType: z.enum(['own', 'client']),
   sellerName: optionalTrimmed(128),
@@ -207,6 +208,7 @@ export function listingBodyFromValues(values: ListingFormValues): Record<string,
     description: values.description,
     locationCity: values.locationCity,
     optionIds: values.optionIds,
+    tagIds: values.tagIds,
     sellerType: values.sellerType,
     sellerName: values.sellerType === 'client' ? values.sellerName || undefined : undefined,
     sellerPhone: values.sellerType === 'client' ? values.sellerPhone || undefined : undefined,

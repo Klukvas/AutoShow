@@ -8,7 +8,13 @@ import { ListingForm } from '@/components/admin/listings/listing-form';
 import { TelegramPostPanel } from '@/components/admin/listings/telegram-post-panel';
 import { MediaManager } from '@/components/admin/media/media-manager';
 import { SectionCard } from '@/components/admin/ui/section-card';
-import type { AdminTelegramPost, CatalogModel, CatalogRef, VehicleOption } from '@/lib/api/types';
+import type {
+  AdminTelegramPost,
+  CatalogModel,
+  CatalogRef,
+  CatalogTag,
+  VehicleOption,
+} from '@/lib/api/types';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -51,7 +57,7 @@ export default async function EditListingPage({ params }: PageProps) {
       ? true
       : Boolean(branding.telegram?.botToken && branding.telegram.channels.length);
 
-  const [makes, models, bodyTypes, fuelTypes, transmissions, driveTypes, colors, options] =
+  const [makes, models, bodyTypes, fuelTypes, transmissions, driveTypes, colors, options, tags] =
     await Promise.all([
       publicApi.listMakes().catch(() => []),
       publicApi.listModels(undefined).catch(() => [] as CatalogModel[]),
@@ -61,6 +67,7 @@ export default async function EditListingPage({ params }: PageProps) {
       publicApi.listSimpleCatalog<CatalogRef>('drive-types').catch(() => []),
       publicApi.listSimpleCatalog<CatalogRef>('colors').catch(() => []),
       publicApi.listOptions().catch(() => [] as VehicleOption[]),
+      adminApi.listTags({ accessToken: auth.accessToken }).catch(() => [] as CatalogTag[]),
     ]);
 
   const media = [...(listing.media ?? [])].sort(
@@ -84,6 +91,7 @@ export default async function EditListingPage({ params }: PageProps) {
           driveTypes,
           colors,
           options,
+          tags,
         }}
         initial={listing}
         canManageCatalog={auth.session.user.role === 'admin'}

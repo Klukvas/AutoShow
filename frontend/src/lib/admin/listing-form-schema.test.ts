@@ -28,6 +28,7 @@ const VALID: Record<string, unknown> = {
   description: 'Еталонний Carrera S у комплектації Sport Chrono, один власник.',
   locationCity: 'Київ',
   optionIds: ['o-1', 'o-2'],
+  tagIds: ['tag-1'],
   sellerType: 'own',
   feeType: 'none',
 };
@@ -67,6 +68,7 @@ describe('listing form schema', () => {
     expect(body.generation).toBeUndefined();
     expect(body.vin).toBeUndefined();
     expect(body.optionIds).toEqual(['o-1', 'o-2']);
+    expect(body.tagIds).toEqual(['tag-1']);
     expect(body.vinVisible).toBe(true);
   });
 

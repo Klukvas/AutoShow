@@ -1,14 +1,15 @@
 import { requireServerToken } from '@/lib/auth/refresh';
+import { adminApi } from '@/lib/api/admin';
 import { publicApi } from '@/lib/api/public';
 import { ListingForm } from '@/components/admin/listings/listing-form';
-import type { CatalogModel, CatalogRef, VehicleOption } from '@/lib/api/types';
+import type { CatalogModel, CatalogRef, CatalogTag, VehicleOption } from '@/lib/api/types';
 
 export const dynamic = 'force-dynamic';
 
 export default async function NewListingPage() {
   const auth = await requireServerToken('/admin/listings/new');
 
-  const [makes, models, bodyTypes, fuelTypes, transmissions, driveTypes, colors, options] =
+  const [makes, models, bodyTypes, fuelTypes, transmissions, driveTypes, colors, options, tags] =
     await Promise.all([
       publicApi.listMakes().catch(() => []),
       publicApi.listModels(undefined).catch(() => [] as CatalogModel[]),
@@ -18,6 +19,7 @@ export default async function NewListingPage() {
       publicApi.listSimpleCatalog<CatalogRef>('drive-types').catch(() => []),
       publicApi.listSimpleCatalog<CatalogRef>('colors').catch(() => []),
       publicApi.listOptions().catch(() => [] as VehicleOption[]),
+      adminApi.listTags({ accessToken: auth.accessToken }).catch(() => [] as CatalogTag[]),
     ]);
 
   return (
@@ -32,6 +34,7 @@ export default async function NewListingPage() {
           driveTypes,
           colors,
           options,
+          tags,
         }}
         canManageCatalog={auth.session.user.role === 'admin'}
       />

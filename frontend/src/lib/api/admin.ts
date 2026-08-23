@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { Collection, CursorPage, VehicleOption } from './types';
+import type { CatalogTag, Collection, CursorPage, VehicleOption } from './types';
 
 export type AdminRole = 'admin' | 'editor';
 
@@ -145,6 +145,7 @@ export interface AdminListing {
   description?: string;
   locationCity?: string;
   options?: Array<{ optionId: string }>;
+  tags?: Array<{ tagId: string }>;
   // Consignment economics (admin-only; NUMERIC columns arrive as strings).
   sellerType?: SellerType;
   sellerName?: string | null;
@@ -320,6 +321,35 @@ export const adminApi = {
   },
   deleteCollection(id: string, opts: AdminCallOpts) {
     return apiFetch<void>(`/admin/collections/${id}`, {
+      method: 'DELETE',
+      accessToken: opts.accessToken,
+    });
+  },
+
+  // Catalog tags (curated marketing/deal labels). The admin list returns ALL
+  // tags, including unpublished ones (the public list is published-only).
+  listTags(opts: AdminCallOpts) {
+    return apiFetch<CatalogTag[]>('/admin/catalog/tags', {
+      accessToken: opts.accessToken,
+      cache: 'no-store',
+    });
+  },
+  createTag(body: Record<string, unknown>, opts: AdminCallOpts) {
+    return apiFetch<CatalogTag>('/admin/catalog/tags', {
+      method: 'POST',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  updateTag(id: string, body: Record<string, unknown>, opts: AdminCallOpts) {
+    return apiFetch<CatalogTag>(`/admin/catalog/tags/${id}`, {
+      method: 'PATCH',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  deleteTag(id: string, opts: AdminCallOpts) {
+    return apiFetch<void>(`/admin/catalog/tags/${id}`, {
       method: 'DELETE',
       accessToken: opts.accessToken,
     });

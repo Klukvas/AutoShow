@@ -52,6 +52,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       ? ([
           { href: '/admin/reviews', key: 'reviews' },
           { href: '/admin/collections', key: 'collections' },
+          { href: '/admin/tags', key: 'tags' },
           { href: '/admin/team', key: 'team' },
           { href: '/admin/branding', key: 'branding' },
           { href: '/admin/audit', key: 'audit' },

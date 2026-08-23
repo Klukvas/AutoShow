@@ -167,6 +167,22 @@ export default async function ListingPage({ params }: PageProps) {
             <KeySpecs listing={listing} t={t} />
           </div>
 
+          {listing.tags.length > 0 && (
+            <section className="mt-8">
+              <SectionHeading size="sm" title={t('tagsTitle')} />
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {listing.tags.map((tag) => (
+                  <li
+                    key={tag.slug}
+                    className="rounded-chip border border-line px-2.5 py-1 font-mono text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-ink-2"
+                  >
+                    {tag.nameUk}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <section className="mt-8">
             <SectionHeading size="sm" title={t('specsTitle')} />
             <div className="mt-4">

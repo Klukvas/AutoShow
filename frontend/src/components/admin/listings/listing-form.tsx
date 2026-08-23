@@ -6,7 +6,13 @@ import { useTranslations } from 'next-intl';
 import { adminApi, type AdminListing, type FeeType, type SellerType } from '@/lib/api/admin';
 import { ApiClientError } from '@/lib/api/client';
 import { fetchAccessToken } from '@/lib/auth/use-access-token';
-import type { CatalogMake, CatalogModel, CatalogRef, VehicleOption } from '@/lib/api/types';
+import type {
+  CatalogMake,
+  CatalogModel,
+  CatalogRef,
+  CatalogTag,
+  VehicleOption,
+} from '@/lib/api/types';
 import {
   listingBodyFromValues,
   parseListingForm,
@@ -41,6 +47,7 @@ export interface ListingCatalog {
   driveTypes: CatalogRef[];
   colors: CatalogRef[];
   options: VehicleOption[];
+  tags: CatalogTag[];
 }
 
 interface ListingFormProps {
@@ -147,6 +154,10 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
     [initial],
   );
   const extraOptionIds = useMemo(() => new Set(extraOptions.map((o) => o.id)), [extraOptions]);
+  const selectedTagIds = useMemo(
+    () => new Set((initial?.tags ?? []).map((tag) => tag.tagId)),
+    [initial],
+  );
 
   const createOption = async () => {
     const nameUk = optName.trim();
@@ -216,6 +227,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
       description: data.get('description') ?? '',
       locationCity: data.get('locationCity') ?? '',
       optionIds: data.getAll('optionIds').map(String),
+      tagIds: data.getAll('tagIds').map(String),
       sellerType: data.get('sellerType') ?? 'own',
       sellerName: data.get('sellerName') ?? '',
       sellerPhone: data.get('sellerPhone') ?? '',
@@ -782,6 +794,23 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
                   </button>
                 </div>
               )}
+            </div>
+          </SectionCard>
+        )}
+
+        {/* Ярлики */}
+        {catalog.tags.length > 0 && (
+          <SectionCard title={t('form.groupTags')}>
+            <div className="flex flex-wrap gap-2">
+              {catalog.tags.map((tag) => (
+                <ChipCheckbox
+                  key={tag.id}
+                  name="tagIds"
+                  value={tag.id}
+                  defaultChecked={selectedTagIds.has(tag.id)}
+                  label={tag.nameUk}
+                />
+              ))}
             </div>
           </SectionCard>
         )}

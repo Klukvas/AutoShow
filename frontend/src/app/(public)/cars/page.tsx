@@ -53,6 +53,7 @@ function buildQuery(search: Record<string, string | string[] | undefined>): List
     yearMax: num('yearMax'),
     mileageMax: num('mileageMax'),
     options: getMany('options'),
+    tags: getMany('tags'),
     sort: (get('sort') as ListingsQuery['sort']) ?? 'newest',
     cursor: get('cursor'),
     limit: 24,
@@ -69,20 +70,31 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const params = await searchParams;
   const query = buildQuery(params);
 
-  const [page, makes, models, bodyTypes, fuelTypes, transmissions, driveTypes, options, branding] =
-    await Promise.all([
-      publicApi
-        .listListings(query, { revalidate: 30 })
-        .catch(() => ({ items: [], nextCursor: null, total: undefined })),
-      publicApi.listMakes().catch(() => []),
-      publicApi.listModels(undefined).catch(() => []),
-      publicApi.listSimpleCatalog('body-types').catch(() => []),
-      publicApi.listSimpleCatalog('fuel-types').catch(() => []),
-      publicApi.listSimpleCatalog('transmissions').catch(() => []),
-      publicApi.listSimpleCatalog('drive-types').catch(() => []),
-      publicApi.listOptions().catch(() => []),
-      getSiteBranding(),
-    ]);
+  const [
+    page,
+    makes,
+    models,
+    bodyTypes,
+    fuelTypes,
+    transmissions,
+    driveTypes,
+    options,
+    tags,
+    branding,
+  ] = await Promise.all([
+    publicApi
+      .listListings(query, { revalidate: 30 })
+      .catch(() => ({ items: [], nextCursor: null, total: undefined })),
+    publicApi.listMakes().catch(() => []),
+    publicApi.listModels(undefined).catch(() => []),
+    publicApi.listSimpleCatalog('body-types').catch(() => []),
+    publicApi.listSimpleCatalog('fuel-types').catch(() => []),
+    publicApi.listSimpleCatalog('transmissions').catch(() => []),
+    publicApi.listSimpleCatalog('drive-types').catch(() => []),
+    publicApi.listOptions().catch(() => []),
+    publicApi.listTags().catch(() => []),
+    getSiteBranding(),
+  ]);
 
   return (
     <FilterBar
@@ -94,6 +106,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       transmissions={transmissions as never}
       driveTypes={driveTypes as never}
       options={options}
+      tags={tags}
       resultCount={page.total}
       baseCurrency={branding?.defaultCurrency}
     >
