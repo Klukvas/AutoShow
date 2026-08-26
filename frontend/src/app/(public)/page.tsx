@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { HomeHero } from '@/components/hero/home-hero';
 import { CollectionsSection } from '@/components/home/collections-section';
 import { ReviewsSection } from '@/components/home/reviews-section';
+import { ServicesSection } from '@/components/home/services-section';
 import { SellCarSection } from '@/components/home/sell-car-section';
 import { StatsBand } from '@/components/home/stats-band';
 import { ListingCard } from '@/components/listing/listing-card';
@@ -85,6 +86,8 @@ export default async function HomePage() {
       </section>
 
       <ReviewsSection />
+
+      <ServicesSection />
 
       <SellCarSection />
     </>

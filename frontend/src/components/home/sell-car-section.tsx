@@ -19,7 +19,7 @@ export async function SellCarSection() {
       <div className="mx-auto grid max-w-[1200px] gap-10 px-5 py-12 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:px-8 md:py-16">
         <div>
           <Eyebrow tone="gold" as="p">
-            №05 · {t('eyebrow')}
+            №06 · {t('eyebrow')}
           </Eyebrow>
           <h2 className="mt-2 font-heading text-title-lg font-extrabold tracking-editorial text-ink">
             {t('title')}
