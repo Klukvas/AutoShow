@@ -67,7 +67,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 )}
               >
                 <span aria-hidden className="mt-px text-[14px]">
-                  {item.tone === 'success' ? '✅' : '⚠️'}
+                  {item.tone === 'success' ? '✓' : '⚠'}
                 </span>
                 <span className="flex-1 text-[13px] font-semibold leading-snug">
                   {item.message}

@@ -23,7 +23,7 @@ const MAX_DOTS = 10;
 
 /**
  * Detail-page gallery per handoff 1d/1g. Desktop: 430px framed photo with
- * round ‹/› buttons, "📷 i / n" counter, fullscreen lightbox and a thumbnail
+ * round ‹/› buttons, "i / n" counter, fullscreen lightbox and a thumbnail
  * strip (last tile collapses the tail into "+N"). Mobile: 250px swipe gallery
  * with dot indicator and an overlay back button. Keyboard: ←/→ navigate,
  * Esc closes fullscreen.
@@ -145,7 +145,6 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
 
         {/* Counter — top-right overlay */}
         <div className="pointer-events-none absolute right-3 top-3 rounded-btn bg-ink/60 px-2.5 py-1 text-sub font-medium text-white backdrop-blur-sm">
-          <span aria-hidden>📷 </span>
           {index + 1} / {ready.length}
         </div>
 
@@ -245,7 +244,6 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
         >
           <div className="flex items-center justify-between px-4 py-3 text-white">
             <span className="text-sub font-medium">
-              <span aria-hidden>📷 </span>
               {index + 1} / {ready.length}
             </span>
             <button

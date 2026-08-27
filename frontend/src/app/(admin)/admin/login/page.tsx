@@ -86,9 +86,6 @@ export default function AdminLoginPage() {
             className="mt-6 rounded-[13px] border border-[#F3E2B8]/40 bg-[#FFF9EC] p-[18px] text-left"
           >
             <div className="flex items-center gap-2.5">
-              <span aria-hidden className="text-[20px]">
-                🔒
-              </span>
               <span className="font-heading text-[16px] font-bold text-[#8A6300]">
                 {t('lockTitle')}
               </span>

@@ -29,15 +29,15 @@ const MAP: Record<string, AuditPresentation> = {
   'listing.mark-sold': { labelKey: 'listing_mark_sold', glyph: '◍', tone: 'danger' },
   'listing.reserve': { labelKey: 'listing_reserve', glyph: '◍', tone: 'warning' },
   'listing.unreserve': { labelKey: 'listing_unreserve', glyph: '◍', tone: 'warning' },
-  'media.confirm': { labelKey: 'media_confirm', glyph: '🖼', tone: 'neutral' },
-  'media.delete': { labelKey: 'media_delete', glyph: '🖼', tone: 'danger' },
-  'media.reorder': { labelKey: 'media_reorder', glyph: '🖼', tone: 'neutral' },
-  'media.set_cover': { labelKey: 'media_set_cover', glyph: '🖼', tone: 'accent' },
+  'media.confirm': { labelKey: 'media_confirm', glyph: '▤', tone: 'neutral' },
+  'media.delete': { labelKey: 'media_delete', glyph: '▤', tone: 'danger' },
+  'media.reorder': { labelKey: 'media_reorder', glyph: '▤', tone: 'neutral' },
+  'media.set_cover': { labelKey: 'media_set_cover', glyph: '▤', tone: 'accent' },
   'admin_user.create': { labelKey: 'admin_user_create', glyph: '＋', tone: 'success' },
   'admin_user.update': { labelKey: 'admin_user_update', glyph: '◍', tone: 'neutral' },
   'admin_user.delete': { labelKey: 'admin_user_delete', glyph: '✕', tone: 'danger' },
   'branding.update': { labelKey: 'branding_update', glyph: '✎', tone: 'accent' },
-  'lead.status_change': { labelKey: 'lead_status_change', glyph: '✉', tone: 'neutral' },
+  'lead.status_change': { labelKey: 'lead_status_change', glyph: '◍', tone: 'neutral' },
 };
 
 export function presentAuditAction(action: string): AuditPresentation {

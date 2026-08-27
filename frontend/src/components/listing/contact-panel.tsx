@@ -53,7 +53,6 @@ export function ContactPanel({ listing, branding }: ContactPanelProps) {
       <div className="mt-5 space-y-2.5">
         {phoneHref && (
           <Button as="a" href={phoneHref} variant="primary" size="lg" className="w-full">
-            <span aria-hidden>📞</span>
             {t('callCta')}
           </Button>
         )}

@@ -52,7 +52,6 @@ export default async function ContactsPage() {
                   rel="noopener noreferrer"
                   className="focus-ring inline-flex items-center gap-1.5 pt-1 text-sub font-semibold text-accent-hover hover:underline dark:text-accent"
                 >
-                  <span aria-hidden>📍</span>
                   {t('mapCta')}
                 </a>
               )}
