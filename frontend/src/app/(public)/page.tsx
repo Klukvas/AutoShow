@@ -14,8 +14,30 @@ import { getSiteBranding } from '@/lib/branding/resolve';
 
 export const revalidate = 60;
 
+type HomeSection = 'fresh' | 'collections' | 'trust' | 'reviews' | 'services' | 'sell';
+
+/** Catalogue numbers (№01…) follow the sections actually rendered — collections
+ *  and reviews hide while empty, and hardcoded numbers would leave gaps. */
+function sectionIndexes(hasCollections: boolean, hasReviews: boolean) {
+  const visible: HomeSection[] = [
+    'fresh',
+    ...(hasCollections ? (['collections'] as const) : []),
+    'trust',
+    ...(hasReviews ? (['reviews'] as const) : []),
+    'services',
+    'sell',
+  ];
+  return (section: HomeSection) => String(visible.indexOf(section) + 1).padStart(2, '0');
+}
+
 export default async function HomePage() {
-  const [t, branding] = await Promise.all([getTranslations('home'), getSiteBranding()]);
+  const [t, branding, collections, reviews] = await Promise.all([
+    getTranslations('home'),
+    getSiteBranding(),
+    publicApi.listCollections().catch(() => []),
+    publicApi.listReviews({ revalidate: 300 }).catch(() => []),
+  ]);
+  const indexOf = sectionIndexes(collections.length > 0, reviews.length > 0);
 
   let listings: Awaited<ReturnType<typeof publicApi.listListings>>['items'] = [];
   try {
@@ -38,7 +60,7 @@ export default async function HomePage() {
       {/* Fresh arrivals */}
       <section className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
         <SectionHeading
-          index="01"
+          index={indexOf('fresh')}
           title={t('freshArrivals')}
           action={
             <Button as="link" href="/cars" variant="ghost" size="sm">
@@ -62,12 +84,12 @@ export default async function HomePage() {
 
       <StatsBand />
 
-      <CollectionsSection />
+      <CollectionsSection collections={collections} index={indexOf('collections')} />
 
       {/* Trust block */}
       <section className="border-t border-line bg-surface">
         <div className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
-          <SectionHeading index="03" title={t('trustEyebrow')} />
+          <SectionHeading index={indexOf('trust')} title={t('trustEyebrow')} />
           <div className="mt-6 grid grid-cols-1 gap-[18px] md:grid-cols-3">
             {[
               { title: t('trust1Title'), body: t('trust1Body') },
@@ -85,11 +107,11 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <ReviewsSection />
+      <ReviewsSection reviews={reviews} index={indexOf('reviews')} />
 
-      <ServicesSection />
+      <ServicesSection index={indexOf('services')} />
 
-      <SellCarSection />
+      <SellCarSection index={indexOf('sell')} />
     </>
   );
 }

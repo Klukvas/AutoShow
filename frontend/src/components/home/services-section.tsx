@@ -18,12 +18,12 @@ const SERVICES = [
   { key: 'promo', href: '#sell' },
 ] as const;
 
-export async function ServicesSection() {
+export async function ServicesSection({ index }: { index: string }) {
   const t = await getTranslations('home');
 
   return (
     <section className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
-      <SectionHeading index="05" title={t('servicesTitle')} />
+      <SectionHeading index={index} title={t('servicesTitle')} />
       <div className="mt-6 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-4">
         {SERVICES.map((service, idx) => (
           <ScrollReveal key={service.key} delay={idx * 0.06}>

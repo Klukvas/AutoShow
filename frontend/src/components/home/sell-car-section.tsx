@@ -6,7 +6,7 @@ import { Eyebrow } from '@/components/ui/eyebrow';
  * Consignment funnel: the showroom's second lead source — owners bringing
  * their cars to sell. Copy sells the service, the form captures the car.
  */
-export async function SellCarSection() {
+export async function SellCarSection({ index }: { index: string }) {
   const t = await getTranslations('sell');
   const steps = [
     { title: t('step1Title'), body: t('step1Body') },
@@ -19,7 +19,7 @@ export async function SellCarSection() {
       <div className="mx-auto grid max-w-[1200px] gap-10 px-5 py-12 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:px-8 md:py-16">
         <div>
           <Eyebrow tone="gold" as="p">
-            №06 · {t('eyebrow')}
+            №{index} · {t('eyebrow')}
           </Eyebrow>
           <h2 className="mt-2 font-heading text-title-lg font-extrabold tracking-editorial text-ink">
             {t('title')}

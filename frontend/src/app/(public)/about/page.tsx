@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { Button } from '@/components/ui/button';
+import { Eyebrow } from '@/components/ui/eyebrow';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { StatsBand } from '@/components/home/stats-band';
 import { ScrollReveal } from '@/components/motion/scroll-reveal';
@@ -20,9 +21,7 @@ export default async function AboutPage() {
       {/* Hero */}
       <section className="border-b border-line bg-surface-warm">
         <div className="mx-auto max-w-[1200px] px-5 py-14 md:px-8 md:py-20">
-          <p className="text-label font-semibold uppercase tracking-label-wide text-ink-3">
-            {t('title')}
-          </p>
+          <Eyebrow as="p">{t('title')}</Eyebrow>
           <h1 className="mt-4 max-w-3xl font-heading text-hero font-extrabold text-ink md:text-editorial md:font-black">
             {branding?.tagline ?? t('intro')}
           </h1>
@@ -71,9 +70,7 @@ export default async function AboutPage() {
           <div className="mt-6 grid grid-cols-1 gap-10 md:grid-cols-2">
             {branding?.address && (
               <div>
-                <h3 className="text-label font-semibold uppercase tracking-label-wide text-ink-3">
-                  {t('addressTitle')}
-                </h3>
+                <Eyebrow as="h3">{t('addressTitle')}</Eyebrow>
                 <p className="mt-3 font-heading text-section font-bold text-ink">
                   {branding.address}
                 </p>
@@ -81,9 +78,7 @@ export default async function AboutPage() {
             )}
             {hours.length > 0 && (
               <div>
-                <h3 className="text-label font-semibold uppercase tracking-label-wide text-ink-3">
-                  {t('hours')}
-                </h3>
+                <Eyebrow as="h3">{t('hours')}</Eyebrow>
                 <div className="mt-3 space-y-1">
                   {hours.map((line) => (
                     <p key={line} className="tabular text-body-md text-ink-2">

@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 import { LeadForm } from '@/components/lead/lead-form';
+import { Eyebrow } from '@/components/ui/eyebrow';
 import { getSiteBranding } from '@/lib/branding/resolve';
 import { dayLabel } from '@/lib/working-hours';
 
@@ -20,9 +21,7 @@ export default async function ContactsPage() {
       <div className="mt-8 grid grid-cols-1 gap-10 md:grid-cols-12">
         <div className="space-y-8 md:col-span-6">
           <div>
-            <h2 className="text-label font-semibold uppercase tracking-label-wide text-ink-3">
-              {t('showroom')}
-            </h2>
+            <Eyebrow as="h2">{t('showroom')}</Eyebrow>
             <div className="mt-3 space-y-1.5">
               {phone && phoneHref && (
                 <div>
@@ -60,9 +59,7 @@ export default async function ContactsPage() {
 
           {branding?.workingHours && Object.keys(branding.workingHours).length > 0 && (
             <div>
-              <h2 className="text-label font-semibold uppercase tracking-label-wide text-ink-3">
-                {t('hoursTitle')}
-              </h2>
+              <Eyebrow as="h2">{t('hoursTitle')}</Eyebrow>
               <ul className="mt-3 max-w-sm space-y-2">
                 {Object.entries(branding.workingHours).map(([day, slot]) => (
                   <li
