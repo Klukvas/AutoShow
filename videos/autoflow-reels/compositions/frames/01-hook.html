@@ -1,0 +1,144 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-cyrillic-ext.woff2") format("woff2");unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-cyrillic.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-latin.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      font-family: "Onest", sans-serif;
+      color: #FBF8F1;
+    }
+
+    #f01-hook-ground {
+      position: absolute;
+      inset: 0;
+      background: #181515;
+    }
+
+    /* Authored at the large Scene-1 size; scaled to 64px-equivalent (0.5714) at the Frame-2 position.
+       transform-origin top-centre so the landed block's top edge sits at y=200. */
+    #f01-hook-headline {
+      position: absolute;
+      top: 200px;
+      left: 0;
+      width: 1080px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 112px;
+      line-height: 1.02;
+      letter-spacing: -0.022em;
+      transform-origin: 50% 0;
+    }
+    #f01-hook-headline .f01-hook-line { display: block; white-space: nowrap; }
+    #f01-hook-headline .f01-hook-word { display: inline-block; }
+    #f01-hook-headline .f01-hook-accent { color: #B4453C; }
+
+    .f01-hook-phone {
+      position: absolute;
+      top: 420px;
+      width: 430px;
+      height: 765px;
+      border-radius: 56px;
+      background: #0B0B0C;
+      box-shadow: 0 0 0 1px rgba(251, 248, 241, 0.14);
+      padding: 10px;
+    }
+    #f01-hook-phone-left { left: 55px; }
+    #f01-hook-phone-right { left: 505px; }
+    .f01-hook-phone .f01-hook-screen {
+      position: relative;
+      width: 410px;
+      height: 745px;
+      border-radius: 46px;
+      background: #000;
+      overflow: hidden;
+    }
+    .f01-hook-phone .f01-hook-island {
+      position: absolute;
+      top: 16px;
+      left: 145px;
+      width: 120px;
+      height: 34px;
+      border-radius: 9999px;
+      background: #0B0B0C;
+      box-shadow: 0 0 0 1px rgba(251, 248, 241, 0.08);
+    }
+  </style>
+
+  <div data-hf-id="hf-jr8f" id="root" data-composition-id="01-hook" data-width="1080" data-height="1920" data-duration="3">
+    <div data-hf-id="hf-en0q" id="f01-hook-ground" class="clip" data-start="0" data-duration="3" data-track-index="0"></div>
+
+    <div data-hf-id="hf-9mck" id="f01-hook-phone-left" class="f01-hook-phone">
+      <div data-hf-id="hf-6l6m" class="f01-hook-screen"><div data-hf-id="hf-e2mx" class="f01-hook-island"></div></div>
+    </div>
+    <div data-hf-id="hf-7ql7" id="f01-hook-phone-right" class="f01-hook-phone">
+      <div data-hf-id="hf-0eci" class="f01-hook-screen"><div data-hf-id="hf-6vn1" class="f01-hook-island"></div></div>
+    </div>
+
+    <div data-hf-id="hf-34p1" id="f01-hook-headline">
+      <span data-hf-id="hf-3bvj" class="f01-hook-line"><span data-hf-id="hf-hv0v" class="f01-hook-word f01-hook-accent" id="f01-hook-w1">Два</span> <span data-hf-id="hf-2k18" class="f01-hook-word" id="f01-hook-w2">способи</span></span>
+      <span data-hf-id="hf-5wm7" class="f01-hook-line"><span data-hf-id="hf-txxe" class="f01-hook-word" id="f01-hook-w3">продати</span> <span data-hf-id="hf-3i24" class="f01-hook-word" id="f01-hook-w4">авто</span></span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const byId = (suffix) => document.querySelector('[id="f01-hook-' + suffix + '"]');
+
+      const headline = byId("headline");
+      const words = ["w1", "w2", "w3", "w4"].map(byId);
+      const phoneLeft = byId("phone-left");
+      const phoneRight = byId("phone-right");
+
+      // Scene 1 places the large block centred around y≈850 (700–1000 band); Scene 2 lands it at
+      // the Frame-2 handoff: top y=200, 64px-equivalent type (64 / 112).
+      const SCENE1_OFFSET_Y = 536;
+      const LANDED_SCALE = 64 / 112;
+      const PHONE_RISE_Y = 900;
+
+      const tl = gsap.timeline({ paused: true });
+
+      // Scene 1 (0.0–1.3s): per-word slide-up + fade, "Два способи" then "продати авто".
+      tl.fromTo(headline, { y: SCENE1_OFFSET_Y, scale: 1 }, { y: SCENE1_OFFSET_Y, scale: 1.02, duration: 1.3, ease: "none" }, 0);
+      const wordStarts = [0.05, 0.2, 0.52, 0.68];
+      words.forEach((word, index) => {
+        tl.fromTo(
+          word,
+          { y: 70, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" },
+          wordStarts[index]
+        );
+      });
+
+      // Scene 2 (1.3–2.5s): headline shrinks and travels to the top; phones rise into the split, left first.
+      tl.fromTo(
+        headline,
+        { y: SCENE1_OFFSET_Y, scale: 1.02 },
+        { y: 0, scale: LANDED_SCALE, duration: 0.75, ease: "power3.inOut", immediateRender: false },
+        1.3
+      );
+      tl.fromTo(
+        phoneLeft,
+        { y: PHONE_RISE_Y, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+        1.42
+      );
+      tl.fromTo(
+        phoneRight,
+        { y: PHONE_RISE_Y, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.8, ease: "power3.out" },
+        1.56
+      );
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["01-hook"] = tl;
+    })();
+  </script>
+</template>

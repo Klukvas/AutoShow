@@ -1,0 +1,208 @@
+{
+  "summary": {
+    "webAnimations": 5,
+    "cssDeclarations": 84,
+    "scrollTargets": 43,
+    "cdpAnimations": 21,
+    "canvases": 0
+  },
+  "namedAnimations": [],
+  "scrollTriggeredElements": 43,
+  "representativeAnimations": [
+    {
+      "type": "CSSAnimation",
+      "playState": "finished",
+      "animationName": "rule-draw",
+      "targetSelector": "div.rule-draw.flex.flex-wrap",
+      "targetRect": {
+        "x": 392,
+        "y": 692.921875,
+        "width": 1136,
+        "height": 50,
+        "top": 692.921875,
+        "right": 1528,
+        "bottom": 742.921875,
+        "left": 392
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "replace",
+          "transform": "scaleX(0)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "auto",
+          "transform": "scaleX(1)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 700,
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "finished",
+      "animationName": "rule-draw",
+      "targetSelector": "div.rule-draw.flex.flex-wrap",
+      "targetRect": {
+        "x": 392,
+        "y": 1791.734375,
+        "width": 1136,
+        "height": 46.5,
+        "top": 1791.734375,
+        "right": 1528,
+        "bottom": 1838.234375,
+        "left": 392
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "replace",
+          "transform": "scaleX(0)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "auto",
+          "transform": "scaleX(1)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 700,
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "finished",
+      "animationName": "rule-draw",
+      "targetSelector": "div.rule-draw.flex.flex-wrap",
+      "targetRect": {
+        "x": 392,
+        "y": 2122.984375,
+        "width": 1136,
+        "height": 46.5,
+        "top": 2122.984375,
+        "right": 1528,
+        "bottom": 2169.484375,
+        "left": 392
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "replace",
+          "transform": "scaleX(0)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "auto",
+          "transform": "scaleX(1)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 700,
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "finished",
+      "animationName": "rule-draw",
+      "targetSelector": "div.rule-draw.flex.flex-wrap",
+      "targetRect": {
+        "x": 392,
+        "y": 2447.578125,
+        "width": 1136,
+        "height": 46.5,
+        "top": 2447.578125,
+        "right": 1528,
+        "bottom": 2494.078125,
+        "left": 392
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "replace",
+          "transform": "scaleX(0)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "auto",
+          "transform": "scaleX(1)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 700,
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    },
+    {
+      "type": "CSSAnimation",
+      "playState": "finished",
+      "animationName": "rule-draw",
+      "targetSelector": "div.rule-draw.flex.flex-wrap",
+      "targetRect": {
+        "x": 392,
+        "y": 2823.765625,
+        "width": 1136,
+        "height": 46.5,
+        "top": 2823.765625,
+        "right": 1528,
+        "bottom": 2870.265625,
+        "left": 392
+      },
+      "keyframes": [
+        {
+          "offset": 0,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "replace",
+          "transform": "scaleX(0)",
+          "computedOffset": 0
+        },
+        {
+          "offset": 1,
+          "easing": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "composite": "auto",
+          "transform": "scaleX(1)",
+          "computedOffset": 1
+        }
+      ],
+      "timing": {
+        "duration": 700,
+        "delay": 0,
+        "iterations": 1,
+        "easing": "linear",
+        "direction": "normal"
+      }
+    }
+  ]
+}

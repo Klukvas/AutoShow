@@ -1,0 +1,198 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 700;font-display:block;src:url("assets/fonts/gf-jetbrainsmono-cyrillic-ext.woff2") format("woff2");unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F}
+    @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 700;font-display:block;src:url("assets/fonts/gf-jetbrainsmono-cyrillic.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116}
+    @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 700;font-display:block;src:url("assets/fonts/gf-jetbrainsmono-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+    @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 700;font-display:block;src:url("assets/fonts/gf-jetbrainsmono-latin.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-cyrillic-ext.woff2") format("woff2");unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-cyrillic.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-latin.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      color: #FBF8F1;
+      font-family: "Onest", sans-serif;
+    }
+
+    .\30 3-cta-ground {
+      position: absolute;
+      inset: 0;
+      background: #181515;
+    }
+
+    /* Content column spans the Reels safe box x 48–948, so its centre sits at x 498, clear of the right action rail. */
+    .\30 3-cta-row {
+      position: absolute;
+      left: 48px;
+      width: 900px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .\30 3-cta-lockup {
+      position: relative;
+      display: flex;
+      align-items: baseline;
+      gap: 28px;
+      white-space: nowrap;
+    }
+
+    .\30 3-cta-figure {
+      font-family: "Onest", sans-serif;
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.025em;
+    }
+
+    .\30 3-cta-unit {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    /* 243 lockup: centred on y 620 */
+    .\30 3-cta-row-before { top: 535px; height: 170px; align-items: center; }
+    .\30 3-cta-before { opacity: 0.55; }
+    .\30 3-cta-before .\30 3-cta-figure { font-size: 168px; }
+    .\30 3-cta-before .\30 3-cta-unit { font-size: 40px; }
+
+    .\30 3-cta-strike {
+      position: absolute;
+      left: -16px;
+      right: -16px;
+      top: 50%;
+      height: 5px;
+      margin-top: -2px;
+      background: #FBF8F1;
+      border-radius: 3px;
+      transform-origin: 0% 50%;
+    }
+
+    /* 1 lockup: centred on y 900, clearly dominant */
+    .\30 3-cta-row-after { top: 750px; height: 300px; align-items: center; }
+    .\30 3-cta-after .\30 3-cta-figure { font-size: 320px; color: #B4453C; }
+    .\30 3-cta-after .\30 3-cta-unit { font-size: 56px; }
+
+    /* Headline: two lines, y ~1112–1260 */
+    .\30 3-cta-row-headline { top: 1112px; }
+    .\30 3-cta-headline {
+      margin: 0;
+      font-family: "Onest", sans-serif;
+      font-weight: 800;
+      font-size: 70px;
+      line-height: 1.06;
+      letter-spacing: -0.018em;
+      text-align: center;
+    }
+    .\30 3-cta-line { display: block; }
+
+    /* CTA pill: centred on y 1360 */
+    .\30 3-cta-row-pill { top: 1305px; height: 110px; align-items: center; }
+    .\30 3-cta-pill {
+      height: 110px;
+      padding: 0 72px;
+      display: flex;
+      align-items: center;
+      border-radius: 9999px;
+      background: #B4453C;
+      color: #FBF8F1;
+      font-family: "Onest", sans-serif;
+      font-weight: 700;
+      font-size: 46px;
+      line-height: 1;
+      letter-spacing: -0.005em;
+      white-space: nowrap;
+    }
+
+    /* Sign-off index: y ~1480 */
+    .\30 3-cta-row-footer { top: 1465px; height: 30px; align-items: center; }
+    .\30 3-cta-footer {
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+      font-size: 26px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #FBF8F1;
+      opacity: 0.4;
+      white-space: nowrap;
+    }
+  </style>
+
+  <div data-hf-id="hf-v74i" id="root" data-composition-id="03-cta" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-ei6v" id="cta-03-ground" class="03-cta-ground clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+
+    <div data-hf-id="hf-a3ga" class="03-cta-row 03-cta-row-before">
+      <div data-hf-id="hf-i3zz" class="03-cta-lockup 03-cta-before">
+        <span data-hf-id="hf-knzf" class="03-cta-figure">243</span>
+        <span data-hf-id="hf-qzie" class="03-cta-unit">повідомлення</span>
+        <span data-hf-id="hf-43oa" class="03-cta-strike"></span>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-o4ab" class="03-cta-row 03-cta-row-after">
+      <div data-hf-id="hf-7vh4" class="03-cta-lockup 03-cta-after">
+        <span data-hf-id="hf-8gyf" class="03-cta-figure">1</span>
+        <span data-hf-id="hf-opd4" class="03-cta-unit">посилання</span>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-0uln" class="03-cta-row 03-cta-row-headline">
+      <h2 data-hf-id="hf-uclq" class="03-cta-headline">
+        <span data-hf-id="hf-j317" class="03-cta-line">Сайт для вашого</span>
+        <span data-hf-id="hf-28ub" class="03-cta-line">автомайданчика</span>
+      </h2>
+    </div>
+
+    <div data-hf-id="hf-iw9a" class="03-cta-row 03-cta-row-pill">
+      <div data-hf-id="hf-b8hr" class="03-cta-pill">Пишіть у директ</div>
+    </div>
+
+    <div data-hf-id="hf-c4uu" class="03-cta-row 03-cta-row-footer">
+      <div data-hf-id="hf-3gpv" class="03-cta-footer">AutoFlow · autos-sale.com</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const FRAME_ID = "03-cta";
+      const byClass = (name) => document.getElementsByClassName(name)[0];
+
+      const before = byClass("03-cta-before");
+      const strike = byClass("03-cta-strike");
+      const after = byClass("03-cta-after");
+      const lines = Array.from(document.getElementsByClassName("03-cta-line"));
+      const pill = byClass("03-cta-pill");
+      const footer = byClass("03-cta-footer");
+
+      const tl = gsap.timeline({ paused: true });
+
+      // Scene 1 (0.0–1.2s): the old way arrives dim, then gets struck through left-to-right.
+      tl.fromTo(before, { opacity: 0, y: 28, scale: 0.96 }, { opacity: 0.55, y: 0, scale: 1, duration: 0.7, ease: "power2.out" }, 0.1);
+      tl.fromTo(strike, { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: "power2.inOut" }, 0.7);
+
+      // Scene 2 (1.2–2.4s): the one link slides up into place and dominates.
+      tl.fromTo(after, { opacity: 0, y: 90 }, { opacity: 1, y: 0, duration: 0.75, ease: "power3.out" }, 1.2);
+
+      // Scene 3 (2.4–3.4s): headline fades up line by line, then the coral pill rises with one soft press.
+      tl.fromTo(lines, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out", stagger: 0.12 }, 2.4);
+      tl.fromTo(pill, { opacity: 0, y: 56, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "power3.out" }, 2.85);
+      tl.to(pill, { scale: 0.95, duration: 0.1, ease: "power1.in" }, 3.3);
+      tl.to(pill, { scale: 1, duration: 0.22, ease: "power2.out" }, 3.4);
+
+      // Scene 4 (3.4–4.5s): the sign-off index settles in; final frame holds to the end.
+      tl.fromTo(footer, { opacity: 0 }, { opacity: 0.4, duration: 0.5, ease: "power1.out" }, 3.45);
+      tl.set(footer, { opacity: 0.4 }, 4.5);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines[FRAME_ID] = tl;
+    })();
+  </script>
+</template>

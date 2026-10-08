@@ -1,0 +1,8 @@
+{
+  "provider": "auto",
+  "lang": "uk",
+  "lines": [
+    { "id": "01", "text": "", "sfx": ["message notification pop", "phone screen tap", "soft whoosh", "success chime", "phone vibration buzz", "deep impact hit", "keyboard typing phone", "short riser"] }
+  ],
+  "bgm": { "mode": "retrieve", "query": "upbeat minimal modern tech promo groove, confident, 100-110 bpm" }
+}

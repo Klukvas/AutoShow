@@ -1,0 +1,151 @@
+{
+  "files": [
+    {
+      "file": "1dd116e7162c5f47-s.woff2",
+      "family": "Onest",
+      "rawFamily": "Onest",
+      "subfamily": "Regular",
+      "postscript": "Onest-Regular",
+      "weight": 400,
+      "style": "normal",
+      "variationAxes": [
+        "wght"
+      ],
+      "identified": true,
+      "isIcon": false
+    },
+    {
+      "file": "25408a68d73c6c69-s.woff2",
+      "family": "Onest",
+      "rawFamily": "Onest",
+      "subfamily": "Regular",
+      "postscript": "Onest-Regular",
+      "weight": 400,
+      "style": "normal",
+      "variationAxes": [
+        "wght"
+      ],
+      "identified": true,
+      "isIcon": false
+    },
+    {
+      "file": "56069e83bb5b2425-s.p.woff2",
+      "family": "Schibsted Grotesk",
+      "rawFamily": "Schibsted Grotesk",
+      "subfamily": "Regular",
+      "postscript": "SchibstedGrotesk-Regular",
+      "weight": 400,
+      "style": "normal",
+      "variationAxes": [
+        "wght"
+      ],
+      "identified": true,
+      "isIcon": false
+    },
+    {
+      "file": "6961d055d00ff7ec-s.p.woff2",
+      "family": "Onest",
+      "rawFamily": "Onest",
+      "subfamily": "Regular",
+      "postscript": "Onest-Regular",
+      "weight": 400,
+      "style": "normal",
+      "variationAxes": [
+        "wght"
+      ],
+      "identified": true,
+      "isIcon": false
+    },
+    {
+      "file": "91601dd83defba07-s.p.woff2",
+      "family": "Schibsted Grotesk",
+      "rawFamily": "Schibsted Grotesk",
+      "subfamily": "Regular",
+      "postscript": "SchibstedGrotesk-Regular",
+      "weight": 400,
+      "style": "normal",
+      "variationAxes": [
+        "wght"
+      ],
+      "identified": true,
+      "isIcon": false
+    },
+    {
+      "file": "a2a4a14ada96f862-s.woff2",
+      "family": "Onest",
+      "rawFamily": "Onest",
+      "subfamily": "Regular",
+      "postscript": "Onest-Regular",
+      "weight": 400,
+      "style": "normal",
+      "variationAxes": [
+        "wght"
+      ],
+      "identified": true,
+      "isIcon": false
+    },
+    {
+      "file": "be4f912c06e1e110-s.woff2",
+      "family": "Onest",
+      "rawFamily": "Onest",
+      "subfamily": "Regular",
+      "postscript": "Onest-Regular",
+      "weight": 400,
+      "style": "normal",
+      "variationAxes": [
+        "wght"
+      ],
+      "identified": true,
+      "isIcon": false
+    },
+    {
+      "file": "c1b02c1a57568c67-s.woff2",
+      "family": "Onest",
+      "rawFamily": "Onest",
+      "subfamily": "Regular",
+      "postscript": "Onest-Regular",
+      "weight": 400,
+      "style": "normal",
+      "variationAxes": [
+        "wght"
+      ],
+      "identified": true,
+      "isIcon": false
+    }
+  ],
+  "families": [
+    {
+      "family": "Onest",
+      "weights": [
+        400
+      ],
+      "variable": true,
+      "fileCount": 6,
+      "files": [
+        "1dd116e7162c5f47-s.woff2",
+        "25408a68d73c6c69-s.woff2",
+        "6961d055d00ff7ec-s.p.woff2",
+        "a2a4a14ada96f862-s.woff2",
+        "be4f912c06e1e110-s.woff2",
+        "c1b02c1a57568c67-s.woff2"
+      ]
+    },
+    {
+      "family": "Schibsted Grotesk",
+      "weights": [
+        400
+      ],
+      "variable": true,
+      "fileCount": 2,
+      "files": [
+        "56069e83bb5b2425-s.p.woff2",
+        "91601dd83defba07-s.p.woff2"
+      ]
+    }
+  ],
+  "unidentified": [],
+  "meta": {
+    "generatedAt": "2026-10-08T19:11:10.619Z",
+    "tool": "fontkit"
+  }
+}

@@ -1,0 +1,9 @@
+{"id":"bgm_001","type":"bgm","path":"assets/bgm/track.mp3","source":"search","description":"upbeat minimal modern tech promo groove, confident, 100-110 bpm","duration":30,"provenance":{"provider":"heygen","prompt":"upbeat minimal modern tech promo groove, confident, 100-110 bpm"}}
+{"id":"sfx_001","type":"sfx","path":"assets/sfx/message-notification-pop.mp3","source":"search","description":"message notification pop","duration":0.7,"provenance":{"provider":"heygen","prompt":"message notification pop"}}
+{"id":"sfx_002","type":"sfx","path":"assets/sfx/phone-screen-tap.mp3","source":"search","description":"phone screen tap","duration":0.2,"provenance":{"provider":"heygen","prompt":"phone screen tap"}}
+{"id":"sfx_003","type":"sfx","path":"assets/sfx/soft-whoosh.mp3","source":"search","description":"soft whoosh","duration":1.8,"provenance":{"provider":"heygen","prompt":"soft whoosh"}}
+{"id":"sfx_004","type":"sfx","path":"assets/sfx/success-chime.mp3","source":"search","description":"success chime","duration":4.8,"provenance":{"provider":"heygen","prompt":"success chime"}}
+{"id":"sfx_005","type":"sfx","path":"assets/sfx/phone-vibration-buzz.mp3","source":"search","description":"phone vibration buzz","duration":8.7,"provenance":{"provider":"heygen","prompt":"phone vibration buzz"}}
+{"id":"sfx_006","type":"sfx","path":"assets/sfx/deep-impact-hit.mp3","source":"search","description":"deep impact hit","duration":1.8,"provenance":{"provider":"heygen","prompt":"deep impact hit"}}
+{"id":"sfx_007","type":"sfx","path":"assets/sfx/keyboard-typing-phone.mp3","source":"search","description":"keyboard typing phone","duration":44.4,"provenance":{"provider":"heygen","prompt":"keyboard typing phone"}}
+{"id":"sfx_008","type":"sfx","path":"assets/sfx/short-riser.mp3","source":"search","description":"short riser","duration":2,"provenance":{"provider":"heygen","prompt":"short riser"}}

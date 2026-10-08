@@ -1,0 +1,297 @@
+{
+  "typography": [
+    {
+      "role": "display",
+      "fontFamily": "Schibsted Grotesk",
+      "fontSize": "52px",
+      "fontWeight": "900",
+      "lineHeight": "54.6px",
+      "letterSpacing": "-1.56px",
+      "color": "#211D16",
+      "sampleText": "Кураторська вітрина авто"
+    },
+    {
+      "role": "heading",
+      "fontFamily": "Schibsted Grotesk",
+      "fontSize": "30px",
+      "fontWeight": "800",
+      "lineHeight": "34.5px",
+      "letterSpacing": "-0.3px",
+      "color": "#211D16",
+      "sampleText": "Нові надходження"
+    },
+    {
+      "role": "heading-3",
+      "fontFamily": "Schibsted Grotesk",
+      "fontSize": "18px",
+      "fontWeight": "800",
+      "lineHeight": "20.16px",
+      "letterSpacing": "-0.18px",
+      "color": "#211D16",
+      "sampleText": "BMW 5 Series"
+    },
+    {
+      "role": "label",
+      "fontFamily": "Onest",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "lineHeight": "24px",
+      "letterSpacing": "normal",
+      "color": "#211D16",
+      "sampleText": "Марка *"
+    },
+    {
+      "role": "link",
+      "fontFamily": "Onest",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "lineHeight": "24px",
+      "letterSpacing": "normal",
+      "color": "#6D6857",
+      "sampleText": "Каталог"
+    },
+    {
+      "role": "body",
+      "fontFamily": "Onest",
+      "fontSize": "14.5px",
+      "fontWeight": "400",
+      "lineHeight": "25.375px",
+      "letterSpacing": "normal",
+      "color": "#6D6857",
+      "sampleText": "Кожне авто перевірене механіком — з повною історією обслугов"
+    },
+    {
+      "role": "body-small",
+      "fontFamily": "Onest",
+      "fontSize": "12.5px",
+      "fontWeight": "600",
+      "lineHeight": "17.5px",
+      "letterSpacing": "normal",
+      "color": "#211D16",
+      "sampleText": "Олександр К. · Київ"
+    },
+    {
+      "role": "code",
+      "fontFamily": "ui-monospace",
+      "fontSize": "11px",
+      "fontWeight": "700",
+      "lineHeight": "16.5px",
+      "letterSpacing": "1.98px",
+      "color": "#7C642D",
+      "sampleText": "№01"
+    }
+  ],
+  "spacing": {
+    "observed": [
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20,
+      24,
+      28,
+      32,
+      40,
+      64
+    ],
+    "baseUnit": 4
+  },
+  "radius": [
+    "2px",
+    "4px",
+    "5px",
+    "6px"
+  ],
+  "shadows": [
+    {
+      "value": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 29, 22, 0.55) 0px 10px 24px -20px",
+      "count": 6
+    },
+    {
+      "value": "rgb(255, 255, 255) 0px 0px 0px 0px inset, rgb(228, 222, 207) 0px 0px 0px 1px inset, rgba(0, 0, 0, 0) 0px 0px 0px 0px",
+      "count": 6
+    }
+  ],
+  "buttons": [
+    {
+      "label": "☾☀",
+      "background": "#FBF8F1",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#211D16",
+      "padding": "0px",
+      "borderRadius": "4px",
+      "border": "1px solid rgb(216, 209, 189)",
+      "boxShadow": "none",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "height": "38px"
+    },
+    {
+      "label": "Залишити заявку",
+      "background": "#B4453C",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#FBF8F1",
+      "padding": "0px 16px",
+      "borderRadius": "4px",
+      "border": "1px solid rgb(180, 69, 60)",
+      "boxShadow": "none",
+      "fontSize": "13.5px",
+      "fontWeight": "600",
+      "height": "38px"
+    },
+    {
+      "label": "Дивитися каталог",
+      "background": "#B4453C",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#FBF8F1",
+      "padding": "0px 24px",
+      "borderRadius": "5px",
+      "border": "1px solid rgb(180, 69, 60)",
+      "boxShadow": "none",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "height": "50px"
+    },
+    {
+      "label": "Залишити заявку",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#6D6857",
+      "padding": "0px 24px",
+      "borderRadius": "5px",
+      "border": "1px solid rgb(216, 209, 189)",
+      "boxShadow": "none",
+      "fontSize": "15px",
+      "fontWeight": "600",
+      "height": "50px"
+    },
+    {
+      "label": "До каталогу →",
+      "background": "transparent",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#6D6857",
+      "padding": "0px 16px",
+      "borderRadius": "4px",
+      "border": "1px solid rgb(216, 209, 189)",
+      "boxShadow": "none",
+      "fontSize": "13.5px",
+      "fontWeight": "600",
+      "height": "38px"
+    },
+    {
+      "label": "button",
+      "background": "#FBF8F1",
+      "backgroundImage": "",
+      "backdropFilter": "blur(4px)",
+      "color": "#211D16",
+      "padding": "0px",
+      "borderRadius": "4px",
+      "border": "0px solid rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "height": "36px"
+    }
+  ],
+  "cards": [
+    {
+      "label": "card",
+      "background": "#FBF8F1",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#211D16",
+      "padding": "0px",
+      "borderRadius": "8px",
+      "border": "1px solid rgb(228, 222, 207)",
+      "boxShadow": "none",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "height": "389.922px"
+    },
+    {
+      "label": "card",
+      "background": "#FBF8F1",
+      "backgroundImage": "",
+      "backdropFilter": "",
+      "color": "#211D16",
+      "padding": "0px",
+      "borderRadius": "6px",
+      "border": "1px solid rgb(228, 222, 207)",
+      "boxShadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(33, 29, 22, 0.55) 0px 10px 24px -20px",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "height": "363.656px"
+    }
+  ],
+  "nav": {
+    "label": "navigation",
+    "background": "#FBF8F1",
+    "backgroundImage": "",
+    "backdropFilter": "",
+    "color": "#211D16",
+    "padding": "0px",
+    "borderRadius": "0px",
+    "border": "",
+    "boxShadow": "none",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "height": "70px"
+  },
+  "chips": [
+    {
+      "label": "1",
+      "background": "#B4453C",
+      "color": "#FBF8F1",
+      "padding": "0px",
+      "borderRadius": "2px",
+      "border": "0px solid rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "fontSize": "13.5px",
+      "fontWeight": "800",
+      "height": "32px"
+    }
+  ],
+  "statCells": [],
+  "tabs": [
+    {
+      "label": "$ 38 500",
+      "background": "transparent",
+      "color": "#211D16",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px solid rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "fontSize": "18px",
+      "fontWeight": "800",
+      "height": "21.5938px"
+    },
+    {
+      "label": "10:00 — 17:00",
+      "background": "transparent",
+      "color": "#6D6857",
+      "padding": "0px",
+      "borderRadius": "0px",
+      "border": "0px solid rgb(229, 231, 235)",
+      "boxShadow": "none",
+      "fontSize": "14.5px",
+      "fontWeight": "400",
+      "height": "25.375px"
+    }
+  ],
+  "backgrounds": [
+    {
+      "value": "linear-gradient(to right bottom, rgb(239, 233, 220), rgb(228, 220, 203))",
+      "area": 322947
+    }
+  ],
+  "glass": []
+}

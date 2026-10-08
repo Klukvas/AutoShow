@@ -1,0 +1,499 @@
+<template>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+  <style>
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-cyrillic-ext.woff2") format("woff2");unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-cyrillic.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+    @font-face{font-family:"Onest";font-style:normal;font-weight:400 900;font-display:block;src:url("assets/fonts/gf-onest-latin.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+    @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 700;font-display:block;src:url("assets/fonts/gf-jetbrainsmono-cyrillic-ext.woff2") format("woff2");unicode-range:U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F}
+    @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 700;font-display:block;src:url("assets/fonts/gf-jetbrainsmono-cyrillic.woff2") format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116}
+    @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 700;font-display:block;src:url("assets/fonts/gf-jetbrainsmono-latin-ext.woff2") format("woff2");unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF}
+    @font-face{font-family:"JetBrains Mono";font-style:normal;font-weight:400 700;font-display:block;src:url("assets/fonts/gf-jetbrainsmono-latin.woff2") format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 1080px;
+      height: 1920px;
+      overflow: hidden;
+      font-family: "Onest", sans-serif;
+      color: #FBF8F1;
+    }
+
+    #f02-ground { position: absolute; inset: 0; background: #181515; }
+    #f02-vignette {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 55% at 50% 42%, rgba(60, 44, 34, 0.32) 0%, rgba(24, 21, 21, 0) 60%, rgba(8, 6, 6, 0.55) 100%);
+    }
+    .f02-glow { position: absolute; border-radius: 50%; pointer-events: none; }
+    #f02-glow-left {
+      left: 20px; top: 520px; width: 500px; height: 560px;
+      background: radial-gradient(closest-side, rgba(251, 248, 241, 0.07), rgba(251, 248, 241, 0));
+    }
+    #f02-glow-right {
+      left: 440px; top: 430px; width: 560px; height: 760px;
+      background: radial-gradient(closest-side, rgba(180, 69, 60, 0.75), rgba(180, 69, 60, 0.22) 55%, rgba(180, 69, 60, 0));
+    }
+
+    /* Matches Frame 01's landed headline exactly: two lines, 64px, top 200, centred on x 540. */
+    #f02-headline {
+      position: absolute; top: 200px; left: 0; width: 1080px;
+      text-align: center; font-weight: 800; font-size: 64px; line-height: 1.02; letter-spacing: -0.022em;
+    }
+    #f02-headline .f02-line { display: block; white-space: nowrap; }
+    #f02-headline .f02-accent { color: #B4453C; }
+
+    .f02-phone {
+      position: absolute; top: 420px; width: 430px; height: 765px;
+      border-radius: 56px; background: #0B0B0C;
+      box-shadow: 0 0 0 1px rgba(251, 248, 241, 0.14); padding: 10px;
+    }
+    #f02-phone-left { left: 55px; }
+    #f02-phone-right { left: 505px; }
+    .f02-screen {
+      position: relative; width: 410px; height: 745px; border-radius: 46px;
+      background: #000; overflow: hidden;
+    }
+    .f02-island {
+      position: absolute; top: 16px; left: 145px; width: 120px; height: 34px;
+      border-radius: 9999px; background: #0B0B0C; box-shadow: 0 0 0 1px rgba(251, 248, 241, 0.08); z-index: 20;
+    }
+    .f02-layer { position: absolute; inset: 0; transform-origin: 50% 50%; }
+
+    /* status bars */
+    .f02-status {
+      position: absolute; left: 0; top: 0; width: 410px; height: 50px;
+      font-weight: 600; font-size: 15px;
+    }
+    .f02-status-dark { background: #000; color: #FFFFFF; }
+    .f02-status-light { background: #FBF8F1; color: #211D16; }
+    .f02-status .f02-time { position: absolute; left: 38px; top: 18px; }
+    .f02-status .f02-bars { position: absolute; right: 70px; top: 21px; width: 18px; height: 11px; }
+    .f02-status .f02-bars i { position: absolute; bottom: 0; width: 3px; border-radius: 1px; background: currentColor; }
+    .f02-status .f02-batt {
+      position: absolute; right: 34px; top: 20px; width: 24px; height: 12px;
+      border: 1.5px solid currentColor; border-radius: 4px; opacity: 0.9;
+    }
+    .f02-status .f02-batt::after {
+      content: ""; position: absolute; left: 1.5px; top: 1.5px; width: 15px; height: 6px; border-radius: 1.5px; background: currentColor;
+    }
+
+    /* chat chrome (shared by both phones) */
+    .f02-header {
+      position: absolute; left: 0; top: 50px; width: 410px; height: 60px;
+      border-bottom: 1px solid #1E1E1E; background: #000;
+    }
+    .f02-chev {
+      position: absolute; left: 14px; top: 12px; width: 14px; height: 14px;
+      border-left: 2.5px solid #FFFFFF; border-bottom: 2.5px solid #FFFFFF; transform: rotate(45deg);
+      margin-top: 8px;
+    }
+    .f02-badge {
+      position: absolute; left: 36px; top: 19px; min-width: 34px; height: 22px; padding: 0 7px;
+      border-radius: 9999px; background: #E0464E; color: #FFFFFF;
+      font-weight: 700; font-size: 13px; line-height: 22px; text-align: center;
+    }
+    .f02-avatar-lg {
+      position: absolute; top: 12px; width: 36px; height: 36px; border-radius: 50%; background: #3A3A3C;
+    }
+    .f02-who { position: absolute; top: 12px; }
+    .f02-who b { display: block; font-weight: 700; font-size: 15px; color: #FFFFFF; line-height: 18px; }
+    .f02-who span { display: block; font-weight: 400; font-size: 12px; color: rgba(255, 255, 255, 0.5); line-height: 17px; }
+    .f02-input {
+      position: absolute; left: 14px; right: 14px; bottom: 18px; height: 40px;
+      border-radius: 9999px; border: 1px solid #2A2A2A;
+    }
+    .f02-viewport { position: absolute; left: 0; top: 111px; width: 410px; height: 568px; overflow: hidden; }
+
+    /* left thread rows */
+    #f02-lthread { position: absolute; left: 0; top: 0; width: 410px; height: 0; }
+    .f02-row { position: absolute; left: 14px; height: 52px; transform-origin: 0% 100%; }
+    .f02-row .f02-ava {
+      position: absolute; left: 0; top: 22px; width: 28px; height: 28px; border-radius: 50%;
+      font-weight: 700; font-size: 12px; line-height: 28px; text-align: center; color: rgba(255, 255, 255, 0.85);
+    }
+    .f02-row .f02-handle {
+      position: absolute; left: 50px; top: 0; font-size: 11px; line-height: 13px; color: rgba(255, 255, 255, 0.42); white-space: nowrap;
+    }
+    .f02-row .f02-bubble {
+      position: absolute; left: 38px; top: 15px; height: 36px; padding: 0 14px; border-radius: 18px;
+      background: #262626; color: rgba(255, 255, 255, 0.9); font-size: 16px; line-height: 36px; white-space: nowrap;
+    }
+    .f02-dots { display: inline-flex; gap: 5px; align-items: center; height: 36px; }
+    .f02-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.55); }
+    #f02-ldim { position: absolute; inset: 0; background: #000; z-index: 15; }
+
+    /* right chat */
+    #f02-rthread { position: absolute; inset: 0; }
+    #f02-rout {
+      position: absolute; right: 14px; bottom: 12px; width: 286px;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 6px; transform-origin: 100% 100%;
+    }
+    .f02-outbubble {
+      padding: 9px 14px; border-radius: 18px 18px 6px 18px; background: #B4453C; color: #FBF8F1;
+      font-size: 16px; line-height: 21px;
+    }
+    #f02-linkcard {
+      width: 270px; border-radius: 14px; background: #FBF8F1; overflow: hidden;
+      border-left: 5px solid #B4453C; padding: 12px 14px 12px 14px; transform-origin: 50% 50%;
+    }
+    #f02-linkcard b { display: block; font-weight: 700; font-size: 15px; line-height: 19px; color: #211D16; }
+    #f02-linkcard span {
+      display: block; margin-top: 4px; font-family: "JetBrains Mono", monospace; font-weight: 600;
+      font-size: 12px; line-height: 15px; color: rgba(33, 29, 22, 0.55);
+    }
+    .f02-in { position: absolute; left: 14px; bottom: 12px; transform-origin: 0% 100%; }
+    .f02-inbubble {
+      position: relative; padding: 0 14px; height: 38px; border-radius: 18px 18px 18px 6px; background: #262626;
+      color: rgba(255, 255, 255, 0.92); font-size: 16px; line-height: 38px; white-space: nowrap;
+    }
+    .f02-inbubble b { font-weight: 800; color: #FFFFFF; }
+    #f02-in-glow {
+      position: absolute; left: -16px; top: -14px; right: -16px; bottom: -14px; border-radius: 30px;
+      background: radial-gradient(closest-side, rgba(180, 69, 60, 0.7), rgba(180, 69, 60, 0));
+    }
+
+    /* site screens */
+    .f02-site { background: #F2EDE1; }
+    .f02-shot { position: absolute; left: 0; top: 50px; width: 410px; height: auto; display: block; }
+    #f02-chip {
+      position: absolute; left: 22px; top: 368px; width: 93px; height: 39px; border-radius: 3px;
+      background: #FBF8F1; border: 1px solid rgba(33, 29, 22, 0.28);
+      font-weight: 600; font-size: 14px; line-height: 37px; text-align: center; color: #211D16;
+      box-shadow: 0 1px 3px rgba(33, 29, 22, 0.08), 0 4px 16px rgba(33, 29, 22, 0.06); transform-origin: 50% 50%;
+    }
+    .f02-ripple {
+      position: absolute; width: 90px; height: 90px; margin: -45px 0 0 -45px; border-radius: 50%;
+      background: rgba(33, 29, 22, 0.2); box-shadow: 0 0 0 2px rgba(33, 29, 22, 0.28); z-index: 18; pointer-events: none;
+    }
+
+    /* labels + callouts */
+    .f02-label {
+      position: absolute; top: 1212px; width: 430px; text-align: center;
+      font-family: "JetBrains Mono", monospace; font-weight: 600; font-size: 26px; letter-spacing: 0.16em;
+      color: rgba(251, 248, 241, 0.6);
+    }
+    #f02-label-left { left: 55px; }
+    #f02-label-right { left: 505px; }
+    .f02-callout-row { position: absolute; left: 505px; width: 430px; text-align: center; }
+    #f02-callout-1 { top: 1282px; }
+    #f02-callout-2 { top: 1376px; }
+    .f02-callout {
+      display: inline-flex; align-items: center; gap: 14px; height: 70px; padding: 0 30px;
+      border: 2px solid #B4453C; border-radius: 9999px; background: rgba(180, 69, 60, 0.12);
+      font-weight: 800; font-size: 36px; letter-spacing: -0.01em; color: #FBF8F1; transform-origin: 50% 50%;
+    }
+    .f02-callout svg { width: 34px; height: 20px; display: block; }
+  </style>
+
+  <div data-hf-id="hf-bprq" id="root" data-composition-id="02-split" data-start="0" data-duration="13.6" data-width="1080" data-height="1920">
+    <div data-hf-id="hf-pn6w" id="f02-ground" class="clip" data-start="0" data-duration="13.6" data-track-index="0"></div>
+    <div data-hf-id="hf-cray" id="f02-vignette"></div>
+    <div data-hf-id="hf-ywh0" id="f02-glow-left" class="f02-glow"></div>
+    <div data-hf-id="hf-kdej" id="f02-glow-right" class="f02-glow"></div>
+
+    <div data-hf-id="hf-0f3o" id="f02-headline">
+      <span data-hf-id="hf-s2xe" class="f02-line"><span data-hf-id="hf-chlo" class="f02-accent">Два</span> способи</span>
+      <span data-hf-id="hf-7poz" class="f02-line">продати авто</span>
+    </div>
+
+    <!-- LEFT: Direct-style inbox that floods -->
+    <div data-hf-id="hf-nxne" id="f02-phone-left" class="f02-phone">
+      <div data-hf-id="hf-8vct" class="f02-screen">
+        <div data-hf-id="hf-5uy8" id="f02-lcontent" class="f02-layer">
+          <div data-hf-id="hf-86e3" class="f02-status f02-status-dark">
+            <span data-hf-id="hf-6xcn" class="f02-time">9:41</span>
+            <span data-hf-id="hf-frn6" class="f02-bars"><i data-hf-id="hf-svh4" style="left:0;height:4px"></i><i data-hf-id="hf-pd21" style="left:5px;height:6px"></i><i data-hf-id="hf-7cj1" style="left:10px;height:8px"></i><i data-hf-id="hf-sn9s" style="left:15px;height:11px"></i></span>
+            <span data-hf-id="hf-b1v7" class="f02-batt"></span>
+          </div>
+          <div data-hf-id="hf-pcnv" class="f02-viewport"><div data-hf-id="hf-lzxs" id="f02-lthread"></div></div>
+          <div data-hf-id="hf-594u" class="f02-header">
+            <span data-hf-id="hf-b70o" class="f02-chev"></span>
+            <span data-hf-id="hf-m02c" id="f02-badge" class="f02-badge">12</span>
+            <span data-hf-id="hf-rhqw" class="f02-avatar-lg" style="left:84px"></span>
+            <span data-hf-id="hf-6ksx" class="f02-who" style="left:130px"><b data-hf-id="hf-y1q3">auto_maidan</b><span data-hf-id="hf-yaet">Повідомлення</span></span>
+          </div>
+          <div data-hf-id="hf-jobn" class="f02-input"></div>
+        </div>
+        <div data-hf-id="hf-dsoq" id="f02-ldim"></div>
+        <div data-hf-id="hf-61om" class="f02-island"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: one calm chat, then the real site -->
+    <div data-hf-id="hf-52nd" id="f02-phone-right" class="f02-phone">
+      <div data-hf-id="hf-wj4h" class="f02-screen">
+        <div data-hf-id="hf-idjm" id="f02-rchat" class="f02-layer" style="background:#000">
+          <div data-hf-id="hf-x6l7" class="f02-status f02-status-dark">
+            <span data-hf-id="hf-59av" class="f02-time">9:41</span>
+            <span data-hf-id="hf-ziba" class="f02-bars"><i data-hf-id="hf-5l80" style="left:0;height:4px"></i><i data-hf-id="hf-rx2l" style="left:5px;height:6px"></i><i data-hf-id="hf-04wx" style="left:10px;height:8px"></i><i data-hf-id="hf-b0ko" style="left:15px;height:11px"></i></span>
+            <span data-hf-id="hf-ybgz" class="f02-batt"></span>
+          </div>
+          <div data-hf-id="hf-2kd7" class="f02-viewport">
+            <div data-hf-id="hf-vjzu" id="f02-rthread">
+              <div data-hf-id="hf-3gea" id="f02-rout">
+                <div data-hf-id="hf-830t" class="f02-outbubble">Ось усі наші авто з фільтрами:</div>
+                <div data-hf-id="hf-6pae" id="f02-linkcard"><b data-hf-id="hf-jwxu">AutoFlow — каталог авто</b><span data-hf-id="hf-gdqe">autos-sale.com</span></div>
+              </div>
+              <div data-hf-id="hf-9ymi" id="f02-rtyping" class="f02-in"><div data-hf-id="hf-3zky" class="f02-inbubble"><span data-hf-id="hf-q8i0" class="f02-dots"><i data-hf-id="hf-w9cw" id="f02-rdot-0"></i><i data-hf-id="hf-x10p" id="f02-rdot-1"></i><i data-hf-id="hf-36qi" id="f02-rdot-2"></i></span></div></div>
+              <div data-hf-id="hf-kb23" id="f02-rincoming" class="f02-in">
+                <div data-hf-id="hf-z8dp" id="f02-in-glow"></div>
+                <div data-hf-id="hf-2yfx" class="f02-inbubble"><b data-hf-id="hf-7548">Беру.</b> Коли можна подивитись?</div>
+              </div>
+            </div>
+          </div>
+          <div data-hf-id="hf-f6g2" class="f02-header">
+            <span data-hf-id="hf-rpvk" class="f02-chev"></span>
+            <span data-hf-id="hf-5cnb" class="f02-avatar-lg" style="left:40px;background:#48484A"></span>
+            <span data-hf-id="hf-aba5" class="f02-who" style="left:86px"><b data-hf-id="hf-5pr8">oleh.k</b><span data-hf-id="hf-tai1">Повідомлення</span></span>
+          </div>
+          <div data-hf-id="hf-sg6b" class="f02-input"></div>
+        </div>
+
+        <div data-hf-id="hf-fz7q" id="f02-rcars" class="f02-layer f02-site">
+          <div data-hf-id="hf-1rk9" class="f02-status f02-status-light">
+            <span data-hf-id="hf-4uzu" class="f02-time">9:41</span>
+            <span data-hf-id="hf-zwmb" class="f02-bars"><i data-hf-id="hf-4eax" style="left:0;height:4px"></i><i data-hf-id="hf-t3zo" style="left:5px;height:6px"></i><i data-hf-id="hf-1bu0" style="left:10px;height:8px"></i><i data-hf-id="hf-9tnl" style="left:15px;height:11px"></i></span>
+            <span data-hf-id="hf-xx5y" class="f02-batt"></span>
+          </div>
+          <img data-hf-id="hf-xdq7" class="f02-shot" src="assets/mobile-cars.png" alt="">
+          <div data-hf-id="hf-go00" id="f02-chip">Toyota</div>
+        </div>
+
+        <div data-hf-id="hf-0dqp" id="f02-rtoyota" class="f02-layer f02-site">
+          <div data-hf-id="hf-zgsd" class="f02-status f02-status-light">
+            <span data-hf-id="hf-4got" class="f02-time">9:41</span>
+            <span data-hf-id="hf-0axc" class="f02-bars"><i data-hf-id="hf-4sly" style="left:0;height:4px"></i><i data-hf-id="hf-spon" style="left:5px;height:6px"></i><i data-hf-id="hf-0xiz" style="left:10px;height:8px"></i><i data-hf-id="hf-a7ym" style="left:15px;height:11px"></i></span>
+            <span data-hf-id="hf-xiux" class="f02-batt"></span>
+          </div>
+          <img data-hf-id="hf-k2zg" class="f02-shot" src="assets/mobile-cars-toyota.png" alt="">
+        </div>
+
+        <div data-hf-id="hf-p4nr" id="f02-rcamry" class="f02-layer f02-site">
+          <div data-hf-id="hf-0npg" class="f02-status f02-status-light">
+            <span data-hf-id="hf-78u0" class="f02-time">9:41</span>
+            <span data-hf-id="hf-xis5" class="f02-bars"><i data-hf-id="hf-3lov" style="left:0;height:4px"></i><i data-hf-id="hf-twlq" style="left:5px;height:6px"></i><i data-hf-id="hf-yxzu" style="left:10px;height:8px"></i><i data-hf-id="hf-911j" style="left:15px;height:11px"></i></span>
+            <span data-hf-id="hf-x4jw" class="f02-batt"></span>
+          </div>
+          <img data-hf-id="hf-3azi" class="f02-shot" src="assets/mobile-camry.png" alt="">
+        </div>
+
+        <!-- tap ripples at measured points on the real screenshots (screen-local px) -->
+        <div data-hf-id="hf-0pew" id="f02-ripple-0" class="f02-ripple" style="left:270px;top:640px;background:rgba(33,29,22,0.22)"></div>
+        <div data-hf-id="hf-ep9b" id="f02-ripple-1" class="f02-ripple" style="left:68px;top:387px"></div>
+        <div data-hf-id="hf-awg2" id="f02-ripple-2" class="f02-ripple" style="left:205px;top:618px;background:rgba(33,29,22,0.3)"></div>
+
+        <div data-hf-id="hf-kq2y" class="f02-island"></div>
+      </div>
+    </div>
+
+    <div data-hf-id="hf-7ll5" id="f02-label-left" class="f02-label">ДИРЕКТ</div>
+    <div data-hf-id="hf-kp0d" id="f02-label-right" class="f02-label">ПОСИЛАННЯ</div>
+
+    <div data-hf-id="hf-x11z" id="f02-callout-1" class="f02-callout-row">
+      <span data-hf-id="hf-vujo" id="f02-callout-1-pill" class="f02-callout">21
+        <svg data-hf-id="hf-7uua" viewBox="0 0 34 20" fill="none" stroke="#B4453C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path data-hf-id="hf-rz65" d="M2 10h28M22 3l8 7-8 7" /></svg>
+        2 авто</span>
+    </div>
+    <div data-hf-id="hf-m5kc" id="f02-callout-2" class="f02-callout-row">
+      <span data-hf-id="hf-xurm" id="f02-callout-2-pill" class="f02-callout">3 тапи</span>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const byId = (suffix) => document.querySelector('[id="f02-' + suffix + '"]');
+      const tl = gsap.timeline({ paused: true });
+
+      // ---------- LEFT: deterministic flood of buyer questions ----------
+      const MESSAGES = [
+        ["Ціна?", "oleh.k"], ["Ще актуально?", "marina_lviv"], ["А є дешевше?", "vitya_auto"],
+        ["Який пробіг?", "andrii.ua"], ["Розмитнена?", "sasha.kh"], ["Ціна?", "ira.dnipro"],
+        ["Скиньте фото салону", "max_odesa"], ["Торг є?", "taras.v"], ["Яка комплектація?", "yulia_k"],
+        ["Ще актуально?", "dima.rv"], ["Є щось до 15к?", "oleh.k"], ["Кредит можна?", "marina_lviv"],
+        ["Ціна?", "vitya_auto"], ["Ау?", "andrii.ua"], ["Торг є?", "sasha.kh"],
+        ["Який пробіг?", "ira.dnipro"], ["Чому не відповідаєте?", "oleh.k"], ["Розмитнена?", "max_odesa"],
+        ["Ціна?", "taras.v"], ["А є дешевше?", "yulia_k"], ["Скиньте фото салону", "dima.rv"],
+        ["Ще актуально?", "marina_lviv"], ["Кредит можна?", "vitya_auto"], ["Яка комплектація?", "andrii.ua"],
+        ["Ціна?", "sasha.kh"], ["Чому не відповідаєте?", "oleh.k"], ["Торг є?", "ira.dnipro"],
+        ["Є щось до 15к?", "max_odesa"], ["Ау?", "taras.v"], [null, ""]
+      ];
+      // Arrival times: ~0.45s cadence (Scene 2) → 0.25s (Scene 3) → 0.2s (Scene 4/5), then the last "Ау?" + typing.
+      const ARRIVALS = [
+        0.25, 0.6,
+        1.1, 1.55, 2.0, 2.45, 2.9, 3.35, 3.8,
+        4.0, 4.25, 4.5, 4.75,
+        5.0, 5.2, 5.4, 5.6, 5.8, 6.0, 6.2, 6.4, 6.6, 6.8, 7.0,
+        7.2, 7.38, 7.56, 7.74,
+        8.75, 9.1
+      ];
+      const ROW_HEIGHT = 52;
+      const VIEWPORT_HEIGHT = 568;
+      const BOTTOM_PAD = 8;
+      const AVATAR_TONES = ["#3A3A3C", "#48484A", "#2C2C2E", "#545456"];
+      const X_JITTER = [0, 6, -2, 10, 3, -4, 8, 1, 12, -3, 5, 9, 0, 7, -2, 11];
+      // Rows overlap slightly once the flood peaks (Scene 4 on).
+      const rowSpacing = (index) => (index >= 28 ? 60 : index >= 24 ? 44 : index >= 13 ? 49 : 60);
+      const rowJitter = (index) => (index >= 13 && index < 28 ? X_JITTER[index % X_JITTER.length] : 0);
+
+      const thread = byId("lthread");
+      const rowTops = MESSAGES.reduce((tops, _msg, index) => {
+        const top = index === 0 ? 0 : tops[index - 1] + rowSpacing(index);
+        return tops.concat(top);
+      }, []);
+
+      const rows = MESSAGES.map(([text, handle], index) => {
+        const row = document.createElement("div");
+        row.className = "f02-row";
+        row.id = "f02-lrow-" + index;
+        row.style.top = rowTops[index] + "px";
+        row.style.left = 14 + rowJitter(index) + "px";
+        const avatar = document.createElement("div");
+        avatar.className = "f02-ava";
+        avatar.style.background = AVATAR_TONES[index % AVATAR_TONES.length];
+        avatar.textContent = handle ? handle.charAt(0).toUpperCase() : "";
+        const bubble = document.createElement("div");
+        bubble.className = "f02-bubble";
+        if (text === null) {
+          bubble.innerHTML = '<span class="f02-dots"><i></i><i></i><i></i></span>';
+        } else {
+          bubble.textContent = text;
+          const handleEl = document.createElement("div");
+          handleEl.className = "f02-handle";
+          handleEl.textContent = handle;
+          row.appendChild(handleEl);
+        }
+        row.appendChild(avatar);
+        row.appendChild(bubble);
+        thread.appendChild(row);
+        return row;
+      });
+
+      const threadYAfter = (count) => (count === 0 ? VIEWPORT_HEIGHT - BOTTOM_PAD : VIEWPORT_HEIGHT - BOTTOM_PAD - (rowTops[count - 1] + ROW_HEIGHT));
+      tl.set(thread, { y: threadYAfter(0) }, 0);
+      rows.forEach((row, index) => {
+        const at = ARRIVALS[index];
+        const gap = index === 0 ? 0.3 : at - ARRIVALS[index - 1];
+        tl.fromTo(
+          thread,
+          { y: threadYAfter(index) },
+          { y: threadYAfter(index + 1), duration: Math.min(0.24, gap * 0.85), ease: "power3.out", immediateRender: false },
+          at
+        );
+        tl.fromTo(
+          row,
+          { opacity: 0, y: 14, scale: 0.96 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.26, ease: "back.out(1.15)" },
+          at
+        );
+      });
+
+      // Typing dots on the last left row pulse a few times, then freeze — it never resolves.
+      const leftDots = rows[rows.length - 1].querySelectorAll(".f02-dots i");
+      for (let cycle = 0; cycle < 4; cycle += 1) {
+        leftDots.forEach((dot, dotIndex) => {
+          const start = 9.3 + cycle * 0.36 + dotIndex * 0.1;
+          tl.fromTo(dot, { opacity: 0.35 }, { opacity: 1, duration: 0.14, ease: "sine.inOut", immediateRender: false }, start);
+          tl.fromTo(dot, { opacity: 1 }, { opacity: 0.35, duration: 0.14, ease: "sine.inOut", immediateRender: false }, start + 0.14);
+        });
+      }
+
+      // Unread counter 12 → 87 → 140 → 198 → 243 (then stops).
+      const badge = byId("badge");
+      const counter = { value: 12 };
+      const renderCount = () => { badge.textContent = String(Math.round(counter.value)); };
+      [[12, 87, 1.0, 2.8], [87, 140, 4.0, 0.8], [140, 198, 5.0, 2.0], [198, 243, 7.2, 0.8]].forEach(([from, to, at, duration]) => {
+        tl.fromTo(counter, { value: from }, { value: to, duration, ease: "none", onUpdate: renderCount, immediateRender: false }, at);
+        tl.fromTo(badge, { scale: 1 }, { scale: 1.18, duration: 0.1, ease: "power2.out", immediateRender: false }, at + duration - 0.05);
+        tl.fromTo(badge, { scale: 1.18 }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, at + duration + 0.05);
+      });
+
+      // Scene 5: short low-amplitude shake, then the inbox dims.
+      const phoneLeft = byId("phone-left");
+      const SHAKE = [9, -8, 7, -6, 4, -3, 0];
+      SHAKE.forEach((x, index) => {
+        tl.to(phoneLeft, { x, duration: 0.045, ease: "sine.inOut" }, 7.95 + index * 0.045);
+      });
+      tl.fromTo(byId("ldim"), { opacity: 0 }, { opacity: 0.55, duration: 0.6, ease: "power2.out" }, 8.25);
+      tl.to(byId("label-left"), { opacity: 0.32, duration: 0.6, ease: "power2.out" }, 8.25);
+      tl.to(byId("glow-left"), { opacity: 0, duration: 0.8, ease: "power2.out" }, 8.25);
+
+      // ---------- Ambient + Scene 1 screen light-up ----------
+      tl.fromTo(byId("vignette"), { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power2.out" }, 0);
+      tl.fromTo(byId("glow-left"), { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "power2.out" }, 0.1);
+      tl.fromTo(byId("lcontent"), { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 0.05);
+      tl.fromTo(byId("rchat"), { opacity: 0, scale: 1 }, { opacity: 1, scale: 1, duration: 0.5, ease: "power2.out" }, 0.1);
+      tl.fromTo(byId("label-left"), { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.4);
+      tl.fromTo(byId("label-right"), { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.5);
+
+      // ---------- RIGHT: one link, three taps ----------
+      const rout = byId("rout");
+      const linkCard = byId("linkcard");
+      tl.fromTo(rout, { opacity: 0, y: 40, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.7, ease: "power3.out" }, 1.4);
+      tl.fromTo(linkCard, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 1.55);
+
+      const ripple = (index, at) => {
+        tl.fromTo(byId("ripple-" + index), { opacity: 0, scale: 0.2 }, { opacity: 0.9, scale: 0.55, duration: 0.12, ease: "power2.out" }, at);
+        tl.fromTo(byId("ripple-" + index), { opacity: 0.9, scale: 0.55 }, { opacity: 0, scale: 1.25, duration: 0.5, ease: "power2.out", immediateRender: false }, at + 0.12);
+      };
+      const press = (target, at, depth) => {
+        tl.fromTo(target, { scale: 1 }, { scale: depth, duration: 0.11, ease: "power2.out", immediateRender: false }, at);
+        tl.fromTo(target, { scale: depth }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, at + 0.11);
+      };
+
+      // Scene 3 — tap #0 on the link card, chat hands off to the catalog sheet.
+      ripple(0, 4.0);
+      press(linkCard, 4.0, 0.97);
+      const rchat = byId("rchat");
+      const rcars = byId("rcars");
+      tl.to(rchat, { scale: 0.94, opacity: 0, duration: 0.38, ease: "power2.in" }, 4.28);
+      tl.fromTo(rcars, { opacity: 0, y: 300, scale: 0.98 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "power3.out" }, 4.3);
+
+      // Scene 4 — a Toyota chip slides into the make row, tap #1, filtered list (2 авто).
+      const chip = byId("chip");
+      tl.fromTo(chip, { opacity: 0, x: -130 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 5.1);
+      ripple(1, 5.9);
+      press(chip, 5.9, 0.93);
+      const rtoyota = byId("rtoyota");
+      tl.fromTo(rtoyota, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 6.18);
+      tl.fromTo(byId("callout-1-pill"), { opacity: 0, scale: 0.6, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.7)" }, 6.55);
+
+      // Scene 5 — tap #2 on the Camry card, the listing page pushes in.
+      ripple(2, 7.45);
+      const rcamry = byId("rcamry");
+      tl.fromTo(rcamry, { x: 410 }, { x: 0, duration: 0.5, ease: "power3.out" }, 7.7);
+      tl.to(rtoyota, { x: -110, duration: 0.5, ease: "power3.out" }, 7.7);
+      tl.fromTo(byId("callout-2-pill"), { opacity: 0, scale: 0.6, y: 10 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(1.7)" }, 8.3);
+
+      // Scene 6 — back to the chat (reverse sheet), buyer types, "Беру".
+      tl.set([rcars, rtoyota], { opacity: 0 }, 9.4);
+      tl.to(rcamry, { y: 760, duration: 0.5, ease: "power2.in" }, 9.4);
+      tl.to(rchat, { scale: 1, opacity: 1, duration: 0.55, ease: "power3.out" }, 9.5);
+      tl.to(rout, { y: -50, duration: 0.4, ease: "power3.out" }, 10.0);
+      const rtyping = byId("rtyping");
+      tl.fromTo(rtyping, { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.3, ease: "power3.out" }, 10.0);
+      [0, 1].forEach((cycle) => {
+        [0, 1, 2].forEach((dotIndex) => {
+          const dot = byId("rdot-" + dotIndex);
+          const start = 10.1 + cycle * 0.3 + dotIndex * 0.08;
+          tl.fromTo(dot, { opacity: 0.35 }, { opacity: 1, duration: 0.12, ease: "sine.inOut", immediateRender: false }, start);
+          tl.fromTo(dot, { opacity: 1 }, { opacity: 0.35, duration: 0.12, ease: "sine.inOut", immediateRender: false }, start + 0.12);
+        });
+      });
+      tl.to(rtyping, { opacity: 0, duration: 0.12, ease: "power1.out" }, 10.68);
+      tl.fromTo(byId("rincoming"), { opacity: 0, y: 12, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.42, ease: "back.out(1.2)" }, 10.7);
+      tl.fromTo(byId("in-glow"), { opacity: 0 }, { opacity: 0.85, duration: 0.8, ease: "power2.out" }, 10.8);
+      const glowRight = byId("glow-right");
+      tl.fromTo(glowRight, { opacity: 0, scale: 0.85 }, { opacity: 0.42, scale: 1, duration: 1.4, ease: "power2.out" }, 10.75);
+
+      // Scene 7 — held read; only a hair of jitter on the coral glow.
+      tl.to(glowRight, { scale: 1.025, opacity: 0.45, duration: 0.5, ease: "sine.inOut" }, 12.15);
+      tl.to(glowRight, { scale: 1, opacity: 0.42, duration: 0.35, ease: "sine.inOut" }, 12.65);
+
+      tl.set({}, {}, 13);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["02-split"] = tl;
+    })();
+  </script>
+</template>

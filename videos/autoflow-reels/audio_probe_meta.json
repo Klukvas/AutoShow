@@ -1,0 +1,95 @@
+{
+  "tts_provider": null,
+  "voice_id": null,
+  "bgm": {
+    "path": "assets/bgm/track.mp3",
+    "volume": 0.9,
+    "query": "upbeat minimal modern tech promo groove, confident, 100-110 bpm",
+    "mode": "retrieve",
+    "duration_s": 30
+  },
+  "bgm_pending": false,
+  "bgm_provider": "heygen",
+  "bgm_pid": null,
+  "bgm_log": null,
+  "bgm_mode": "retrieve",
+  "bgm_target_duration_s": null,
+  "bgm_seed_duration_s": null,
+  "bgm_loop_count": null,
+  "voices": [],
+  "sfx": [
+    {
+      "id": "01",
+      "name": "message notification pop",
+      "file": "assets/sfx/message-notification-pop.mp3",
+      "source": "heygen",
+      "offset_s": 0,
+      "duration_s": 0.72,
+      "volume": 0.35
+    },
+    {
+      "id": "01",
+      "name": "phone screen tap",
+      "file": "assets/sfx/phone-screen-tap.mp3",
+      "source": "heygen",
+      "offset_s": 0,
+      "duration_s": 0.24,
+      "volume": 0.35
+    },
+    {
+      "id": "01",
+      "name": "soft whoosh",
+      "file": "assets/sfx/soft-whoosh.mp3",
+      "source": "heygen",
+      "offset_s": 0,
+      "duration_s": 1.834,
+      "volume": 0.35
+    },
+    {
+      "id": "01",
+      "name": "success chime",
+      "file": "assets/sfx/success-chime.mp3",
+      "source": "heygen",
+      "offset_s": 0,
+      "duration_s": 4.755,
+      "volume": 0.35
+    },
+    {
+      "id": "01",
+      "name": "phone vibration buzz",
+      "file": "assets/sfx/phone-vibration-buzz.mp3",
+      "source": "heygen",
+      "offset_s": 0,
+      "duration_s": 8.729,
+      "volume": 0.35
+    },
+    {
+      "id": "01",
+      "name": "deep impact hit",
+      "file": "assets/sfx/deep-impact-hit.mp3",
+      "source": "heygen",
+      "offset_s": 0,
+      "duration_s": 1.765,
+      "volume": 0.35
+    },
+    {
+      "id": "01",
+      "name": "keyboard typing phone",
+      "file": "assets/sfx/keyboard-typing-phone.mp3",
+      "source": "heygen",
+      "offset_s": 0,
+      "duration_s": 44.382,
+      "volume": 0.35
+    },
+    {
+      "id": "01",
+      "name": "short riser",
+      "file": "assets/sfx/short-riser.mp3",
+      "source": "heygen",
+      "offset_s": 0,
+      "duration_s": 1.967,
+      "volume": 0.35
+    }
+  ],
+  "total_duration_s": 0
+}
