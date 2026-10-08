@@ -15,18 +15,12 @@ interface MediaPictureProps {
 const VARIANT_ORDER: Record<string, number> = { thumb: 0, gallery: 1, full: 2 };
 
 /**
- * Neutral shimmer placeholder (inline SVG): the photo area reads as "loading"
- * instead of flashing empty. Static — no per-image tiny renditions needed.
- * URI-encoded (not base64) so it works in both server and client bundles.
+ * Loading surface: the <img> itself carries the theme's --ph-* gradient, so
+ * the photo area reads as "loading" in the active palette (warm on the Paper
+ * Lot storefront, walnut in dark) until the opaque photo paints over it. A
+ * blurDataURL can't follow theme tokens — it was a cool grey on cream cards.
  */
-const SHIMMER_SVG =
-  '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="10">' +
-  '<defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="0">' +
-  '<stop offset="0%" stop-color="#e8eaee"/><stop offset="50%" stop-color="#f3f4f6"/>' +
-  '<stop offset="100%" stop-color="#e8eaee"/></linearGradient></defs>' +
-  '<rect width="16" height="10" fill="url(#g)"/></svg>';
-
-const SHIMMER_DATA_URL = `data:image/svg+xml,${encodeURIComponent(SHIMMER_SVG)}`;
+const LOADING_SURFACE = 'bg-gradient-to-br from-ph-a to-ph-b';
 
 /**
  * Renders the backend-generated renditions as a responsive Image. We pick the
@@ -78,9 +72,7 @@ export function MediaPicture({
         fill
         sizes={sizes}
         priority={priority}
-        placeholder="blur"
-        blurDataURL={SHIMMER_DATA_URL}
-        className={cn('object-cover', className)}
+        className={cn('object-cover', LOADING_SURFACE, className)}
       />
     );
   }
@@ -93,9 +85,7 @@ export function MediaPicture({
       height={height}
       sizes={sizes}
       priority={priority}
-      placeholder="blur"
-      blurDataURL={SHIMMER_DATA_URL}
-      className={className}
+      className={cn(LOADING_SURFACE, className)}
     />
   );
 }

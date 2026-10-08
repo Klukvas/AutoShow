@@ -16,14 +16,15 @@ export const revalidate = 60;
 
 type HomeSection = 'fresh' | 'collections' | 'trust' | 'reviews' | 'services' | 'sell';
 
-/** Catalogue numbers (№01…) follow the sections actually rendered — collections
- *  and reviews hide while empty, and hardcoded numbers would leave gaps. */
-function sectionIndexes(hasCollections: boolean, hasReviews: boolean) {
+/** Catalogue numbers (№01…) follow the sections actually rendered — fresh
+ *  arrivals, collections and reviews hide while empty, and hardcoded numbers
+ *  would leave gaps. */
+function sectionIndexes(shown: { fresh: boolean; collections: boolean; reviews: boolean }) {
   const visible: HomeSection[] = [
-    'fresh',
-    ...(hasCollections ? (['collections'] as const) : []),
+    ...(shown.fresh ? (['fresh'] as const) : []),
+    ...(shown.collections ? (['collections'] as const) : []),
     'trust',
-    ...(hasReviews ? (['reviews'] as const) : []),
+    ...(shown.reviews ? (['reviews'] as const) : []),
     'services',
     'sell',
   ];
@@ -31,23 +32,25 @@ function sectionIndexes(hasCollections: boolean, hasReviews: boolean) {
 }
 
 export default async function HomePage() {
-  const [t, branding, collections, reviews] = await Promise.all([
+  const [t, branding, listings, collections, reviews] = await Promise.all([
     getTranslations('home'),
     getSiteBranding(),
+    publicApi
+      .listListings({ sort: 'newest', limit: 7 }, { revalidate: 60 })
+      .then((page) => page.items)
+      .catch(() => []),
     publicApi.listCollections().catch(() => []),
     publicApi.listReviews({ revalidate: 300 }).catch(() => []),
   ]);
-  const indexOf = sectionIndexes(collections.length > 0, reviews.length > 0);
-
-  let listings: Awaited<ReturnType<typeof publicApi.listListings>>['items'] = [];
-  try {
-    const page = await publicApi.listListings({ sort: 'newest', limit: 7 }, { revalidate: 60 });
-    listings = page.items;
-  } catch {
-    listings = [];
-  }
   const hero = listings[0] ?? null;
+  // The newest car is the hero; the grid shows the next six. With nothing left
+  // for the grid the section would be a heading over empty space — hide it.
   const rest = listings.slice(1, 7);
+  const indexOf = sectionIndexes({
+    fresh: rest.length > 0,
+    collections: collections.length > 0,
+    reviews: reviews.length > 0,
+  });
 
   return (
     <>
@@ -58,29 +61,31 @@ export default async function HomePage() {
       />
 
       {/* Fresh arrivals */}
-      <section className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
-        <SectionHeading
-          index={indexOf('fresh')}
-          title={t('freshArrivals')}
-          action={
-            <Button as="link" href="/cars" variant="ghost" size="sm">
-              {t('viewAll')} →
-            </Button>
-          }
-        />
+      {rest.length > 0 && (
+        <section className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
+          <SectionHeading
+            index={indexOf('fresh')}
+            title={t('freshArrivals')}
+            action={
+              <Button as="link" href="/cars" variant="ghost" size="sm">
+                {t('viewAll')} →
+              </Button>
+            }
+          />
 
-        <div className="mt-6 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
-          {rest.map((listing, idx) => (
-            <ScrollReveal key={listing.id} delay={Math.min(idx, 5) * 0.05}>
-              <ListingCard
-                listing={listing}
-                priority={idx < 2}
-                baseCurrency={branding?.defaultCurrency}
-              />
-            </ScrollReveal>
-          ))}
-        </div>
-      </section>
+          <div className="mt-6 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
+            {rest.map((listing, idx) => (
+              <ScrollReveal key={listing.id} delay={Math.min(idx, 5) * 0.05}>
+                <ListingCard
+                  listing={listing}
+                  priority={idx < 2}
+                  baseCurrency={branding?.defaultCurrency}
+                />
+              </ScrollReveal>
+            ))}
+          </div>
+        </section>
+      )}
 
       <StatsBand />
 

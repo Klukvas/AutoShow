@@ -23,6 +23,10 @@ const LINKS: Array<{ href: string; key: 'catalog' | 'about' | 'contacts' }> = [
   { href: '/contacts', key: 'contacts' },
 ];
 
+function isActiveLink(pathname: string, href: string): boolean {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 /**
  * Handoff header: 70px sticky surface bar with a hairline bottom border.
  * Logo square + wordmark · nav links (active = 2px accent underline) · theme
@@ -61,7 +65,7 @@ export function PublicNav({ branding }: PublicNavProps) {
           {/* Desktop links */}
           <nav aria-label="Primary" className="hidden items-center gap-7 md:flex">
             {LINKS.map((link) => {
-              const active = pathname === link.href || pathname.startsWith(`${link.href}/`);
+              const active = isActiveLink(pathname, link.href);
               return (
                 <Link
                   key={link.href}
@@ -115,7 +119,9 @@ export function PublicNav({ branding }: PublicNavProps) {
       {mounted &&
         menuOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[100] flex flex-col bg-bg px-5 pb-8 pt-4 text-ink md:hidden">
+          // Portaled to <body>, i.e. outside the (public) layout's theme wrapper —
+          // re-apply the Paper Lot scope or the menu falls back to the admin palette.
+          <div className="theme-vitrina-paper fixed inset-0 z-[100] flex flex-col bg-bg px-5 pb-8 pt-4 text-ink md:hidden">
             <div className="flex h-header items-center justify-between">
               <BrandMark branding={branding} displayName={displayName} />
               <button
@@ -128,15 +134,23 @@ export function PublicNav({ branding }: PublicNavProps) {
               </button>
             </div>
             <nav aria-label="Mobile" className="mt-6 flex flex-col">
-              {LINKS.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="focus-ring border-b border-line py-4 font-heading text-title-sm font-bold text-ink hover:text-lot-gold"
-                >
-                  {t(link.key)}
-                </Link>
-              ))}
+              {LINKS.map((link) => {
+                const active = isActiveLink(pathname, link.href);
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      // Active row mirrors the desktop marker: its rule turns gold.
+                      'focus-ring border-b py-4 font-heading text-title-sm font-bold text-ink hover:text-lot-gold',
+                      active ? 'border-lot-gold' : 'border-line',
+                    )}
+                  >
+                    {t(link.key)}
+                  </Link>
+                );
+              })}
             </nav>
             <div className="mt-8 flex items-center gap-3">
               <Button
