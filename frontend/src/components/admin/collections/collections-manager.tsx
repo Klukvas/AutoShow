@@ -205,8 +205,8 @@ export function CollectionsManager({ initial }: { initial: Collection[] }) {
                   <span
                     className={
                       c.isPublished
-                        ? 'rounded-[5px] bg-ok-bg px-2 py-[3px] text-[10.5px] font-bold text-ok'
-                        : 'rounded-[5px] bg-st-draft-bg px-2 py-[3px] text-[10.5px] font-bold text-ink-3'
+                        ? 'rounded-[5px] bg-st-published-bg px-2 py-[3px] text-[10.5px] font-bold text-st-published-fg'
+                        : 'rounded-[5px] bg-st-draft-bg px-2 py-[3px] text-[10.5px] font-bold text-st-draft-fg'
                     }
                   >
                     {c.isPublished ? t('published') : t('hidden')}

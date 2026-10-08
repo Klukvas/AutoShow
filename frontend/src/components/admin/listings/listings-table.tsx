@@ -178,7 +178,7 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
             type="button"
             onClick={() => void runBulk('publish')}
             disabled={bulkRunning}
-            className="focus-ring h-9 rounded-[9px] bg-accent px-3.5 text-[12.5px] font-bold text-white disabled:opacity-50"
+            className="focus-ring h-9 rounded-[9px] bg-accent px-3.5 text-[12.5px] font-bold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             {bulkRunning ? t('common.saving') : t('listings.bulkPublish')}
           </button>

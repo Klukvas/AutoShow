@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/cn';
 
 type ToastTone = 'success' | 'error';
@@ -27,6 +28,7 @@ const MAX_STACK = 4;
  * Errors that need reading/acting stay as inline banners.
  */
 export function ToastProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslations('admin.common');
   const [items, setItems] = useState<ToastItem[]>([]);
   const [mounted, setMounted] = useState(false);
   const nextId = useRef(1);
@@ -74,7 +76,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 </span>
                 <button
                   type="button"
-                  aria-label="Close"
+                  aria-label={t('close')}
                   onClick={() => dismiss(item.id)}
                   className="focus-ring -mr-1 -mt-0.5 rounded-[6px] px-1.5 text-[15px] leading-none text-ink-3 hover:text-ink"
                 >

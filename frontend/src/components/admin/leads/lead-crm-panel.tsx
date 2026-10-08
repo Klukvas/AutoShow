@@ -176,7 +176,7 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
             type="button"
             onClick={addNote}
             disabled={busy || !draft.trim()}
-            className="focus-ring h-10 flex-none self-end rounded-[9px] bg-accent px-3.5 text-[12.5px] font-bold text-white disabled:opacity-50"
+            className="focus-ring h-10 flex-none self-end rounded-[9px] bg-accent px-3.5 text-[12.5px] font-bold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             {t('leads.noteAdd')}
           </button>

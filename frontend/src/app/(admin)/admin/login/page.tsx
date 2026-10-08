@@ -137,7 +137,7 @@ export default function AdminLoginPage() {
             className={cn(
               'focus-ring h-[46px] w-full rounded-[10px] px-3.5 text-[14px] font-medium outline-none transition-none disabled:opacity-50',
               invalid
-                ? 'border-[1.5px] border-[#D9534F] bg-[#FDF3F2] text-ink'
+                ? 'border-[1.5px] border-[#D9534F] bg-[#FDF3F2] text-[#14161B]'
                 : 'border border-white/[0.14] bg-white/5 text-white',
             )}
           />

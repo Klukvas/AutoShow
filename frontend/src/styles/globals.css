@@ -170,8 +170,8 @@
   --sb-bg: 11 13 16; /* #0B0D10 = canvas */
   --sb-ink: 242 243 245;
   --sb-ink-2: 168 173 184;
-  --sb-muted: 115 121 133;
-  --sb-faint: 100 106 118;
+  /* --sb-muted / --sb-faint inherit :root — already tuned for the dark sidebar;
+     the darker overrides fell below AA (4.45 / 3.58) on #0B0D10. */
   --sb-line: rgba(255, 255, 255, 0.08);
   --sb-active: rgba(255, 255, 255, 0.08);
   --sb-input-line: rgba(255, 255, 255, 0.14);
