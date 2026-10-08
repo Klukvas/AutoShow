@@ -31,7 +31,9 @@ export function FavoriteButton({ slug, variant = 'overlay', className }: Favorit
         toggle(slug);
       }}
       className={cn(
-        'focus-ring inline-flex items-center justify-center transition-colors',
+        // Same press response as the sibling CompareButton: dips instantly under
+        // the finger; motion-reduce users get only the colour change.
+        'focus-ring inline-flex items-center justify-center transition-[transform,background-color,border-color,color] duration-100 motion-safe:active:scale-[0.9]',
         variant === 'overlay' &&
           'h-9 w-9 rounded-btn bg-surface/85 shadow-sm backdrop-blur-sm hover:bg-surface',
         variant === 'inline' &&

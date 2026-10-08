@@ -48,7 +48,7 @@ export function CompareBar() {
             </span>
             <Link
               href="/compare"
-              className="focus-ring inline-flex h-9 items-center rounded-btn bg-accent px-4 text-sub font-bold text-on-accent transition-[background-color,transform] duration-100 hover:bg-accent-hover active:scale-[0.97]"
+              className="focus-ring inline-flex h-9 items-center rounded-btn bg-accent px-4 text-sub font-bold text-on-accent transition-[background-color,transform] duration-100 hover:bg-accent-hover motion-safe:active:scale-[0.97]"
             >
               {t('open')}
             </Link>
