@@ -5,7 +5,9 @@ import { fontDisplay, fontSans } from '@/lib/fonts';
 import { getSiteBranding } from '@/lib/branding/resolve';
 import { brandingThemeCss } from '@/lib/branding/theme';
 import { ThemeScript } from '@/components/theme/theme-script';
+import { MotionProvider } from '@/components/motion/motion-provider';
 import '@/styles/globals.css';
+import '@/styles/cinematic.css';
 
 export async function generateMetadata(): Promise<Metadata> {
   const branding = await getSiteBranding();
@@ -53,9 +55,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       {/* suppressHydrationWarning: browser extensions (Grammarly etc.) inject
           data-* attributes into <body> before hydration — not our markup. */}
-      <body className="bg-bg text-ink antialiased" suppressHydrationWarning>
+      <body className="platform-cinematic bg-bg text-ink antialiased" suppressHydrationWarning>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
+          <MotionProvider>{children}</MotionProvider>
         </NextIntlClientProvider>
       </body>
     </html>

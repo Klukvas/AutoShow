@@ -1,9 +1,10 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Logger } from '@nestjs/common';
+import { ForbiddenException, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Job } from 'bullmq';
 import sharp from 'sharp';
 import { IsNull, Repository } from 'typeorm';
+import { lockWritableListing } from '../modules/listings/writable-listing';
 import { ListingMedia } from '../modules/listings/entities/listing-media.entity';
 import { MediaRendition } from '../modules/listings/entities/media-rendition.entity';
 import { StorageService } from '../modules/storage/storage.service';
@@ -95,37 +96,78 @@ export class MediaProcessorWorker extends WorkerHost {
       // count gates whether we persist renditions. If remove() soft-deleted the
       // row while we were processing, we compensate by deleting the S3 objects
       // we just uploaded instead of resurrecting them.
-      const flip = await this.media.update(
-        { id: mediaId, deletedAt: IsNull() },
-        {
-          status: 'ready',
-          width: metadata.width,
-          height: metadata.height,
-          sizeBytes: String(original.length),
-          mime: metadata.format ? `image/${metadata.format}` : media.mime,
-          failureReason: null,
-        },
-      );
-      if (flip.affected !== 1) {
-        this.logger.warn({ mediaId }, 'media removed mid-processing, discarding renditions');
+      const kept = await this.media.manager.transaction(async (em) => {
+        try {
+          await lockWritableListing(em, media.listingId);
+        } catch (error) {
+          if (error instanceof ForbiddenException) {
+            await em.update(
+              ListingMedia,
+              { id: mediaId, deletedAt: IsNull(), status: media.status },
+              {
+                status: 'failed',
+                failureReason: 'Listing sold before media processing completed',
+              },
+            );
+            return false;
+          }
+          if (error instanceof NotFoundException) return false;
+          throw error;
+        }
+        const flip = await em.update(
+          ListingMedia,
+          { id: mediaId, deletedAt: IsNull() },
+          {
+            status: 'ready',
+            width: metadata.width,
+            height: metadata.height,
+            sizeBytes: String(original.length),
+            mime: metadata.format ? `image/${metadata.format}` : media.mime,
+            failureReason: null,
+          },
+        );
+        if (flip.affected !== 1) return false;
+        await em.delete(MediaRendition, { mediaId });
+        if (renditionsToCreate.length) await em.save(MediaRendition, renditionsToCreate);
+        return true;
+      });
+      if (!kept) {
+        this.logger.warn(
+          { mediaId },
+          'listing sold or removed mid-processing, discarding renditions',
+        );
         await Promise.all(
           renditionsToCreate.map((r) => this.storage.delete(r.s3Key).catch(() => undefined)),
         );
         return;
       }
-
-      await this.renditions.delete({ mediaId });
-      if (renditionsToCreate.length) await this.renditions.save(renditionsToCreate);
       this.logger.log({ mediaId, count: renditionsToCreate.length }, 'media processed');
     } catch (err) {
       this.logger.error({ err, mediaId }, 'media processing failed');
-      await this.media.update(
-        { id: mediaId },
-        {
-          status: 'failed',
-          failureReason: err instanceof Error ? err.message.slice(0, 510) : 'unknown error',
-        },
-      );
+      await this.media.manager.transaction(async (em) => {
+        try {
+          await lockWritableListing(em, media.listingId);
+        } catch (error) {
+          if (error instanceof ForbiddenException) {
+            await em.update(
+              ListingMedia,
+              { id: mediaId, deletedAt: IsNull(), status: media.status },
+              { status: 'failed', failureReason: 'Listing sold before media processing completed' },
+            );
+            return;
+          }
+          if (error instanceof NotFoundException) return;
+          throw error;
+        }
+        await em.update(
+          ListingMedia,
+          { id: mediaId, deletedAt: IsNull(), status: media.status },
+          {
+            status: 'failed',
+            failureReason: err instanceof Error ? err.message.slice(0, 510) : 'unknown error',
+          },
+        );
+      });
       throw err;
     }
   }

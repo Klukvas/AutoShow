@@ -16,11 +16,16 @@ export function EmptyState({
 }) {
   return (
     <div className={cn('flex flex-col items-center px-6 py-16 text-center', className)}>
-      <div aria-hidden className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-ink/[0.05] text-ink-3">
+      <div
+        aria-hidden
+        className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-ink/[0.05] text-ink-3"
+      >
         {icon ?? <CarOutline className="h-6 w-9" />}
       </div>
-      <h2 className="font-heading text-[17px] font-bold tracking-tight text-ink">{title}</h2>
-      {body && <p className="mt-1.5 max-w-[360px] text-[13px] font-medium text-ink-3">{body}</p>}
+      <h2 className="font-heading text-[1.0625rem] font-medium tracking-tight text-ink">{title}</h2>
+      {body && (
+        <p className="mt-1.5 max-w-[360px] text-[0.8125rem] font-medium text-ink-3">{body}</p>
+      )}
       {action && <div className="mt-5">{action}</div>}
     </div>
   );

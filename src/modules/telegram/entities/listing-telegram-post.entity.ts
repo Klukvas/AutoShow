@@ -30,6 +30,9 @@ export class ListingTelegramPost extends BaseEntity {
   @Column({ name: 'caption_message_id', type: 'int' })
   captionMessageId!: number;
 
+  @Column({ name: 'photo_ai_disclosure', type: 'varchar', length: 8, nullable: true })
+  photoAiDisclosure!: 'ai' | 'scene' | null;
+
   @Column({ name: 'sold_marked_at', type: 'timestamptz', nullable: true })
   soldMarkedAt!: Date | null;
 }

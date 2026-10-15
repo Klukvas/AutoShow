@@ -1,0 +1,34 @@
+{
+  "car": {
+    "path": "assets/images/mercedes-e2025-w214.png",
+    "type": "AI generated product illustration, not a listing photograph",
+    "tool": "built-in image_gen",
+    "reference": "Official Mercedes-Benz W214 front/rear image",
+    "reference_url": "https://www.mbusa.com/content/dam/mb-nafta/us/myco/my27/e-class/e-sedan/byo-options/2027-E350-SEDAN-SFB-DR.png",
+    "reference_path": "assets/references/official-w214-2.png",
+    "note": "2025 E-Class illustration informed by W214 reference. No specific real vehicle price or mileage claimed.",
+    "prompt": "Isolated white W214 E-Class front three quarter facing right, official reference design, flush door handles, black headlamp grille bridge, true alpha, complete car and soft contact shadow."
+  },
+  "fonts": [
+    {
+      "family": "Onest",
+      "source": "existing local assets/fonts/gf-onest-*.woff2"
+    },
+    {
+      "family": "Caveat",
+      "path": "assets/fonts/caveat-bold.ttf",
+      "url": "https://fonts.gstatic.com/s/caveat/v23/WnznHAc5bAfYB2QRah7pcpNvOx-pjRV6SII.ttf"
+    }
+  ],
+  "audio": {
+    "source": "existing local music.m4a,whoosh.m4a,tap.m4a,notification.m4a,chime.m4a",
+    "new_paid_generation": false,
+    "narration": false
+  },
+  "logo": {
+    "type": "DOM wordmark and red slanted motif reconstructed from approved static reference; no standalone logo file available"
+  },
+  "ui": {
+    "type": "illustrative white label reconstruction from approved storyboard; no personal account or external writes"
+  }
+}

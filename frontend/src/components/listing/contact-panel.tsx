@@ -38,17 +38,17 @@ export function ContactPanel({ listing, branding }: ContactPanelProps) {
   const hours = hoursLines(branding?.workingHours);
 
   return (
-    <div className="rounded-card border border-line bg-surface p-6 shadow-panel">
+    <div className="rounded-card border border-line bg-surface p-6 shadow-none">
       <div className="flex items-center gap-2.5">
-        <div className="tabular font-heading text-price-lg font-extrabold text-ink">{price}</div>
+        <div className="tabular font-heading text-price-lg font-medium text-ink">{price}</div>
         {listing.price.priceDrop && (
-          <span className="inline-flex items-center rounded-chip bg-ok/10 px-2 py-0.5 text-[12px] font-bold text-ok">
+          <span className="inline-flex items-center rounded-chip bg-ok/10 px-2 py-0.5 text-[0.75rem] font-medium text-ok">
             {t('priceDropped')} ↓{listing.price.priceDrop.dropPct}%
           </span>
         )}
       </div>
       {priceNote && <p className="mt-1 text-sub text-ink-2">{priceNote}</p>}
-      <p className="mt-2 text-sub font-semibold text-ink-2">{sellerLine}</p>
+      <p className="mt-2 text-sub font-medium text-ink-2">{sellerLine}</p>
 
       <div className="mt-5 space-y-2.5">
         {phoneHref && (
@@ -88,7 +88,7 @@ export function ContactPanel({ listing, branding }: ContactPanelProps) {
           {phone && phoneHref && (
             <a
               href={phoneHref}
-              className="focus-ring tabular font-heading text-[17px] font-bold text-ink transition-colors hover:text-lot-gold"
+              className="focus-ring tabular font-heading text-[1.0625rem] font-medium text-ink transition-colors hover:text-lot-gold"
             >
               {phone}
             </a>

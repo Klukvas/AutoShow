@@ -1,5 +1,6 @@
-import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
+import { Listing } from '../listings/entities/listing.entity';
 import { MediaService } from './media.service';
 
 const editor: AuthenticatedUser = { id: 'editor-1', email: 'editor@example.com', role: 'editor' };
@@ -11,12 +12,23 @@ describe('MediaService', () => {
       create: jest.fn((value) => value),
       save: jest.fn(async (value) => value),
       softRemove: jest.fn(),
+      softDelete: jest.fn(),
+      manager: { transaction: jest.fn() },
     };
+    const listings = { findOne: jest.fn().mockResolvedValue({ id: 'listing-1', status: 'draft' }) };
+    const em = {
+      findOne: jest.fn((entity: unknown, options: unknown) =>
+        entity === Listing ? listings.findOne(options) : media.findOne(options),
+      ),
+      softDelete: media.softDelete,
+      getRepository: (entity: unknown) => (entity === Listing ? listings : media),
+    };
+    media.manager.transaction.mockImplementation(async (fn) => fn(em));
     const renditions = {
       find: jest.fn(),
       softDelete: jest.fn(),
     };
-    const listings = { findOne: jest.fn() };
+
     const storage = {
       presignPut: jest.fn(),
       head: jest.fn(),
@@ -32,12 +44,13 @@ describe('MediaService', () => {
       audit as never,
       queue as never,
       { MEDIA_MAX_BYTES: 20_000_000 } as never,
+      { cleanupKeys: jest.fn().mockResolvedValue([]) } as never,
     );
     return { service, media, renditions, listings, storage, audit };
   };
 
   it('rejects a declared media type that does not match the MIME type', async () => {
-    const { service, listings } = makeService();
+    const { service } = makeService();
 
     await expect(
       service.beginUpload('listing-1', {
@@ -47,7 +60,6 @@ describe('MediaService', () => {
         sizeBytes: 100,
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
-    expect(listings.findOne).not.toHaveBeenCalled();
   });
 
   it('derives the object extension from the validated MIME type', async () => {
@@ -108,7 +120,7 @@ describe('MediaService', () => {
     expect(audit.record).toHaveBeenCalled();
   });
 
-  it('keeps the database row active when storage deletion fails', async () => {
+  it('keeps the deletion durable and defers cleanup when storage deletion fails', async () => {
     const { service, media, renditions, storage } = makeService();
     media.findOne.mockResolvedValue({
       id: 'media-1',
@@ -117,10 +129,8 @@ describe('MediaService', () => {
     renditions.find.mockResolvedValue([]);
     storage.delete.mockRejectedValue(new Error('storage unavailable'));
 
-    await expect(service.remove('media-1', editor)).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
-    );
-    expect(media.softRemove).not.toHaveBeenCalled();
+    await expect(service.remove('media-1', editor)).resolves.toBeUndefined();
+    expect(media.softDelete).toHaveBeenCalled();
     expect(renditions.softDelete).not.toHaveBeenCalled();
   });
 });

@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+import { isOwnedLogoKey } from './catalog-logo.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, IsNull, Repository } from 'typeorm';
@@ -31,17 +33,41 @@ export class MakeLogoService {
   async fetchLogo(makeId: string): Promise<void> {
     try {
       const make = await this.makes.findOne({ where: { id: makeId, deletedAt: IsNull() } });
-      if (!make || make.logoS3Key) return;
+      if (!make || make.logoS3Key || make.logoMode !== 'auto') return;
 
       const icon = await this.icons.fetchIcon(make.slug, make.nameEn);
       let stored: string | null = null;
       if (icon) {
-        const key = `catalog/makes/${make.slug}.png`;
+        const key = `catalog/makes/${make.id}/${randomUUID()}.png`;
         await this.storage.putBuffer(key, icon.buffer, icon.contentType);
         stored = key;
       }
 
-      await this.makes.update({ id: make.id }, { logoS3Key: stored, logoCheckedAt: new Date() });
+      // Compare the original version as well as mode/key: a manual upload or
+      // removal that finishes during the network fetch always wins.
+      let affected = 0;
+      try {
+        const result = await this.makes.update(
+          {
+            id: make.id,
+            version: make.version,
+            deletedAt: IsNull(),
+            logoMode: 'auto',
+            logoS3Key: IsNull(),
+          },
+          { logoS3Key: stored, logoCheckedAt: new Date() },
+        );
+        affected = result.affected ?? 0;
+      } finally {
+        if (!affected && isOwnedLogoKey(stored, make.id)) {
+          try {
+            await this.storage.delete(stored);
+          } catch (error) {
+            this.logger.warn({ error, key: stored }, 'unused auto logo cleanup failed');
+          }
+        }
+      }
+      if (!affected) return;
       // The public /catalog/makes response is Redis-cached — bust it so the
       // icon shows up right away, not after the TTL.
       if (stored) await this.catalog.invalidate();
@@ -64,6 +90,7 @@ export class MakeLogoService {
       .createQueryBuilder('make')
       .where('make.deleted_at IS NULL')
       .andWhere('make.logo_s3_key IS NULL')
+      .andWhere("make.logo_mode = 'auto'")
       .andWhere(
         new Brackets((qb) => {
           qb.where('make.logo_checked_at IS NULL').orWhere('make.logo_checked_at < :before', {

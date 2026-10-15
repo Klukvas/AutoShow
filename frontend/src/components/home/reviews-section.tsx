@@ -1,11 +1,11 @@
 import { getTranslations } from 'next-intl/server';
-import { SectionHeading } from '@/components/ui/section-heading';
+import { HomeSectionHeading } from './home-section-heading';
 import { ScrollReveal } from '@/components/motion/scroll-reveal';
 import type { PublicReview } from '@/lib/api/types';
 
 function Stars({ rating }: { rating: number }) {
   return (
-    <span aria-label={`${rating}/5`} className="text-[13px] tracking-[2px] text-warn-strong">
+    <span aria-label={`${rating}/5`} className="text-[0.8125rem] tracking-[2px] text-lot-gold">
       {'★'.repeat(Math.max(1, Math.min(5, rating)))}
       <span className="text-line-strong">{'★'.repeat(5 - Math.max(1, Math.min(5, rating)))}</span>
     </span>
@@ -14,21 +14,20 @@ function Stars({ rating }: { rating: number }) {
 
 interface ReviewsSectionProps {
   reviews: PublicReview[];
-  index: string;
 }
 
 /** Homepage testimonials (admin-curated, hidden while there are none). */
-export async function ReviewsSection({ reviews, index }: ReviewsSectionProps) {
+export async function ReviewsSection({ reviews }: ReviewsSectionProps) {
   const t = await getTranslations('home');
   if (reviews.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
-      <SectionHeading index={index} title={t('reviewsTitle')} />
-      <div className="mt-6 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
+    <section className="home-container home-section">
+      <HomeSectionHeading title={t('reviewsTitle')} />
+      <div className="home-reviews-grid">
         {reviews.slice(0, 6).map((review, idx) => (
           <ScrollReveal key={review.id} delay={Math.min(idx, 5) * 0.05}>
-            <figure className="flex h-full flex-col rounded-card border border-line bg-surface p-5">
+            <figure className="home-review">
               <Stars rating={review.rating} />
               <blockquote className="mt-3 flex-1 text-body-md leading-relaxed text-ink-2">
                 “{review.text}”

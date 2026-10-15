@@ -29,8 +29,8 @@ export interface TelegramChannel {
 
 /**
  * Telegram publishing config. Lives in site_settings (admin-editable, no
- * redeploy) — NEVER returned by the public branding endpoint and masked in
- * audit diffs: botToken is a live credential.
+ * redeploy) — NEVER returned by the public branding endpoint; botToken (a live
+ * credential) and leadChatId (a private manager chat) are masked in audit diffs.
  */
 export interface TelegramSettings {
   botToken: string | null;

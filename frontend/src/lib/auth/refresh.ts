@@ -1,8 +1,15 @@
 import { createHash } from 'node:crypto';
+import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { ApiClientError } from '@/lib/api/client';
 import { adminApi } from '@/lib/api/admin';
-import { readSession, writeSession, clearSession, type AdminSession } from './session';
+import {
+  readSession,
+  writeSession,
+  clearSession,
+  refreshRetryProof,
+  type AdminSession,
+} from './session';
 
 const REFRESH_MARGIN_SEC = 30;
 
@@ -28,15 +35,21 @@ export interface ServerAuth {
 }
 
 /** Read-only, RSC-safe: returns a still-valid access token or null. Never writes. */
-export async function readServerToken(): Promise<ServerAuth | null> {
+export const readServerToken = cache(async (): Promise<ServerAuth | null> => {
   const session = await readSession();
   if (!session) return null;
   const now = Math.floor(Date.now() / 1000);
   if (session.accessExpiresAt - REFRESH_MARGIN_SEC > now) {
-    return { session, accessToken: session.accessToken };
+    try {
+      const user = await adminApi.currentUser({ accessToken: session.accessToken });
+      return { session: { ...session, user }, accessToken: session.accessToken };
+    } catch (error) {
+      if (error instanceof ApiClientError && error.status === 401) return null;
+      throw error;
+    }
   }
   return null; // stale — caller must route through a refresh Route Handler
-}
+});
 
 /**
  * RSC helper: returns a valid token, or performs a redirect that never returns.
@@ -62,7 +75,10 @@ function keyFor(refreshToken: string): string {
 
 async function rotateOnce(session: AdminSession): Promise<AdminSession | null> {
   try {
-    const fresh = await adminApi.refresh(session.refreshToken);
+    const fresh = await adminApi.refresh(
+      session.refreshToken,
+      refreshRetryProof(session.refreshToken),
+    );
     const now = Math.floor(Date.now() / 1000);
     return {
       ...session,
@@ -87,12 +103,19 @@ export async function refreshSession(): Promise<ServerAuth | null> {
   if (!session) return null;
   const now = Math.floor(Date.now() / 1000);
   if (session.accessExpiresAt - REFRESH_MARGIN_SEC > now) {
-    return { session, accessToken: session.accessToken };
+    try {
+      const user = await adminApi.currentUser({ accessToken: session.accessToken });
+      return { session: { ...session, user }, accessToken: session.accessToken };
+    } catch (error) {
+      if (!(error instanceof ApiClientError && error.status === 401)) throw error;
+      // The refresh record is versioned too; rejected sessions clear their cookie below.
+    }
   }
 
   const key = keyFor(session.refreshToken);
   let promise = inFlight.get(key);
   if (!promise) {
+    // Later calls revalidate through the proof-bound backend recovery.
     promise = rotateOnce(session).finally(() => inFlight.delete(key));
     inFlight.set(key, promise);
   }

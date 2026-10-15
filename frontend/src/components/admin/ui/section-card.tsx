@@ -13,9 +13,9 @@ export function SectionCard({
   contentClassName?: string;
 }) {
   return (
-    <section className={cn('rounded-[12px] border border-line bg-surface p-5', className)}>
+    <section className={cn('min-w-0 rounded-none border border-line bg-surface p-5', className)}>
       {title && (
-        <h2 className="mb-4 text-[13px] font-bold uppercase tracking-[0.05em] text-ink-2">
+        <h2 className="mb-4 text-[0.8125rem] font-medium uppercase tracking-[0.05em] text-ink-2">
           {title}
         </h2>
       )}

@@ -55,15 +55,15 @@ export default async function CollectionPage({ params }: PageProps) {
   return (
     <div className="mx-auto max-w-[1200px] px-5 pb-16 pt-8 md:px-8">
       <nav className="text-sub text-ink-3">
-        <Link href="/" className="focus-ring rounded-[4px] hover:text-ink">
+        <Link href="/" className="focus-ring rounded-none hover:text-ink">
           AutoFlow
         </Link>
         {' / '}
-        <Link href="/cars" className="focus-ring rounded-[4px] hover:text-ink">
+        <Link href="/cars" className="focus-ring rounded-none hover:text-ink">
           {t('title')}
         </Link>
       </nav>
-      <h1 className="mt-3 font-heading text-title-lg font-extrabold text-ink">
+      <h1 className="mt-3 font-heading text-title-lg font-medium text-ink">
         {preset.emoji} {preset.titleUk}
       </h1>
       <p className="mt-2 max-w-[620px] text-body-md leading-relaxed text-ink-2">

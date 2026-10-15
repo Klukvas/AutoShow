@@ -1,4 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
+import { AdminUser } from '../admin-users/entities/admin-user.entity';
 import { Reflector } from '@nestjs/core';
 import type { Request } from 'express';
 import { IS_PUBLIC_KEY } from '../../common/decorators/public.decorator';
@@ -10,6 +13,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly tokens: AuthTokenService,
     private readonly reflector: Reflector,
+    @InjectRepository(AdminUser) private readonly users: Repository<AdminUser>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -27,17 +31,15 @@ export class JwtAuthGuard implements CanActivate {
     const token = header.slice(7);
     const payload = this.tokens.verifyAccess(token);
 
-    // Stateless access tokens survive a password change / role change / disable
-    // / delete until they expire — unless the user has a revocation cut-off.
-    if (await this.tokens.isAccessTokenRevoked(payload.sub, payload.iat)) {
+    const user = await this.users.findOne({ where: { id: payload.sub, deletedAt: IsNull() } });
+    if (
+      !user?.isActive ||
+      !Number.isInteger(payload.authVersion) ||
+      payload.authVersion !== user.authVersion
+    ) {
       throw new UnauthorizedException('Access token has been revoked');
     }
-
-    req.user = {
-      id: payload.sub,
-      email: payload.email,
-      role: payload.role,
-    };
+    req.user = { id: user.id, email: user.email, role: user.role };
     return true;
   }
 }

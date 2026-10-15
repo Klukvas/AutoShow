@@ -21,10 +21,12 @@ function MetricCard({
   accent?: boolean;
 }) {
   return (
-    <div className="rounded-[12px] border border-line bg-surface p-4">
-      <div className="text-[11.5px] font-bold uppercase tracking-[0.05em] text-ink-3">{label}</div>
+    <div className="rounded-none border border-line bg-surface p-4">
+      <div className="text-[0.71875rem] font-medium uppercase tracking-[0.05em] text-ink-3">
+        {label}
+      </div>
       <div
-        className={`tabular mt-1.5 font-heading text-[26px] font-extrabold ${accent ? 'text-accent' : 'text-ink'}`}
+        className={`tabular mt-1.5 font-heading text-[1.625rem] font-medium ${accent ? 'text-accent' : 'text-ink'}`}
       >
         {value}
       </div>
@@ -36,11 +38,11 @@ function FunnelStep({ label, value, accent }: { label: string; value: string; ac
   return (
     <div className="text-center">
       <div
-        className={`tabular font-heading text-[22px] font-extrabold ${accent ? 'text-accent' : 'text-ink'}`}
+        className={`tabular font-heading text-[1.375rem] font-medium ${accent ? 'text-accent' : 'text-ink'}`}
       >
         {value}
       </div>
-      <div className="text-[11px] font-semibold text-ink-3">{label}</div>
+      <div className="text-[0.6875rem] font-medium text-ink-3">{label}</div>
     </div>
   );
 }
@@ -88,8 +90,8 @@ export default async function AdminDashboardPage() {
   return (
     <div className="mx-auto max-w-[1100px]">
       <div className="mb-5">
-        <h1 className="font-heading text-[22px] font-extrabold text-ink">{t('title')}</h1>
-        <p className="mt-0.5 text-[13px] font-medium text-ink-3">{t('subtitle')}</p>
+        <h1 className="font-heading text-[1.375rem] font-medium text-ink">{t('title')}</h1>
+        <p className="mt-0.5 text-[0.8125rem] font-medium text-ink-3">{t('subtitle')}</p>
       </div>
 
       {/* Sales & money */}
@@ -117,37 +119,37 @@ export default async function AdminDashboardPage() {
         <SectionCard title={t('conversionTitle')}>
           <div className="flex items-center justify-between gap-3">
             <FunnelStep label={t('funnelViews')} value={String(summary.conversion.views)} />
-            <span aria-hidden className="text-[18px] text-ink-3">
+            <span aria-hidden className="text-[1.125rem] text-ink-3">
               →
             </span>
             <FunnelStep label={t('funnelLeads')} value={String(summary.conversion.leads)} />
-            <span aria-hidden className="text-[18px] text-ink-3">
+            <span aria-hidden className="text-[1.125rem] text-ink-3">
               →
             </span>
             <FunnelStep label={t('funnelRate')} value={`${summary.conversion.rate}%`} accent />
           </div>
-          <p className="mt-3 text-[12px] font-medium text-ink-3">{t('conversionHint')}</p>
+          <p className="mt-3 text-[0.75rem] font-medium text-ink-3">{t('conversionHint')}</p>
         </SectionCard>
 
         <SectionCard title={t('attributionTitle')}>
           {summary.attribution.length === 0 ? (
-            <p className="text-[13px] font-medium text-ink-3">{t('empty')}</p>
+            <p className="text-[0.8125rem] font-medium text-ink-3">{t('empty')}</p>
           ) : (
             <div className="flex flex-col gap-2">
               {summary.attribution.map((row) => {
                 const max = Math.max(1, ...attributionCounts);
                 return (
                   <div key={row.source} className="flex items-center gap-3">
-                    <span className="w-[96px] flex-none truncate text-[12px] font-semibold text-ink-2">
+                    <span className="w-[96px] flex-none truncate text-[0.75rem] font-medium text-ink-2">
                       {row.source}
                     </span>
-                    <div className="h-[18px] flex-1 overflow-hidden rounded-[5px] bg-surface-2">
+                    <div className="h-[18px] flex-1 overflow-hidden rounded-none bg-surface-2">
                       <div
-                        className="h-full rounded-[5px] bg-accent/80"
+                        className="h-full rounded-none bg-accent/80"
                         style={{ width: `${Math.max(6, (row.count / max) * 100)}%` }}
                       />
                     </div>
-                    <span className="tabular w-8 flex-none text-right text-[12px] font-bold text-ink-2">
+                    <span className="tabular w-8 flex-none text-right text-[0.75rem] font-medium text-ink-2">
                       {row.count}
                     </span>
                   </div>
@@ -162,27 +164,27 @@ export default async function AdminDashboardPage() {
         {/* Sales by month (CSS bars, no chart lib) */}
         <SectionCard title={t('salesByMonth')}>
           {summary.salesByMonth.length === 0 ? (
-            <p className="text-[13px] font-medium text-ink-3">{t('empty')}</p>
+            <p className="text-[0.8125rem] font-medium text-ink-3">{t('empty')}</p>
           ) : (
             <div className="flex flex-col gap-2.5">
               {summary.salesByMonth.map((m) => (
                 <div key={m.month} className="flex items-center gap-3">
-                  <span className="tabular w-[64px] flex-none text-[12px] font-bold text-ink-2">
+                  <span className="tabular w-[64px] flex-none text-[0.75rem] font-medium text-ink-2">
                     {monthLabel(m.month)}
                   </span>
-                  <div className="h-[22px] flex-1 overflow-hidden rounded-[6px] bg-surface-2">
+                  <div className="h-[22px] flex-1 overflow-hidden rounded-none bg-surface-2">
                     <div
-                      className="flex h-full items-center rounded-[6px] bg-accent/85 px-2"
+                      className="flex h-full items-center rounded-none bg-accent/85 px-2"
                       style={{
                         width: `${Math.max(6, (Number(m.commission) / maxMonthCommission) * 100)}%`,
                       }}
                     >
-                      <span className="tabular whitespace-nowrap text-[11px] font-bold text-on-accent">
+                      <span className="tabular whitespace-nowrap text-[0.6875rem] font-medium text-on-accent">
                         {money(m.commission)}
                       </span>
                     </div>
                   </div>
-                  <span className="tabular w-[68px] flex-none text-right text-[12px] font-semibold text-ink-3">
+                  <span className="tabular w-[68px] flex-none text-right text-[0.75rem] font-medium text-ink-3">
                     {t('salesCount', { count: m.count })}
                   </span>
                 </div>
@@ -194,23 +196,23 @@ export default async function AdminDashboardPage() {
         {/* Top by views */}
         <SectionCard title={t('topViews')}>
           {summary.views.top.length === 0 ? (
-            <p className="text-[13px] font-medium text-ink-3">{t('empty')}</p>
+            <p className="text-[0.8125rem] font-medium text-ink-3">{t('empty')}</p>
           ) : (
             <ul className="flex flex-col gap-1">
               {summary.views.top.map((item, idx) => (
                 <li key={item.id}>
                   <Link
                     href={`/admin/listings/${item.id}/edit`}
-                    className="focus-ring flex items-center gap-3 rounded-[9px] px-2 py-2 hover:bg-ink/[0.03]"
+                    className="dashboard-top-car focus-ring flex items-center gap-3 rounded-none px-2 py-2 hover:bg-ink/[0.03]"
                   >
-                    <span className="tabular w-5 flex-none text-center text-[13px] font-extrabold text-ink-3">
+                    <span className="tabular w-5 flex-none text-center text-[0.8125rem] font-medium text-ink-3">
                       {idx + 1}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-[13.5px] font-semibold text-ink">
+                    <span className="min-w-0 flex-1 truncate text-[0.84375rem] font-medium text-ink">
                       {item.title}
                     </span>
                     <ListingStatusBadge status={item.status as ListingStatus} />
-                    <span className="tabular flex-none text-right text-[12.5px] font-bold text-ink-2">
+                    <span className="tabular flex-none text-right text-[0.78125rem] font-medium text-ink-2">
                       {item.viewsCount}{' '}
                       <span className="font-medium text-ink-3">{t('viewsSuffix')}</span>
                       {item.viewsCount > 0 && (

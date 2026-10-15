@@ -42,7 +42,7 @@ export function LeadStatusSegments({ id, status }: { id: string; status: Status 
 
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <span className="text-[12.5px] font-semibold text-ink-2">{t('leads.statusLabel')}</span>
+      <span className="text-[0.78125rem] font-medium text-ink-2">{t('leads.statusLabel')}</span>
       <div role="group" aria-label={t('leads.statusLabel')} className="flex gap-[7px]">
         {SEGMENTS.map((s) => {
           const active = status === s;
@@ -54,10 +54,10 @@ export function LeadStatusSegments({ id, status }: { id: string; status: Status 
               aria-pressed={active}
               onClick={() => change(s)}
               className={cn(
-                'focus-ring min-h-[38px] rounded-[9px] border px-3.5 text-[12.5px] transition-none disabled:opacity-60',
+                'focus-ring min-h-[38px] rounded-none border px-3.5 text-[0.78125rem] transition-none disabled:opacity-60',
                 active
-                  ? 'border-accent bg-accent/[0.08] font-bold text-accent-hover'
-                  : 'border-line-input bg-surface font-semibold text-ink-2 hover:border-line-hover',
+                  ? 'border-accent bg-accent/[0.08] font-medium text-accent-hover'
+                  : 'border-line-input bg-surface font-medium text-ink-2 hover:border-line-hover',
               )}
             >
               {t(`leadStatus.${s}`)}
@@ -69,12 +69,12 @@ export function LeadStatusSegments({ id, status }: { id: string; status: Status 
         type="button"
         disabled={busy}
         onClick={() => change(status === 'spam' ? 'new' : 'spam')}
-        className="focus-ring rounded-[6px] text-[12px] font-semibold text-ink-3 underline-offset-2 hover:text-ink-2 hover:underline disabled:opacity-60"
+        className="focus-ring rounded-none text-[0.75rem] font-medium text-ink-3 underline-offset-2 hover:text-ink-2 hover:underline disabled:opacity-60"
       >
         {status === 'spam' ? t('leads.unspam') : t('leads.spamAction')}
       </button>
       {error && (
-        <p role="alert" className="w-full text-[12px] font-medium text-danger">
+        <p role="alert" className="w-full text-[0.75rem] font-medium text-danger">
           ⚠ {error}
         </p>
       )}

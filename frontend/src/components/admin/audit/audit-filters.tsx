@@ -24,7 +24,7 @@ export function AuditFilters({ entityType, period }: { entityType?: string; peri
   };
 
   const selectCls =
-    'focus-ring h-9 rounded-[8px] border border-line-input bg-surface px-3 text-[12px] font-semibold text-ink-2 outline-none';
+    'focus-ring h-9 rounded-none border border-line-input bg-surface px-3 text-[0.75rem] font-medium text-ink-2 outline-none';
 
   return (
     <div className="flex gap-2">

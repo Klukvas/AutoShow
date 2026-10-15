@@ -86,11 +86,11 @@ export function CreditCalculator({ listingId, priceAmount, currency }: CreditCal
 
   return (
     <div className="rounded-card border border-line bg-surface p-6">
-      <h2 className="font-heading text-section font-bold text-ink">{t('title')}</h2>
+      <h2 className="font-heading text-section font-medium text-ink">{t('title')}</h2>
 
       <div className="mt-4 flex flex-col gap-4">
         <div>
-          <span className="mb-1.5 block text-label font-semibold uppercase text-ink-2">
+          <span className="mb-1.5 block text-label font-medium uppercase text-ink-2">
             {t('downPayment')}
           </span>
           <div className="flex flex-wrap gap-2">
@@ -101,7 +101,7 @@ export function CreditCalculator({ listingId, priceAmount, currency }: CreditCal
                 onClick={() => setDownShare(share)}
                 aria-pressed={downShare === share}
                 className={cn(
-                  'focus-ring h-10 rounded-btn border px-4 text-sub font-semibold transition-colors',
+                  'focus-ring h-10 rounded-btn border px-4 text-sub font-medium transition-colors',
                   downShare === share
                     ? 'border-ink bg-ink text-surface'
                     : 'border-line-input text-ink-2 hover:border-ink-3',
@@ -111,13 +111,11 @@ export function CreditCalculator({ listingId, priceAmount, currency }: CreditCal
               </button>
             ))}
           </div>
-          <p className="mt-1.5 text-sub text-ink-3">
-            {formatMoney(String(downPayment), currency)}
-          </p>
+          <p className="mt-1.5 text-sub text-ink-3">{formatMoney(String(downPayment), currency)}</p>
         </div>
 
         <div>
-          <span className="mb-1.5 block text-label font-semibold uppercase text-ink-2">
+          <span className="mb-1.5 block text-label font-medium uppercase text-ink-2">
             {t('term')}
           </span>
           <div className="flex flex-wrap gap-2">
@@ -128,7 +126,7 @@ export function CreditCalculator({ listingId, priceAmount, currency }: CreditCal
                 onClick={() => setTerm(months)}
                 aria-pressed={term === months}
                 className={cn(
-                  'focus-ring h-10 rounded-btn border px-3.5 text-sub font-semibold transition-colors',
+                  'focus-ring h-10 rounded-btn border px-3.5 text-sub font-medium transition-colors',
                   term === months
                     ? 'border-ink bg-ink text-surface'
                     : 'border-line-input text-ink-2 hover:border-ink-3',
@@ -142,11 +140,11 @@ export function CreditCalculator({ listingId, priceAmount, currency }: CreditCal
 
         <div className="rounded-input bg-bg p-4">
           <p className="text-sub text-ink-2">{t('monthlyLabel')}</p>
-          <p className="tabular mt-0.5 font-heading text-price-md font-extrabold text-ink">
+          <p className="tabular mt-0.5 font-heading text-price-md font-medium text-ink">
             ≈ {formatMoney(monthly.toFixed(0), currency)}
             <span className="text-sub font-medium text-ink-3"> / {t('perMonth')}</span>
           </p>
-          <p className="mt-1 text-[11.5px] leading-snug text-ink-3">{t('disclaimer')}</p>
+          <p className="mt-1 text-[0.71875rem] leading-snug text-ink-3">{t('disclaimer')}</p>
         </div>
       </div>
 

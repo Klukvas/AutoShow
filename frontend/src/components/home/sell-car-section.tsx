@@ -1,12 +1,11 @@
 import { getTranslations } from 'next-intl/server';
 import { SellCarForm } from '@/components/lead/sell-car-form';
-import { Eyebrow } from '@/components/ui/eyebrow';
 
 /**
  * Consignment funnel: the showroom's second lead source — owners bringing
  * their cars to sell. Copy sells the service, the form captures the car.
  */
-export async function SellCarSection({ index }: { index: string }) {
+export async function SellCarSection() {
   const t = await getTranslations('sell');
   const steps = [
     { title: t('step1Title'), body: t('step1Body') },
@@ -15,13 +14,11 @@ export async function SellCarSection({ index }: { index: string }) {
   ];
 
   return (
-    <section id="sell" className="scroll-mt-20 border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-[1200px] gap-10 px-5 py-12 md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:px-8 md:py-16">
+    <section id="sell" className="home-sell">
+      <div className="home-container home-section home-sell-grid">
         <div>
-          <Eyebrow tone="gold" as="p">
-            №{index} · {t('eyebrow')}
-          </Eyebrow>
-          <h2 className="mt-2 font-heading text-title-lg font-extrabold tracking-editorial text-ink">
+          <p className="home-kicker">{t('eyebrow')}</p>
+          <h2 className="home-sell-title">
             {t('title')}
           </h2>
           <p className="mt-3 max-w-[440px] text-body-md leading-relaxed text-ink-2">
@@ -30,7 +27,7 @@ export async function SellCarSection({ index }: { index: string }) {
           <ol className="mt-6 space-y-4">
             {steps.map((step, idx) => (
               <li key={step.title} className="flex gap-3.5">
-                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-chip bg-accent text-[13.5px] font-extrabold text-on-accent">
+                <span className="home-step-number">
                   {idx + 1}
                 </span>
                 <div>
@@ -41,7 +38,7 @@ export async function SellCarSection({ index }: { index: string }) {
             ))}
           </ol>
         </div>
-        <div className="rounded-card border border-line bg-bg p-6">
+        <div className="home-sell-form">
           <h3 className="font-heading text-section font-bold text-ink">{t('formTitle')}</h3>
           <p className="mb-5 mt-1 text-sub text-ink-2">{t('formSubtitle')}</p>
           <SellCarForm />

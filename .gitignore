@@ -19,3 +19,11 @@ design_handoff_vitrina/
 download_backoffice/
 download_backoffice 2/
 *.zip
+
+# Local release-verification artifacts and screenshot baselines
+.*-release/
+frontend/.*-review-baseline/
+frontend/e2e/*.png
+frontend/e2e/homepage-cinematic/*.png
+frontend/e2e/homepage-cinematic/verification.json
+frontend/e2e/platform-cinematic/*.png

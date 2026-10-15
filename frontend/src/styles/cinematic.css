@@ -1,0 +1,405 @@
+/* Shared palette only: portals inherit from body; geometry belongs to components. */
+
+.platform-cinematic,
+.cinematic-login {
+  --bg: 11 18 23;
+  --canvas: 8 14 18;
+  --surface: 18 27 33;
+  --surface-2: 22 32 39;
+  --surface-warm: 15 23 29;
+  --ink: 243 243 239;
+  --ink-2: 182 191 195;
+  --ink-3: 162 174 181;
+  --line: 44 55 63;
+  --line-input: 76 89 98;
+  --line-strong: 103 118 128;
+  --line-hover: 159 173 182;
+  --lot-gold: 201 185 156;
+  --focus: 241 205 116;
+  --ph-a: 22 33 41;
+  --ph-b: 14 24 31;
+  --ph-glyph: 89 106 118;
+  --skeleton: 30 42 50;
+  --skeleton-hi: 45 60 69;
+  --ok: 145 218 172;
+  --ok-bg: 22 47 35;
+  --warn: 236 198 126;
+  --warn-strong: 236 198 126;
+  --danger: 255 169 159;
+  --danger-bg: 54 29 29;
+  --danger-line: 111 66 66;
+  --danger-fill: 255 169 159;
+  --on-danger: 43 15 14;
+  --ratelimit: 244 211 148;
+  --ratelimit-2: 244 211 148;
+  --ratelimit-bg: 47 39 23;
+  --ratelimit-line: 106 87 49;
+  --st-draft-bg: 33 45 54;
+  --st-draft-fg: 190 202 210;
+  --st-published-bg: 22 47 35;
+  --st-published-fg: 145 218 172;
+  --st-reserved-bg: 47 39 23;
+  --st-reserved-fg: 236 198 126;
+  --st-sold-bg: 54 29 29;
+  --st-sold-fg: 255 169 159;
+  --st-archived-bg: 33 45 54;
+  --st-archived-fg: 190 202 210;
+  --thead: 15 23 29;
+  --sb-bg: 8 14 18;
+  --sb-ink: 243 243 239;
+  --sb-ink-2: 182 191 195;
+  --sb-muted: 162 174 181;
+  --sb-faint: 162 174 181;
+  --sb-line: rgba(255,255,255,.12);
+  --sb-active: rgba(255,255,255,.07);
+  --sb-input-line: rgba(255,255,255,.2);
+  --sb-input-bg: rgba(255,255,255,.04);
+  --radius-chip: 0px;
+  --radius-btn: 0px;
+  --radius-input: 0px;
+  --radius-default: 0px;
+  --radius-card: 0px;
+  --radius-window: 0px;
+  --radius-hero: 0px;
+  --radius-sheet: 0px;
+  color-scheme: dark;
+}
+
+[data-theme='light'] .platform-cinematic {
+  --bg: 244 245 243;
+  --canvas: 235 239 239;
+  --surface: 255 255 253;
+  --surface-2: 235 239 239;
+  --surface-warm: 240 243 242;
+  --ink: 17 27 35;
+  --ink-2: 69 84 94;
+  --ink-3: 84 101 112;
+  --line: 206 216 220;
+  --line-input: 159 176 186;
+  --line-strong: 118 140 153;
+  --line-hover: 97 121 135;
+  --lot-gold: 110 86 44;
+  --focus: 145 96 0;
+  --ph-a: 226 234 237;
+  --ph-b: 209 220 226;
+  --ph-glyph: 130 153 168;
+  --skeleton: 221 230 234;
+  --skeleton-hi: 239 244 246;
+  --ok: 36 111 70;
+  --ok-bg: 224 241 232;
+  --warn: 142 93 19;
+  --warn-strong: 130 82 13;
+  --danger: 165 49 41;
+  --danger-bg: 252 234 232;
+  --danger-line: 224 168 163;
+  --danger-fill: 165 49 41;
+  --on-danger: 255 255 253;
+  --ratelimit: 128 87 16;
+  --ratelimit-2: 128 87 16;
+  --ratelimit-bg: 252 245 225;
+  --ratelimit-line: 221 197 142;
+  --st-draft-bg: 228 235 239;
+  --st-draft-fg: 73 93 106;
+  --st-published-bg: 224 241 232;
+  --st-published-fg: 36 111 70;
+  --st-reserved-bg: 252 245 225;
+  --st-reserved-fg: 130 82 13;
+  --st-sold-bg: 252 234 232;
+  --st-sold-fg: 165 49 41;
+  --st-archived-bg: 228 235 239;
+  --st-archived-fg: 73 93 106;
+  --thead: 235 239 239;
+  color-scheme: light;
+}
+
+.platform-cinematic .af-cta {
+  letter-spacing: 0;
+  box-shadow: none;
+}
+
+.platform-cinematic .af-cta.bg-accent,
+.platform-primary {
+  background: #f3f3ef;
+  color: #111b23;
+  border-color: #f3f3ef;
+}
+
+.platform-cinematic .af-cta.bg-accent:hover,
+.platform-primary:hover {
+  background: #dce4e7;
+  border-color: #dce4e7;
+}
+
+[data-theme='light'] .platform-cinematic .af-cta.bg-accent,
+[data-theme='light'] .platform-primary {
+  background: #111b23;
+  color: #f3f3ef;
+  border-color: #111b23;
+}
+
+[data-theme='light'] .platform-cinematic .af-cta.bg-accent:hover,
+[data-theme='light'] .platform-primary:hover {
+  background: #2c3b45;
+  border-color: #2c3b45;
+}
+
+.platform-destructive {
+  background: rgb(var(--danger-fill));
+  color: rgb(var(--on-danger));
+}
+
+.platform-destructive:hover {
+  filter: brightness(.92);
+}
+
+.cinematic-interior h1 {
+  font-family: var(--font-sans),sans-serif;
+  font-size: clamp(38px,4vw,56px);
+  font-weight: 300;
+  line-height: 1.12;
+  letter-spacing: -.045em;
+}
+
+.cinematic-interior h2 {
+  font-weight: 500;
+  letter-spacing: -.035em;
+}
+
+.cinematic-interior .font-heading {
+  font-family: var(--font-sans),sans-serif;
+}
+
+.cinematic-admin h1 {
+  font-family: var(--font-sans),sans-serif;
+  font-size: 30px;
+  font-weight: 300;
+  line-height: 1.2;
+  letter-spacing: -.035em;
+}
+
+.cinematic-admin h2 {
+  font-weight: 500;
+}
+
+.cinematic-admin {
+  font-size: 14px;
+}
+
+.platform-cinematic .material-bar {
+  background: rgb(var(--bg));
+  backdrop-filter: none;
+}
+
+.platform-cinematic .material-panel {
+  background: rgb(var(--surface));
+  backdrop-filter: none;
+}
+
+.platform-cinematic .shadow-panel,
+.platform-cinematic .shadow-card,
+.platform-cinematic .shadow-cta-sticky,
+.platform-cinematic .shadow-sm {
+  box-shadow: none;
+}
+
+.cinematic-interior .rule-draw::after {
+  display: none;
+}
+
+.cinematic-interior .home-listing-price {
+  font-size: 26px;
+}
+
+.platform-card-tags {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  color: rgb(var(--ink-2));
+  font-size: 11px;
+}
+
+.platform-card-tags li {
+  border: 1px solid rgb(var(--line));
+  padding: 3px 6px;
+}
+
+.platform-price-drop {
+  color: rgb(var(--ok));
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.cinematic-login {
+  background: rgb(var(--bg));
+  color: rgb(var(--ink));
+}
+
+.cinematic-login h1 {
+  font-size: 34px;
+  font-weight: 300;
+  letter-spacing: -.035em;
+}
+
+.cinematic-wordmark {
+  font-family: var(--font-sans),sans-serif;
+  font-size: 26px;
+  font-weight: 300;
+  letter-spacing: -.05em;
+}
+
+.cinematic-wordmark span {
+  color: rgb(var(--lot-gold));
+}
+
+.cinematic-interior .home-listing-photo {
+  aspect-ratio: 1.6;
+}
+
+@media (max-width: 767px) {
+
+  .cinematic-interior h1 {
+    font-size: 36px;
+  }
+
+  .cinematic-admin h1 {
+    font-size: 28px;
+  }
+}
+
+@media (prefers-contrast: more) {
+
+  .platform-cinematic {
+    --line: 162 174 181;
+    --line-input: 182 191 195;
+    --line-strong: 182 191 195;
+  }
+
+  [data-theme='light'] .platform-cinematic {
+    --line: 69 84 94;
+    --line-input: 69 84 94;
+    --line-strong: 69 84 94;
+  }
+}
+/* Approved dark zones stay dark even when an interior light preference is stored. */
+
+.platform-cinematic .homepage-cinematic .af-cta.bg-accent,
+.platform-cinematic .homepage-cinematic .platform-primary,
+.platform-cinematic .cinematic-login .platform-primary {
+  background: #f3f3ef;
+  color: #111b23;
+  border-color: #f3f3ef;
+}
+
+.platform-cinematic .homepage-cinematic .af-cta.bg-accent:hover,
+.platform-cinematic .homepage-cinematic .platform-primary:hover,
+.platform-cinematic .cinematic-login .platform-primary:hover {
+  background: #dce4e7;
+  border-color: #dce4e7;
+}
+
+.platform-select {
+  background-color: rgb(var(--surface));
+}
+
+.cinematic-interior .home-stats-inner {
+  grid-template-columns: repeat(auto-fit,minmax(min(100%,6rem),1fr));
+}
+
+.cinematic-interior .home-stats-value {
+  font-size: 36px;
+  font-weight: 300;
+}
+
+.cinematic-admin > header h1 {
+  font-size: 18px;
+  font-weight: 500;
+}
+/* Existing admin actions use native buttons/links rather than the Button primitive. */
+
+.platform-cinematic :where(button,a).bg-accent.text-on-accent {
+  background: #f3f3ef;
+  color: #111b23;
+}
+
+.platform-cinematic :where(button,a).bg-accent.text-on-accent:hover {
+  background: #dce4e7;
+}
+
+[data-theme='light'] .platform-cinematic :where(button,a).bg-accent.text-on-accent {
+  background: #111b23;
+  color: #f3f3ef;
+}
+
+[data-theme='light'] .platform-cinematic :where(button,a).bg-accent.text-on-accent:hover {
+  background: #2c3b45;
+}
+
+.platform-cinematic .homepage-cinematic :where(button,a).bg-accent.text-on-accent {
+  background: #f3f3ef;
+  color: #111b23;
+}
+
+.platform-cinematic .homepage-cinematic :where(button,a).bg-accent.text-on-accent:hover {
+  background: #dce4e7;
+}
+/* Keep keyboard focus explicit even on flat controls with decorative shadows removed. */
+
+.platform-cinematic .focus-ring:focus-visible,
+.platform-cinematic .af-cta:focus-visible {
+  outline: 2px solid rgb(var(--focus));
+  outline-offset: 3px;
+}
+
+.platform-cinematic .home-listing-photo-link:focus-visible {
+  outline-offset: -4px;
+}
+
+@media (max-width: 767px) {
+
+  .dashboard-top-car {
+    display: grid;
+    grid-template-columns: 24px minmax(0,1fr);
+  }
+
+  .dashboard-top-car > span:first-child {
+    grid-row: 1 / 4;
+  }
+
+  .dashboard-top-car > span:not(:first-child) {
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+  }
+}
+
+/* Photo controls keep their light foreground on a permanently dark overlay. */
+.inventory-photo-control {
+  background: rgb(11 18 23 / .8);
+  color: #b6bfc3;
+}
+.inventory-photo-control:hover {
+  background: rgb(11 18 23 / .96);
+}
+.photo-overlay-icon {
+  stroke: #b6bfc3;
+}
+.photo-favorite-active {
+  fill: #ffa99f;
+  stroke: #ffa99f;
+}
+.photo-compare-active {
+  stroke: #c9b99c;
+}
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .home-listing-tools .inventory-photo-control {
+    background: #0b1217;
+    backdrop-filter: none;
+  }
+  .photo-overlay-icon {
+    stroke: #f3f3ef;
+  }
+}
+.cinematic-interior h2.text-title-lg {
+  font-weight: 300;
+}

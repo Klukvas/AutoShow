@@ -1,3 +1,4 @@
+import { CatalogLogoService } from './catalog-logo.service';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -45,7 +46,13 @@ const ENTITIES = [
     AuthModule,
   ],
   controllers: [CatalogPublicController, CatalogAdminController],
-  providers: [CatalogService, CatalogAdminService, SimpleIconsClient, MakeLogoService],
+  providers: [
+    CatalogLogoService,
+    CatalogService,
+    CatalogAdminService,
+    SimpleIconsClient,
+    MakeLogoService,
+  ],
   exports: [CatalogService, MakeLogoService, TypeOrmModule],
 })
 export class CatalogModule {}

@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=1080,height=1920" />
+    <title>AutoFlow · затверджена анімація без озвучки</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="assets/js/gsap.min.js"></script>
+  </head>
+  <body>
+    <div
+      data-hf-id="hf-7hxc"
+      id="root"
+      data-composition-id="autoflow-flow"
+      data-width="1080"
+      data-height="1920"
+      data-duration="30"
+    >
+      <div
+        data-hf-id="hf-lyb2"
+        id="mount-01"
+        class="clip scene-host"
+        data-composition-id="scene-01"
+        data-composition-src="compositions/scene-01.html"
+        data-start="0"
+        data-duration="4.2"
+        data-width="1080"
+        data-height="1920"
+        data-track-index="0"
+      ></div>
+      <div
+        data-hf-id="hf-404p"
+        id="mount-02"
+        class="clip scene-host"
+        data-composition-id="scene-02"
+        data-composition-src="compositions/scene-02.html"
+        data-start="4.2"
+        data-duration="4.8"
+        data-width="1080"
+        data-height="1920"
+        data-track-index="0"
+      ></div>
+      <div
+        data-hf-id="hf-bnk4"
+        id="mount-03"
+        class="clip scene-host"
+        data-composition-id="scene-03"
+        data-composition-src="compositions/scene-03.html"
+        data-start="9"
+        data-duration="5"
+        data-width="1080"
+        data-height="1920"
+        data-track-index="0"
+      ></div>
+      <div
+        data-hf-id="hf-0jwh"
+        id="mount-04"
+        class="clip scene-host"
+        data-composition-id="scene-04"
+        data-composition-src="compositions/scene-04.html"
+        data-start="14"
+        data-duration="5"
+        data-width="1080"
+        data-height="1920"
+        data-track-index="0"
+      ></div>
+      <div
+        data-hf-id="hf-m9ku"
+        id="mount-05"
+        class="clip scene-host"
+        data-composition-id="scene-05"
+        data-composition-src="compositions/scene-05.html"
+        data-start="19"
+        data-duration="6"
+        data-width="1080"
+        data-height="1920"
+        data-track-index="0"
+      ></div>
+      <div
+        data-hf-id="hf-ziwb"
+        id="mount-06"
+        class="clip scene-host"
+        data-composition-id="scene-06"
+        data-composition-src="compositions/scene-06.html"
+        data-start="25"
+        data-duration="5"
+        data-width="1080"
+        data-height="1920"
+        data-track-index="0"
+      ></div>
+      <img
+        id="continuity-car"
+        class="clip continuity-car"
+        data-start="0"
+        data-duration="5.05"
+        data-track-index="1"
+        src="assets/images/mercedes-e2025-w214.png"
+        alt="Білий Mercedes-Benz E-Class 2025"
+      />
+      <audio
+        data-hf-id="hf-av9e"
+        id="music"
+        src="assets/audio/music.m4a"
+        data-start="0"
+        data-duration="30"
+        data-track-index="2"
+        data-volume="0.68"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0},{"t":0.5,"v":0.68},{"t":28.4,"v":0.68},{"t":30,"v":0}]}]}'
+      ></audio
+      ><audio
+        data-hf-id="hf-4kl7"
+        id="sfx-photo"
+        src="assets/audio/whoosh.m4a"
+        data-start="3.6"
+        data-duration="0.7"
+        data-track-index="3"
+        data-volume="0.2"
+      ></audio
+      ><audio
+        data-hf-id="hf-5rtr"
+        id="sfx-publish"
+        src="assets/audio/tap.m4a"
+        data-start="7.4"
+        data-duration="0.24"
+        data-track-index="3"
+        data-volume="0.6"
+      ></audio
+      ><audio
+        data-hf-id="hf-01r5"
+        id="sfx-site"
+        src="assets/audio/whoosh.m4a"
+        data-start="10.3"
+        data-duration="0.7"
+        data-track-index="3"
+        data-volume="0.22"
+      ></audio
+      ><audio
+        data-hf-id="hf-tbww"
+        id="sfx-open"
+        src="assets/audio/tap.m4a"
+        data-start="9.8"
+        data-duration="0.24"
+        data-track-index="3"
+        data-volume="0.4"
+      ></audio
+      ><audio
+        data-hf-id="hf-c8cb"
+        id="sfx-post"
+        src="assets/audio/notification.m4a"
+        data-start="15.25"
+        data-duration="0.72"
+        data-track-index="3"
+        data-volume="0.65"
+      ></audio
+      ><audio
+        data-hf-id="hf-r2qs"
+        id="sfx-lead"
+        src="assets/audio/notification.m4a"
+        data-start="21.7"
+        data-duration="0.72"
+        data-track-index="3"
+        data-volume="0.65"
+      ></audio
+      ><audio
+        data-hf-id="hf-5wqa"
+        id="sfx-close"
+        src="assets/audio/chime.m4a"
+        data-start="27.1"
+        data-duration="2.5"
+        data-track-index="3"
+        data-volume="0.17"
+      ></audio>
+    </div>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo(
+        '.continuity-car',
+        { x: 0, y: 0, scale: 1, opacity: 0 },
+        { x: 0, y: 0, scale: 1, opacity: 1, duration: 0.75, ease: 'power3.out' },
+        0.3,
+      );
+      tl.to(
+        '.continuity-car',
+        { x: 115, y: -55, scale: 0.785, duration: 1.2, ease: 'power3.inOut' },
+        3.6,
+      );
+      tl.to('.continuity-car', { opacity: 0, duration: 0.15 }, 4.9);
+      window.__timelines['autoflow-flow'] = tl;
+    </script>
+  </body>
+</html>

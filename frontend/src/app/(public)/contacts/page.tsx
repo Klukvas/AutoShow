@@ -16,7 +16,7 @@ export default async function ContactsPage() {
 
   return (
     <div className="mx-auto max-w-[1200px] px-5 py-10 md:px-8 md:py-14">
-      <h1 className="font-heading text-title-lg font-extrabold text-ink">{t('title')}</h1>
+      <h1 className="font-heading text-title-lg font-medium text-ink">{t('title')}</h1>
 
       <div className="mt-8 grid grid-cols-1 gap-10 md:grid-cols-12">
         <div className="space-y-8 md:col-span-6">
@@ -27,7 +27,7 @@ export default async function ContactsPage() {
                 <div>
                   <a
                     href={phoneHref}
-                    className="focus-ring tabular font-heading text-title-sm font-bold text-ink transition-colors hover:text-lot-gold"
+                    className="focus-ring tabular font-heading text-title-sm font-medium text-ink transition-colors hover:text-lot-gold"
                   >
                     {phone}
                   </a>
@@ -37,7 +37,7 @@ export default async function ContactsPage() {
                 <div>
                   <a
                     href={`mailto:${branding.contactEmail}`}
-                    className="focus-ring font-heading text-section font-bold text-ink transition-colors hover:text-lot-gold"
+                    className="focus-ring font-heading text-section font-medium text-ink transition-colors hover:text-lot-gold"
                   >
                     {branding.contactEmail}
                   </a>
@@ -49,7 +49,7 @@ export default async function ContactsPage() {
                   href={mapHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="focus-ring inline-flex items-center gap-1.5 pt-1 text-sub font-semibold text-accent-hover hover:underline dark:text-accent"
+                  className="focus-ring inline-flex items-center gap-1.5 pt-1 text-sub font-medium text-accent-hover hover:underline dark:text-accent"
                 >
                   {t('mapCta')}
                 </a>

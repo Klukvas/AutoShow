@@ -1,0 +1,1439 @@
+--- before/BRIEF.md
++++ after/BRIEF.md
+@@ -9,9 +9,10 @@
+ music: existing-local
+ ---
+ 
+-# AutoFlow — один автомобіль, один маршрут
++# AutoFlow — погоджене анімоване прев’ю
+ 
+-Аудиторія: власники українських автомайданчиків. Повідомлення: «Додали авто один раз. Далі працює AutoFlow».
+-Концепція, шість сцен і статичний v2 погоджені користувачем у поточній задачі. Уточнення: сцена 02 — «Додайте його в AutoFlow»; найновіше «для начала без озвучки» визначає це перше прев’ю: музика та SFX, без VO/TTS.
++Аудиторія: власники українських автомайданчиків. Концепція: оголошення про авто переходить із редактора на власний сайт, автоматично до Telegram-каналу, а заявка покупця — менеджеру.
+ 
+-Цей етап створює лише локальне анімоване прев’ю. Фінальний файл/MP4 потребує окремого явного одобрення готового прев’ю. Жодних платних викликів, акаунтів, публікацій чи генерації.
++У поточній розмові користувач обрав Codex, погодив концепцію, шість сцен і статичний лист Варіант А. Останнє доручення: «окей, тогда делай, пока видос без озвучики, но не скупись на анимации». Збережено погоджені ivory/peach/red, Onest, білий Mercedes-Benz E-Class 2025, детальні UI, піктограми та рукописні акценти. Редактор і сайт — white label.
++
++Локальне прев’ю містить існуючу музику та SFX, без VO/TTS. Фінальне прев’ю потребує явного одобрення до рендера MP4. Фінальний файл не рендерили; нічого не публікували. Нові платні API-провайдери не використовуються. Прозорий автомобіль створено дозволеним вбудованим ImageGen; локальні джерела зафіксовано у MEDIA-SOURCES.json.
+--- before/STORYBOARD.md
++++ after/STORYBOARD.md
+@@ -1,22 +1,28 @@
+-# Погоджений v2 → анімоване прев’ю
++---
++music: existing-local
++narration: no
++status: animated-preview-awaiting-approval
++---
+ 
+-30 секунд, 1080×1920, музика та SFX, без озвучки. Композиція й ієрархія погодженого листа збережені; заголовок 02 змінений за явним уточненням. Білу Camry показуємо повністю через object-fit: contain з відступами; новий оригінал — та сама машина зі скриншота.
++# Шість погоджених сцен — Варіант А
+ 
+-| Сцена | Час | Текст | Дія та призначення |
++1080×1920, 30 fps, 30 секунд. Підтвердження етапів — явні репліки користувача в поточній розмові, а не цей документ. Готове анімоване прев’ю ще очікує одобрення перед фінальним рендером.
++
++| Сцена | Час | Екранний текст | Дія |
+ |---|---|---|---|
+-| 01 | 0–3 | У вас є авто. | Повне фото; початок шляху. |
+-| 02 | 3–9 | Додайте його в AutoFlow | Те саме фото переходить у редактор; дані з’являються по черзі, натискання «Опублікувати». |
+-| 03 | 9–14 | На вашому сайті | Спільне фото зникає до 9.0 с; фокус переходить реальному фрагменту сайту; акцент на «Залишити заявку». |
+-| 04 | 14–19 | І у вашому Telegram-каналі | iPhone отримує пост із фото, ціною, характеристиками й посиланням. |
+-| 05 | 19–25 | Заявка — одразу менеджеру | iPhone лишається в тій самій позиції; надходить «Нова заявка» і «Хочу подивитися це авто». |
+-| 06 | 25–30 | Менше рутини. Більше уваги клієнтам. | Типографічний висновок, чернетка CTA «Переглянути демо», утримання до кінця. |
++| 01 | 0–4.2 | Маєте авто на продаж? Покажіть його покупцям | Повний білий Mercedes; каскад трьох іконок вигод; те саме фото прямує до редактора. |
++| 02 | 4.2–9 | Створіть оголошення про авто | White label редактор; фото, модель, 2025, «Ціна за запитом», опис; курсор натискає «Додати авто». |
++| 03 | 9–14 | Опублікуйте авто на своєму сайті | Натискання публікації спричиняє появу детального white label сайту; фото, галерея, ціна, «Залишити заявку». «Ваш сайт. Більше клієнтів. Більше продажів.» |
++| 04 | 14–19 | І воно автоматично з’явиться у вашому Telegram-каналі | Вертикальний iPhone, Telegram-пост із тим самим автомобілем і посиланням. Рукописне «Ваші авто там, де є покупці!». |
++| 05 | 19–25 | Покупець залишає заявку на авто. Ваш менеджер отримує сповіщення | Форма покупця; клік; стрілка; натурально пропорційний телефон менеджера піднімається знизу; сповіщення з ім’ям, маскованим телефоном, автомобілем і «Відкрити в AutoFlow». |
++| 06 | 25–30 | Менше рутини. Більше уваги клієнтам. | AutoFlow wordmark за погодженим зразком, три вигоди, CTA «Переглянути демо», рукописне «Розвиваємо автобізнес разом». |
+ 
+-Публічний UI — реальний локальний скриншот. Редактор і Telegram — ілюстративні реконструкції, а не захоплення особистого акаунта. Редактор звірений із кодом. Telegram звірений з офіційним CC0 reference; схематичні назви/повідомлення залишаються умовними. Сторонні референсні аватари/повідомлення не входять у ролик.
++## Video direction
+ 
+-Автопост потребує налаштованого бота/каналу та autoPublish; повідомлення менеджерам — бота й leadChatId. «Одразу» описує автоматичний маршрут, без гарантії секунд чи продажу.
++Тепле ivory тло, великі частково обрізані peach-дуги, чорна жирна Onest, червоні акценти, округлі білі панелі із м’якою тінню. Усі важливі елементи — окремі DOM-шари. Немає шестипанельних рамок чи номерів кадрів у відео. Немає фрази «нові клієнти щодня» або вигаданих числових цін/пробігу.
+ 
+-Шість окремих template-композицій у animation/compositions мають локальні paused GSAP таймлайни. Головна композиція містить тільки mount slots, аудіо і спільне фото; його геометрія зафіксована з перевіреного кадру. Фото зникає до 9.0 с; реальний сайт з’являється після нього без дублювання автомобіля.
++0.45–0.65s входи; коротка 0.1s компресія кнопки та 0.3s повернення; явні причинні кліки, SVG-стрілки, поетапні дані. Телефони не хитаються та не стискаються по вертикалі. Завершення CTA зберігається до кінця.
+ 
+-Виробниче уточнення: iPhone звужений до приблизно 600×1070 px для впізнаваної пропорції пристрою; зовнішня ієрархія й тексти збережені, обидва iPhone мають однаковий стан корпуса на стику. Статичний v2 погоджений. Анімоване прев’ю очікує перегляду й явного одобрення. Фінальний рендер не виконано.
++UI є ілюстративною локальною реконструкцією погоджених екранів, а не персональним акаунтом. Автопост потребує налаштованого каналу/бота; сповіщення — налаштувань менеджера. Імена та маскований номер демонстраційні.
+ 
+-Анімований проект винесено в animation/, щоб Studio перевіряв шість сцен і не трактував статичний storyboard.html як композицію.
++Кожна сцена має окремий paused GSAP timeline і стабільний data-scene-view селектор для Studio/compiler. Framework керує аудіо та видимістю кліпів. Відео без озвучки; локальні SFX синхронізовані з діями.
+--- before/animation/index.html
++++ after/animation/index.html
+@@ -1,16 +1,191 @@
+-<!doctype html><html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=1080,height=1920"><title>AutoFlow — музика та SFX · без озвучки</title><script src="assets/js/gsap.min.js"></script><script src="assets/js/MotionPathPlugin.min.js"></script><style>@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-cyrillic.woff2');font-weight:400 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-latin.woff2');font-weight:400 900}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-cyrillic.woff2');font-weight:400 700;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-latin.woff2');font-weight:400 700}
+-@font-face{font-family:Inter;src:url('assets/fonts/gf-onest-cyrillic.woff2');font-weight:400 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Inter;src:url('assets/fonts/gf-onest-latin.woff2');font-weight:400 900}
+-:root{--cream:#FBF8F1;--tile:#F2EBDB;--ink:#211D16;--coral:#B4453C}*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--cream);font-family:Onest,Arial,sans-serif}#root{position:relative;width:100%;height:100%;overflow:hidden}#root>div[data-composition-src]{position:absolute;inset:0;width:100%;height:100%}.shared-photo{position:absolute;left:0;top:0;right:auto;bottom:auto;width:900px;height:458px;transform-origin:0 0;object-fit:contain;background:var(--tile);padding:20px;border-radius:8px;z-index:3;opacity:0}audio{display:none}
+-</style></head><body><div id="root" data-composition-id="autoflow-flow" data-start="0" data-width="1080" data-height="1920" data-duration="30" data-hf-id="hf-flow-index-001"><div id="mount-01" class="clip" data-composition-id="scene-01" data-composition-src="compositions/scene-01.html" data-width="1080" data-height="1920" data-start="0" data-duration="3" data-track-index="0" data-hf-id="hf-flow-index-002"></div><div id="mount-02" class="clip" data-composition-id="scene-02" data-composition-src="compositions/scene-02.html" data-width="1080" data-height="1920" data-start="3" data-duration="6" data-track-index="0" data-hf-id="hf-flow-index-003"></div><div id="mount-03" class="clip" data-composition-id="scene-03" data-composition-src="compositions/scene-03.html" data-width="1080" data-height="1920" data-start="9" data-duration="5" data-track-index="0" data-hf-id="hf-flow-index-004"></div><div id="mount-04" class="clip" data-composition-id="scene-04" data-composition-src="compositions/scene-04.html" data-width="1080" data-height="1920" data-start="14" data-duration="5" data-track-index="0" data-hf-id="hf-flow-index-005"></div><div id="mount-05" class="clip" data-composition-id="scene-05" data-composition-src="compositions/scene-05.html" data-width="1080" data-height="1920" data-start="19" data-duration="6" data-track-index="0" data-hf-id="hf-flow-index-006"></div><div id="mount-06" class="clip" data-composition-id="scene-06" data-composition-src="compositions/scene-06.html" data-width="1080" data-height="1920" data-start="25" data-duration="5" data-track-index="0" data-hf-id="hf-flow-index-007"></div><img id="shared-photo" class="clip shared-photo" src="assets/images/camry-original-01.jpeg" alt="Toyota Camry повністю в кадрі" data-start="0" data-duration="9" data-track-index="1" data-hf-id="hf-flow-index-008"><audio data-hf-id="hf-av9e" id="music" src="assets/audio/music.m4a" data-start="0" data-duration="30" data-track-index="2" data-volume="0.68" data-automation="{&quot;version&quot;:1,&quot;lanes&quot;:[{&quot;target&quot;:&quot;volume&quot;,&quot;points&quot;:[{&quot;t&quot;:0,&quot;v&quot;:0},{&quot;t&quot;:0.5,&quot;v&quot;:0.68},{&quot;t&quot;:28.4,&quot;v&quot;:0.68},{&quot;t&quot;:30,&quot;v&quot;:0}]}]}"></audio><audio data-hf-id="hf-4kl7" id="sfx-photo" src="assets/audio/whoosh.m4a" data-start="2.7" data-duration="0.7" data-track-index="3" data-volume="0.2"></audio><audio data-hf-id="hf-5rtr" id="sfx-publish" src="assets/audio/tap.m4a" data-start="7.25" data-duration="0.24" data-track-index="3" data-volume="0.6"></audio><audio data-hf-id="hf-01r5" id="sfx-site" src="assets/audio/whoosh.m4a" data-start="8.8" data-duration="0.7" data-track-index="3" data-volume="0.22"></audio><audio data-hf-id="hf-tbww" id="sfx-open" src="assets/audio/tap.m4a" data-start="12.7" data-duration="0.24" data-track-index="3" data-volume="0.4"></audio><audio data-hf-id="hf-c8cb" id="sfx-post" src="assets/audio/notification.m4a" data-start="15.1" data-duration="0.72" data-track-index="3" data-volume="0.65"></audio><audio data-hf-id="hf-r2qs" id="sfx-lead" src="assets/audio/notification.m4a" data-start="20.2" data-duration="0.72" data-track-index="3" data-volume="0.65"></audio><audio data-hf-id="hf-5wqa" id="sfx-close" src="assets/audio/chime.m4a" data-start="26.2" data-duration="2.5" data-track-index="3" data-volume="0.17"></audio></div><script>gsap.registerPlugin(MotionPathPlugin);
+-window.__timelines=window.__timelines||{};
+-const tl=gsap.timeline({paused:true,defaults:{ease:'power3.out'}});
+-tl.set('#shared-photo',{x:76,y:720,scale:860/900},0);
+-tl.fromTo('#shared-photo',{opacity:0},{opacity:1,duration:.4},.1);
+-tl.to('#shared-photo',{x:211.1064563075742,y:622,scale:600.5527123848516/900,duration:.85,ease:'power3.inOut'},2.7);
+-tl.to('#shared-photo',{opacity:0,duration:.3},8.7);
+-window.__timelines['autoflow-flow']=tl;
+-</script></body></html>+<!doctype html>
++<html lang="uk">
++  <head>
++    <meta charset="utf-8" />
++    <meta name="viewport" content="width=1080,height=1920" />
++    <title>AutoFlow · затверджена анімація без озвучки</title>
++    <link rel="stylesheet" href="style.css" />
++    <script src="assets/js/gsap.min.js"></script>
++  </head>
++  <body>
++    <div
++      data-hf-id="hf-7hxc"
++      id="root"
++      data-composition-id="autoflow-flow"
++      data-width="1080"
++      data-height="1920"
++      data-duration="30"
++    >
++      <div
++        data-hf-id="hf-lyb2"
++        id="mount-01"
++        class="clip scene-host"
++        data-composition-id="scene-01"
++        data-composition-src="compositions/scene-01.html"
++        data-start="0"
++        data-duration="4.2"
++        data-width="1080"
++        data-height="1920"
++        data-track-index="0"
++      ></div>
++      <div
++        data-hf-id="hf-404p"
++        id="mount-02"
++        class="clip scene-host"
++        data-composition-id="scene-02"
++        data-composition-src="compositions/scene-02.html"
++        data-start="4.2"
++        data-duration="4.8"
++        data-width="1080"
++        data-height="1920"
++        data-track-index="0"
++      ></div>
++      <div
++        data-hf-id="hf-bnk4"
++        id="mount-03"
++        class="clip scene-host"
++        data-composition-id="scene-03"
++        data-composition-src="compositions/scene-03.html"
++        data-start="9"
++        data-duration="5"
++        data-width="1080"
++        data-height="1920"
++        data-track-index="0"
++      ></div>
++      <div
++        data-hf-id="hf-0jwh"
++        id="mount-04"
++        class="clip scene-host"
++        data-composition-id="scene-04"
++        data-composition-src="compositions/scene-04.html"
++        data-start="14"
++        data-duration="5"
++        data-width="1080"
++        data-height="1920"
++        data-track-index="0"
++      ></div>
++      <div
++        data-hf-id="hf-m9ku"
++        id="mount-05"
++        class="clip scene-host"
++        data-composition-id="scene-05"
++        data-composition-src="compositions/scene-05.html"
++        data-start="19"
++        data-duration="6"
++        data-width="1080"
++        data-height="1920"
++        data-track-index="0"
++      ></div>
++      <div
++        data-hf-id="hf-ziwb"
++        id="mount-06"
++        class="clip scene-host"
++        data-composition-id="scene-06"
++        data-composition-src="compositions/scene-06.html"
++        data-start="25"
++        data-duration="5"
++        data-width="1080"
++        data-height="1920"
++        data-track-index="0"
++      ></div>
++      <img
++        id="continuity-car"
++        class="clip continuity-car"
++        data-start="0"
++        data-duration="5.05"
++        data-track-index="1"
++        src="assets/images/mercedes-e2025-w214.png"
++        alt="Білий Mercedes-Benz E-Class 2025"
++      />
++      <audio
++        data-hf-id="hf-av9e"
++        id="music"
++        src="assets/audio/music.m4a"
++        data-start="0"
++        data-duration="30"
++        data-track-index="2"
++        data-volume="0.68"
++        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0},{"t":0.5,"v":0.68},{"t":28.4,"v":0.68},{"t":30,"v":0}]}]}'
++      ></audio
++      ><audio
++        data-hf-id="hf-4kl7"
++        id="sfx-photo"
++        src="assets/audio/whoosh.m4a"
++        data-start="3.6"
++        data-duration="0.7"
++        data-track-index="3"
++        data-volume="0.2"
++      ></audio
++      ><audio
++        data-hf-id="hf-5rtr"
++        id="sfx-publish"
++        src="assets/audio/tap.m4a"
++        data-start="7.4"
++        data-duration="0.24"
++        data-track-index="3"
++        data-volume="0.6"
++      ></audio
++      ><audio
++        data-hf-id="hf-01r5"
++        id="sfx-site"
++        src="assets/audio/whoosh.m4a"
++        data-start="10.3"
++        data-duration="0.7"
++        data-track-index="3"
++        data-volume="0.22"
++      ></audio
++      ><audio
++        data-hf-id="hf-tbww"
++        id="sfx-open"
++        src="assets/audio/tap.m4a"
++        data-start="9.8"
++        data-duration="0.24"
++        data-track-index="3"
++        data-volume="0.4"
++      ></audio
++      ><audio
++        data-hf-id="hf-c8cb"
++        id="sfx-post"
++        src="assets/audio/notification.m4a"
++        data-start="15.25"
++        data-duration="0.72"
++        data-track-index="3"
++        data-volume="0.65"
++      ></audio
++      ><audio
++        data-hf-id="hf-r2qs"
++        id="sfx-lead"
++        src="assets/audio/notification.m4a"
++        data-start="21.7"
++        data-duration="0.72"
++        data-track-index="3"
++        data-volume="0.65"
++      ></audio
++      ><audio
++        data-hf-id="hf-5wqa"
++        id="sfx-close"
++        src="assets/audio/chime.m4a"
++        data-start="27.1"
++        data-duration="2.5"
++        data-track-index="3"
++        data-volume="0.17"
++      ></audio>
++    </div>
++    <script>
++      const tl = gsap.timeline({ paused: true });
++      tl.fromTo(
++        '.continuity-car',
++        { x: 0, y: 0, scale: 1, opacity: 0 },
++        { x: 0, y: 0, scale: 1, opacity: 1, duration: 0.75, ease: 'power3.out' },
++        0.3,
++      );
++      tl.to(
++        '.continuity-car',
++        { x: 115, y: -55, scale: 0.785, duration: 1.2, ease: 'power3.inOut' },
++        3.6,
++      );
++      tl.to('.continuity-car', { opacity: 0, duration: 0.15 }, 4.9);
++      window.__timelines['autoflow-flow'] = tl;
++    </script>
++  </body>
++</html>
+--- before/animation/index.motion.json
++++ after/animation/index.motion.json
+@@ -3,23 +3,23 @@
+   "assertions": [
+     {
+       "kind": "appearsBy",
+-      "selector": "[data-composition-id=\"scene-01\"] .headline",
+-      "bySec": 0.6
++      "selector": "[data-scene-view=\"01\"] .headline",
++      "bySec": 0.8
+     },
+     {
+       "kind": "appearsBy",
+-      "selector": "[data-composition-id=\"scene-02\"] .button",
+-      "bySec": 7.15
++      "selector": "[data-scene-view=\"04\"] .post",
++      "bySec": 16.2
+     },
+     {
+       "kind": "appearsBy",
+-      "selector": "[data-composition-id=\"scene-05\"] .buyer-message",
++      "selector": "[data-scene-view=\"05\"] .notice",
+       "bySec": 22.8
+     },
+     {
+       "kind": "appearsBy",
+-      "selector": "[data-composition-id=\"scene-06\"] .button",
+-      "bySec": 27.6
++      "selector": "[data-scene-view=\"06\"] .button",
++      "bySec": 28
+     }
+   ]
+ }
+--- before/animation/BRIEF.md
++++ after/animation/BRIEF.md
+@@ -9,9 +9,10 @@
+ music: existing-local
+ ---
+ 
+-# AutoFlow — один автомобіль, один маршрут
++# AutoFlow — погоджене анімоване прев’ю
+ 
+-Аудиторія: власники українських автомайданчиків. Повідомлення: «Додали авто один раз. Далі працює AutoFlow».
+-Концепція, шість сцен і статичний v2 погоджені користувачем у поточній задачі. Уточнення: сцена 02 — «Додайте його в AutoFlow»; найновіше «для начала без озвучки» визначає це перше прев’ю: музика та SFX, без VO/TTS.
++Аудиторія: власники українських автомайданчиків. Концепція: оголошення про авто переходить із редактора на власний сайт, автоматично до Telegram-каналу, а заявка покупця — менеджеру.
+ 
+-Цей етап створює лише локальне анімоване прев’ю. Фінальний файл/MP4 потребує окремого явного одобрення готового прев’ю. Жодних платних викликів, акаунтів, публікацій чи генерації.
++У поточній розмові користувач обрав Codex, погодив концепцію, шість сцен і статичний лист Варіант А. Останнє доручення: «окей, тогда делай, пока видос без озвучики, но не скупись на анимации». Збережено погоджені ivory/peach/red, Onest, білий Mercedes-Benz E-Class 2025, детальні UI, піктограми та рукописні акценти. Редактор і сайт — white label.
++
++Локальне прев’ю містить існуючу музику та SFX, без VO/TTS. Фінальне прев’ю потребує явного одобрення до рендера MP4. Фінальний файл не рендерили; нічого не публікували. Нові платні API-провайдери не використовуються. Прозорий автомобіль створено дозволеним вбудованим ImageGen; локальні джерела зафіксовано у MEDIA-SOURCES.json.
+--- before/animation/STORYBOARD.md
++++ after/animation/STORYBOARD.md
+@@ -1,22 +1,28 @@
+-# Погоджений v2 → анімоване прев’ю
++---
++music: existing-local
++narration: no
++status: animated-preview-awaiting-approval
++---
+ 
+-30 секунд, 1080×1920, музика та SFX, без озвучки. Композиція й ієрархія погодженого листа збережені; заголовок 02 змінений за явним уточненням. Білу Camry показуємо повністю через object-fit: contain з відступами; новий оригінал — та сама машина зі скриншота.
++# Шість погоджених сцен — Варіант А
+ 
+-| Сцена | Час | Текст | Дія та призначення |
++1080×1920, 30 fps, 30 секунд. Підтвердження етапів — явні репліки користувача в поточній розмові, а не цей документ. Готове анімоване прев’ю ще очікує одобрення перед фінальним рендером.
++
++| Сцена | Час | Екранний текст | Дія |
+ |---|---|---|---|
+-| 01 | 0–3 | У вас є авто. | Повне фото; початок шляху. |
+-| 02 | 3–9 | Додайте його в AutoFlow | Те саме фото переходить у редактор; дані з’являються по черзі, натискання «Опублікувати». |
+-| 03 | 9–14 | На вашому сайті | Спільне фото зникає до 9.0 с; фокус переходить реальному фрагменту сайту; акцент на «Залишити заявку». |
+-| 04 | 14–19 | І у вашому Telegram-каналі | iPhone отримує пост із фото, ціною, характеристиками й посиланням. |
+-| 05 | 19–25 | Заявка — одразу менеджеру | iPhone лишається в тій самій позиції; надходить «Нова заявка» і «Хочу подивитися це авто». |
+-| 06 | 25–30 | Менше рутини. Більше уваги клієнтам. | Типографічний висновок, чернетка CTA «Переглянути демо», утримання до кінця. |
++| 01 | 0–4.2 | Маєте авто на продаж? Покажіть його покупцям | Повний білий Mercedes; каскад трьох іконок вигод; те саме фото прямує до редактора. |
++| 02 | 4.2–9 | Створіть оголошення про авто | White label редактор; фото, модель, 2025, «Ціна за запитом», опис; курсор натискає «Додати авто». |
++| 03 | 9–14 | Опублікуйте авто на своєму сайті | Натискання публікації спричиняє появу детального white label сайту; фото, галерея, ціна, «Залишити заявку». «Ваш сайт. Більше клієнтів. Більше продажів.» |
++| 04 | 14–19 | І воно автоматично з’явиться у вашому Telegram-каналі | Вертикальний iPhone, Telegram-пост із тим самим автомобілем і посиланням. Рукописне «Ваші авто там, де є покупці!». |
++| 05 | 19–25 | Покупець залишає заявку на авто. Ваш менеджер отримує сповіщення | Форма покупця; клік; стрілка; натурально пропорційний телефон менеджера піднімається знизу; сповіщення з ім’ям, маскованим телефоном, автомобілем і «Відкрити в AutoFlow». |
++| 06 | 25–30 | Менше рутини. Більше уваги клієнтам. | AutoFlow wordmark за погодженим зразком, три вигоди, CTA «Переглянути демо», рукописне «Розвиваємо автобізнес разом». |
+ 
+-Публічний UI — реальний локальний скриншот. Редактор і Telegram — ілюстративні реконструкції, а не захоплення особистого акаунта. Редактор звірений із кодом. Telegram звірений з офіційним CC0 reference; схематичні назви/повідомлення залишаються умовними. Сторонні референсні аватари/повідомлення не входять у ролик.
++## Video direction
+ 
+-Автопост потребує налаштованого бота/каналу та autoPublish; повідомлення менеджерам — бота й leadChatId. «Одразу» описує автоматичний маршрут, без гарантії секунд чи продажу.
++Тепле ivory тло, великі частково обрізані peach-дуги, чорна жирна Onest, червоні акценти, округлі білі панелі із м’якою тінню. Усі важливі елементи — окремі DOM-шари. Немає шестипанельних рамок чи номерів кадрів у відео. Немає фрази «нові клієнти щодня» або вигаданих числових цін/пробігу.
+ 
+-Шість окремих template-композицій у animation/compositions мають локальні paused GSAP таймлайни. Головна композиція містить тільки mount slots, аудіо і спільне фото; його геометрія зафіксована з перевіреного кадру. Фото зникає до 9.0 с; реальний сайт з’являється після нього без дублювання автомобіля.
++0.45–0.65s входи; коротка 0.1s компресія кнопки та 0.3s повернення; явні причинні кліки, SVG-стрілки, поетапні дані. Телефони не хитаються та не стискаються по вертикалі. Завершення CTA зберігається до кінця.
+ 
+-Виробниче уточнення: iPhone звужений до приблизно 600×1070 px для впізнаваної пропорції пристрою; зовнішня ієрархія й тексти збережені, обидва iPhone мають однаковий стан корпуса на стику. Статичний v2 погоджений. Анімоване прев’ю очікує перегляду й явного одобрення. Фінальний рендер не виконано.
++UI є ілюстративною локальною реконструкцією погоджених екранів, а не персональним акаунтом. Автопост потребує налаштованого каналу/бота; сповіщення — налаштувань менеджера. Імена та маскований номер демонстраційні.
+ 
+-Анімований проект винесено в animation/, щоб Studio перевіряв шість сцен і не трактував статичний storyboard.html як композицію.
++Кожна сцена має окремий paused GSAP timeline і стабільний data-scene-view селектор для Studio/compiler. Framework керує аудіо та видимістю кліпів. Відео без озвучки; локальні SFX синхронізовані з діями.
+--- before/animation/compositions/scene-05.html
++++ after/animation/compositions/scene-05.html
+@@ -1,26 +1,204 @@
+-<!DOCTYPE html><html lang="uk"><head></head><body><template id="scene-05-template"><style>
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-cyrillic.woff2');font-weight:400 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-latin.woff2');font-weight:400 900}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-cyrillic.woff2');font-weight:400 700;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-latin.woff2');font-weight:400 700}
+-:root{--cream:#FBF8F1;--tile:#F2EBDB;--ink:#211D16;--coral:#B4453C;--line:#211d1626}*{box-sizing:border-box}body{margin:0;background:var(--tile);color:var(--ink);font-family:Onest,Arial,sans-serif}main{max-width:1440px;margin:auto;padding:52px 40px 64px}header{border-top:1px solid var(--ink);padding-top:20px;display:flex;justify-content:space-between;gap:30px;margin-bottom:35px}.eyebrow{font:600 11px Mono,monospace;letter-spacing:.12em;text-transform:uppercase}h1{font-size:clamp(28px,3vw,46px);line-height:1.04;letter-spacing:-.04em;margin:15px 0 10px;max-width:840px}header p{font-size:15px;margin:0;max-width:700px;line-height:1.5}.badge{font:12px Mono,monospace;white-space:nowrap;align-self:flex-start;padding:10px;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 24px}.frame{position:relative;aspect-ratio:9/16;container-type:size;overflow:hidden;background:var(--cream);border:1px solid var(--line)}.inner{position:absolute;left:7cqw;right:12.3cqw;top:16cqw;bottom:34cqw}.kicker{font:600 2.45cqw Mono,monospace;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:3cqw;display:flex;justify-content:space-between}.headline{font-size:9.2cqw;line-height:1.05;letter-spacing:-.05em;font-weight:800;margin:5cqw 0 5cqw}.headline.long{font-size:7.7cqw}.photo{position:relative;overflow:hidden;background:var(--tile);height:52cqw;border-radius:8px;border:1px solid var(--line)}.photo img{position:absolute;width:115%;max-width:none;top:-31cqw;left:-7cqw}.line{border-top:1px solid var(--line);padding-top:3cqw;margin-top:4cqw}.model{font-size:4.2cqw;font-weight:700;line-height:1.15}.spec{font-size:3.3cqw;line-height:1.35;margin-top:2cqw}.price{font-size:7.1cqw;font-weight:800;letter-spacing:-.035em;margin-top:4cqw}.coral{background:var(--coral);color:var(--cream)}.pill{font-size:3.5cqw;font-weight:600;padding:3cqw 4cqw;border-radius:6px;margin-top:4cqw;display:inline-block}.panel{background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:4cqw}.panel .photo{height:32cqw;background:var(--cream)}.panel .photo img{top:-25cqw}.field{display:flex;justify-content:space-between;gap:2cqw;font-size:3.5cqw;border-bottom:1px solid var(--line);padding:2cqw 0}.field span{opacity:.65}.field b{font-weight:600}.button{padding:3.5cqw 2cqw;border-radius:6px;text-align:center;font-size:4.1cqw;font-weight:700;margin-top:4cqw}.public-window{height:76cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:8px 8px 0 0}.public-window img{width:100%;position:absolute;top:-28cqw}.public-cta{height:14cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px}.public-cta img{width:100%;position:absolute;top:-124cqw}.tg-header{font-size:3.5cqw;font-weight:600;padding-bottom:3cqw;border-bottom:1px solid var(--line);margin-bottom:3cqw}.panel .tg-photo{height:28cqw}.tg-title{font-weight:800;font-size:5.3cqw;margin-top:3cqw;line-height:1.1}.tg-link{font-size:3.8cqw;padding:2.5cqw;background:var(--coral);color:var(--cream);border-radius:6px;margin-top:3cqw}.lead .model{font-size:4.7cqw}.lead .field{display:block}.lead .field b{display:block;margin-top:1cqw}.arrow{text-align:center;font-size:6cqw;padding:1cqw 0}.notification{padding:3cqw;border:1px solid var(--line);border-radius:8px;background:var(--tile);position:relative}.notification .new{font-weight:800;font-size:5cqw;line-height:1.1}.notification .spec{font-size:3.4cqw}.notification:before{content:'●';color:var(--ink);position:absolute;right:4cqw;top:4cqw;font-size:3cqw}.brand{font-size:8cqw;font-weight:800;letter-spacing:-.04em}.brand span{font-size:4cqw;display:inline-block;background:var(--ink);color:var(--cream);padding:1.2cqw 2cqw;border-radius:5px;margin-right:2cqw;vertical-align:middle}.closing .headline{font-size:10cqw;margin-top:12cqw;margin-bottom:6cqw}.closing .photo{height:31cqw}.closing .photo img{top:-34cqw}.closing .button{margin-top:5cqw}.folio{position:absolute;left:7cqw;right:12.3cqw;bottom:12cqw;font:600 2.4cqw Mono,monospace;letter-spacing:.07em;border-top:1px solid var(--line);padding-top:3cqw;display:flex;justify-content:space-between}.caption{display:flex;justify-content:space-between;font:600 11px Mono,monospace;margin-top:13px;gap:8px;line-height:1.4}.notes{font-size:13px;line-height:1.5;margin-top:8px;max-width:45em}.notes strong{font-weight:700}.chip{display:inline-block;font:10px Mono,monospace;border:1px solid var(--line);padding:5px 7px;margin-top:7px}.footer{margin-top:40px;padding-top:25px;border-top:1px solid var(--ink);display:grid;grid-template-columns:1fr 1fr;gap:35px}.footer h2{font-size:16px;margin:0 0 10px}.footer p{font-size:13px;line-height:1.5;margin:0 0 10px}.swatches{display:flex;gap:8px;margin-top:14px}.swatches span{width:35px;height:35px;border:1px solid var(--line);border-radius:3px}.status{margin-top:25px;font:12px Mono,monospace;padding:15px 0;border-top:1px solid var(--line)}@media(max-width:950px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{display:block}.badge{display:inline-block;margin-top:15px}}@media(max-width:600px){main{padding:25px 18px 35px}.grid{grid-template-columns:1fr;gap:30px}h1{font-size:32px}.footer{grid-template-columns:1fr;gap:20px}.caption{font-size:10px}header p{font-size:14px}}
+-
+-/* v2: scene-specific overrides; frames 02 and 03 retain their original styles. */
+-.v2-photo .headline{font-size:12cqw;line-height:1.03;margin-bottom:8cqw}.v2-photo .raw-photo{position:absolute;top:43cqw;left:-7cqw;right:-12.3cqw;height:82cqw;overflow:hidden;background:var(--tile)}.v2-photo .raw-photo img{position:absolute;width:120%;left:-10%;top:-39cqw}.v2-photo .raw-label{position:absolute;top:130cqw;font:600 3.1cqw Mono,monospace;letter-spacing:.04em}.v2-phone .phone{position:absolute;left:3cqw;top:34cqw;width:74cqw;height:94cqw;border:1.2cqw solid #181515;border-radius:7cqw;background:var(--cream);overflow:hidden;padding:0 3cqw;box-shadow:0 1px 3px #211d1614}.v2-phone .statusbar{height:7cqw;font-size:2.9cqw;font-weight:700;display:flex;align-items:center;justify-content:space-between;padding:0 1cqw}.v2-phone .island{position:absolute;top:1cqw;left:25cqw;width:22cqw;height:4.8cqw;border-radius:3cqw;background:#181515}.v2-phone .status-icons{letter-spacing:-.1em;font-size:2.4cqw}.v2-phone .chatnav{height:10cqw;margin:0 -3cqw;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:2cqw;padding:1cqw 3cqw;background:var(--cream)}.v2-phone .back{font-size:6cqw;line-height:1}.v2-phone .avatar{width:6.5cqw;height:6.5cqw;border-radius:50%;background:var(--ink);color:var(--cream);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:3cqw}.v2-phone .chatname{font-size:3.4cqw;font-weight:700;line-height:1.2}.v2-phone .chatmeta{font-size:2.5cqw;line-height:1.3;opacity:.65;font-weight:400}.v2-phone .post{margin:3cqw 0 0;background:var(--tile);border:1px solid var(--line);border-radius:3cqw;overflow:hidden}.v2-phone .post-photo{height:31cqw;position:relative;overflow:hidden}.v2-phone .post-photo img{position:absolute;width:120%;left:-10%;top:-26cqw}.v2-phone .post-copy{padding:3cqw}.v2-phone .post-title{font-size:4.6cqw;font-weight:800;letter-spacing:-.03em;line-height:1.1}.v2-phone .post-price{font-size:6cqw;font-weight:800;margin:2cqw 0 1cqw}.v2-phone .post-spec{font-size:3cqw;line-height:1.4}.v2-phone .post-link{font-size:3.6cqw;background:var(--coral);color:var(--cream);padding:2.5cqw;border-radius:1cqw;margin-top:3cqw;font-weight:600}.v2-phone .post-stamp{font-size:2.4cqw;text-align:right;opacity:.65;margin-top:1.5cqw}.v2-phone .chatinput{position:absolute;bottom:3.5cqw;left:3cqw;right:3cqw;border:1px solid var(--line);border-radius:4cqw;padding:2cqw 3cqw;font-size:2.9cqw;opacity:.6}.v2-phone .homebar{position:absolute;bottom:1cqw;left:24cqw;width:24cqw;height:.7cqw;border-radius:1cqw;background:var(--ink)}.v2-manager .phone{background:var(--tile)}.v2-manager .lead-bubble{margin-top:7cqw;padding:5cqw 4cqw;background:var(--cream);border:1px solid var(--line);border-radius:3cqw}.v2-manager .bot-label{font:600 2.8cqw Mono,monospace;margin-bottom:3cqw}.v2-manager .lead-title{font-size:7cqw;line-height:1.05;font-weight:800;letter-spacing:-.035em;margin:0 0 5cqw}.v2-manager .lead-car{font-size:4.3cqw;font-weight:700;line-height:1.15;border-top:1px solid var(--line);padding-top:3cqw}.v2-manager .sender{margin-top:4cqw;font-size:3cqw;opacity:.65}.v2-manager .buyer-message{font-size:5.2cqw;line-height:1.2;margin:1.5cqw 0 4cqw}.v2-manager .incoming{color:var(--coral);font-size:5cqw}.v2-ending .headline{font-size:11cqw;margin-top:20cqw;line-height:1.05}.v2-ending .button{margin-top:12cqw;font-size:4.8cqw;padding:4cqw}.revision{margin-top:25px;border-top:1px solid var(--line);padding-top:20px}.revision h2{font-size:16px}.revision p,.revision blockquote{font-size:13px;line-height:1.6}.revision blockquote{margin:15px 0;padding:15px 20px;border-left:1px solid var(--ink);background:var(--cream)}
+-
+-/* v2 crop and phone-content fit pass. */
+-.v2-photo .raw-photo{height:82cqw}.v2-photo .raw-photo img{width:150%;left:-25%;top:-34.5cqw}
+-.v2-phone .post-photo{height:22cqw}.v2-phone .post-copy{padding:2cqw}.v2-phone .post-title{font-size:3.9cqw}.v2-phone .post-price{font-size:5.4cqw;margin:1cqw 0}.v2-phone .post-spec{font-size:2.7cqw}.v2-phone .post-link{font-size:3.1cqw;padding:2cqw;margin-top:2cqw}.v2-phone .post-stamp{font-size:2cqw;margin-top:1cqw}
+-.v2-manager .lead-bubble{margin-top:4cqw;padding:3.5cqw 3cqw}.v2-manager .bot-label{font-size:2.4cqw;margin-bottom:2cqw}.v2-manager .lead-title{font-size:6cqw;margin-bottom:3cqw}.v2-manager .lead-car{font-size:3.4cqw;padding-top:2cqw}.v2-manager .sender{margin-top:2cqw;font-size:2.7cqw}.v2-manager .buyer-message{font-size:4.2cqw;margin:1.5cqw 0 3cqw}.v2-manager .incoming{font-size:3cqw}
+-
+-.v2-phone .chatinput{padding:.8cqw 2cqw;font-size:2.4cqw;bottom:3cqw}.v2-phone .back{color:#2AABEE}.v2-phone .post-link{background:var(--cream);color:#287AAE;border:1px solid var(--line);padding:1.7cqw 2cqw}.v2-phone .channel-action{text-align:center;border-color:transparent}
+-
+-.frame{position:absolute;inset:0;width:100%;height:100%;border:0;aspect-ratio:auto;container-type:size}.folio{bottom:18cqw;font-size:2.35cqw}.v2-photo .raw-photo{background:var(--tile)}.v2-phone .post-photo{height:22cqw;background:var(--cream);padding:1cqw}.v2-phone .post-photo img{position:static;width:100%;height:100%;object-fit:contain;max-width:100%}.field{color:var(--ink)}.field span,.chatmeta,.sender,.post-stamp{opacity:1;color:#625B4B}.v2-phone .statusbar,.v2-phone .chatinput,.v2-phone .post-stamp{opacity:1;color:#625B4B}.v2-phone .post-link,.v2-phone .back{color:#1D6698}.v2-phone .phone{width:55.5cqw;height:99cqw;left:12.6cqw;top:28cqw}.v2-phone .island{left:calc(50% - 10cqw);width:20cqw}.v2-phone .homebar{left:calc(50% - 12cqw)}.v2-phone .headline.long{font-size:7.2cqw;line-height:1.0}
+-
+-#scene-05{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}[data-scene-view="05"] .headline,[data-scene-view="05"] .chatnav,[data-scene-view="05"] .lead-bubble,[data-scene-view="05"] .lead-title,[data-scene-view="05"] .lead-car,[data-scene-view="05"] .sender,[data-scene-view="05"] .buyer-message,[data-scene-view="05"] .post-stamp{opacity:0}</style><div id="scene-05" data-composition-id="scene-05" data-width="1080" data-height="1920" data-duration="6" data-hf-id="hf-flow-scene-05-001"><div class="frame v2-phone v2-manager" id="scene-05-view" data-scene-view="05" data-hf-id="hf-flow-scene-05-002"><div class="inner" data-hf-id="hf-flow-scene-05-003"><div class="kicker" data-hf-id="hf-flow-scene-05-004"><span data-hf-id="hf-flow-scene-05-005">Заявка</span><span data-hf-id="hf-flow-scene-05-006">05 / 06</span></div><h2 class="headline long" data-hf-id="hf-flow-scene-05-007">Заявка — одразу<br data-hf-id="hf-x5px">менеджеру</h2><div class="phone" data-hf-id="hf-flow-scene-05-008"><div class="island" data-hf-id="hf-flow-scene-05-009"></div><div class="statusbar" data-hf-id="hf-flow-scene-05-010"><span data-hf-id="hf-flow-scene-05-011">9:41</span><span class="status-icons" data-hf-id="hf-flow-scene-05-012">▮▮▮ ▰</span></div><div class="chatnav" data-hf-id="hf-flow-scene-05-013"><span class="back" data-hf-id="hf-flow-scene-05-014">‹</span><div class="avatar" data-hf-id="hf-flow-scene-05-015">М</div><div class="chatname" data-hf-id="hf-flow-scene-05-016">Чат менеджерів<div class="chatmeta" data-hf-id="hf-flow-scene-05-017">Telegram</div></div></div><div class="lead-bubble" data-hf-id="hf-flow-scene-05-018"><div class="bot-label" data-hf-id="hf-flow-scene-05-019">AutoFlow <span class="incoming" data-hf-id="hf-flow-scene-05-020">↓</span></div><div class="lead-title" data-hf-id="hf-flow-scene-05-021">Нова<br data-hf-id="hf-rsrt">заявка</div><div class="lead-car" data-hf-id="hf-flow-scene-05-022">Toyota Camry<br data-hf-id="hf-szow">2022</div><div class="sender" data-hf-id="hf-flow-scene-05-023">Покупець</div><div class="buyer-message" data-hf-id="hf-flow-scene-05-024">Хочу подивитися<br data-hf-id="hf-sldv">це авто</div><div class="post-stamp" data-hf-id="hf-flow-scene-05-025">Отримано менеджером</div></div><div class="chatinput" data-hf-id="hf-flow-scene-05-026">Повідомлення</div><div class="homebar" data-hf-id="hf-flow-scene-05-027"></div></div></div><div class="folio" data-hf-id="hf-flow-scene-05-028"><span data-hf-id="hf-flow-scene-05-029">Покупець → менеджер</span><span data-hf-id="hf-flow-scene-05-030">Контакт для роботи</span></div></div></div><script>const tl=gsap.timeline({paused:true,defaults:{ease:'power3.out'}});
+-tl.fromTo('[data-scene-view="05"] .headline',{y:24,opacity:0},{y:0,opacity:1,duration:.42},.06);
+-tl.fromTo('[data-scene-view="05"] .chatnav',{opacity:0},{opacity:1,duration:.35},0);
+-tl.fromTo('[data-scene-view="05"] .lead-bubble',{y:80,opacity:0},{y:0,opacity:1,duration:.5},1.2);
+-tl.fromTo('[data-scene-view="05"] .lead-title,[data-scene-view="05"] .lead-car,[data-scene-view="05"] .sender,[data-scene-view="05"] .buyer-message,[data-scene-view="05"] .post-stamp',{y:10,opacity:0},{y:0,opacity:1,duration:.3,stagger:.48},1.55);
+-tl.to('[data-scene-view="05"] .phone',{y:-40,opacity:0,duration:.35,ease:'power2.in'},5.65);
+-window.__timelines['scene-05']=tl;</script></template></body></html>+<!doctype html>
++<html lang="uk">
++  <head></head>
++  <body>
++    <template
++      ><div
++        data-hf-id="hf-jljv"
++        id="scene-05"
++        class="scene"
++        data-scene-view="05"
++        data-composition-id="scene-05"
++        data-width="1080"
++        data-height="1920"
++        data-duration="6"
++      >
++        <div data-hf-id="hf-9r3x" class="scene-body">
++          <div data-hf-id="hf-3fbd" class="arc" data-layout-ignore=""></div>
++          <div data-hf-id="hf-tt2s" class="arc bottom" data-layout-ignore=""></div>
++          <h2 data-hf-id="hf-t43f" class="headline">
++            <span data-hf-id="hf-3j7t">Покупець залишає</span
++            ><span data-hf-id="hf-b6cq" class="red">заявку на авто</span>
++          </h2>
++          <p data-hf-id="hf-8zwd" class="subtitle" style="top: 342px; font-size: 44px">
++            Ваш менеджер отримує сповіщення
++          </p>
++          <div data-hf-id="hf-pw5x" class="lead-form ui">
++            <p data-hf-id="hf-c7lb" class="ui-title">Залишити заявку</p>
++            <div data-hf-id="hf-0ztw" class="field">
++              <span data-hf-id="hf-l0h7" class="field-label">Ваше ім’я</span>
++              <div data-hf-id="hf-y0lx" class="input">Олександр Коваленко</div>
++            </div>
++            <div data-hf-id="hf-bxgc" class="field">
++              <span data-hf-id="hf-k47s" class="field-label">Телефон</span>
++              <div data-hf-id="hf-m0eh" class="input">+380 67 123 XX XX</div>
++            </div>
++            <div data-hf-id="hf-aqj9" class="field">
++              <span data-hf-id="hf-y9s1" class="field-label">Коментар (необов’язково)</span>
++              <div data-hf-id="hf-r9o2" class="input comment">
++                Цікавить це авто.
++                <div data-hf-id="hf-ow46">Підкажіть, будь ласка, більше деталей.</div>
++              </div>
++            </div>
++            <div data-hf-id="hf-t7v0" class="button" id="submit-lead">Залишити заявку</div>
++          </div>
++          <div data-hf-id="hf-ojyr" class="cursor" style="left: 820px; top: 1100px">
++            <svg data-hf-id="hf-trex" viewBox="0 0 70 90">
++              <path data-hf-id="hf-8tz5" d="M8 3v69l18-17 15 30 14-7-16-29 25-2Z" />
++            </svg>
++          </div>
++          <svg
++            data-hf-id="hf-i3wm"
++            class="click-rays"
++            style="left: 758px; top: 1035px"
++            viewBox="0 0 100 100"
++          >
++            <path
++              data-hf-id="hf-g72y"
++              d="M50 5v15M18 18l12 12M5 50h15M82 18 70 30M18 82l12-12"
++            /></svg
++          ><svg
++            data-hf-id="hf-3tlw"
++            class="draw-arrow"
++            style="left: 92px; top: 1130px; width: 160px; height: 165px"
++            viewBox="0 0 160 165"
++          >
++            <path data-hf-id="hf-ubbs" d="M90 8Q-5 75 78 147M45 139l36 12 0-37" />
++          </svg>
++          <div data-hf-id="hf-y1yq" class="phone manager-phone">
++            <div data-hf-id="hf-9o7x" class="phone-screen">
++              <div data-hf-id="hf-7sfr" class="island"></div>
++              <div data-hf-id="hf-8kim" class="status">
++                <span data-hf-id="hf-zwmt">9:41</span><span data-hf-id="hf-22t9">▮▮▮ ▰</span>
++              </div>
++              <div data-hf-id="hf-7rtw" class="phone-nav">
++                <div data-hf-id="hf-y97l" class="telegram-mark">
++                  <svg data-hf-id="hf-ulu9" viewBox="0 0 24 24">
++                    <path
++                      data-hf-id="hf-wxll"
++                      d="m2 11 19-8c.9-.4 1.6.2 1.3 1.4L19 21c-.2 1-1 1.3-1.8.7L12 18l-2.5 2.4c-.3.3-.5.5-1 .5l.4-5.6L19.1 6c.4-.4-.1-.6-.6-.3L5.8 13.7l-3.5-1.1C1.3 12.3 1.3 11.5 2 11Z"
++                    />
++                  </svg>
++                </div>
++                <div data-hf-id="hf-i34l" class="nav-title">
++                  Telegram
++                  <span data-hf-id="hf-h15m" style="font-size: 26px; font-weight: 400"
++                    >　зараз</span
++                  >
++                </div>
++              </div>
++              <div data-hf-id="hf-47vj" class="chat-pattern"></div>
++              <div data-hf-id="hf-g5ng" class="notice">
++                <div data-hf-id="hf-wbc0" class="notice-title">
++                  <svg
++                    data-hf-id="hf-6tv3"
++                    class="bell"
++                    viewBox="0 0 24 24"
++                    style="width: 40px; height: 40px; fill: #fc5d21; vertical-align: middle"
++                  >
++                    <path
++                      data-hf-id="hf-er3d"
++                      d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5Zm4 2a3 3 0 0 0 6 0"
++                    /></svg
++                  >　Нова заявка
++                </div>
++                <p data-hf-id="hf-olqa" class="notice-body">Хочу дізнатися більше про це авто</p>
++                <div data-hf-id="hf-6s3n" class="notice-row">
++                  <svg data-hf-id="hf-1tol" viewBox="0 0 24 24">
++                    <circle data-hf-id="hf-jd47" cx="9" cy="7" r="3" />
++                    <path
++                      data-hf-id="hf-h12m"
++                      d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v2"
++                    /></svg
++                  ><span data-hf-id="hf-hatq">Олександр Коваленко</span>
++                </div>
++                <div data-hf-id="hf-folf" class="notice-row">
++                  <span data-hf-id="hf-krgd">☎</span
++                  ><span data-hf-id="hf-p4gq">+380 67 123 XX XX</span>
++                </div>
++                <div data-hf-id="hf-faae" class="notice-row">
++                  <span data-hf-id="hf-g04w">▱</span
++                  ><span data-hf-id="hf-yo1s">Mercedes-Benz E-Class, 2025</span>
++                </div>
++                <div data-hf-id="hf-8m7a" class="notice-button">Відкрити в AutoFlow</div>
++              </div>
++              <div data-hf-id="hf-i260" class="homebar"></div>
++            </div>
++          </div>
++        </div>
++      </div>
++      <script>
++        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
++        const scope = '[data-scene-view="05"]';
++        tl.fromTo(
++          scope + ' .headline span',
++          { y: 65, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.58, stagger: 0.11 },
++          0.05,
++        );
++        tl.fromTo(
++          scope + ' .subtitle',
++          { y: 24, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.4 },
++          0.5,
++        );
++        tl.fromTo(scope + ' .arc', { rotation: -6 }, { rotation: 0, duration: 6, ease: 'none' }, 0);
++        const paths = document.querySelectorAll(scope + ' .draw-arrow path');
++        paths.forEach((path) => {
++          const length = path.getTotalLength();
++          path.style.strokeDasharray = length;
++          tl.fromTo(
++            path,
++            { strokeDashoffset: length },
++            { strokeDashoffset: 0, duration: 0.55, ease: 'none' },
++            2.0,
++          );
++        });
++        tl.fromTo(
++          scope + ' .lead-form',
++          { y: 70, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.6 },
++          0.35,
++        );
++        tl.fromTo(
++          scope + ' .field',
++          { y: 18, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.35, stagger: 0.22 },
++          0.6,
++        );
++        tl.fromTo(scope + ' .manager-phone', { y: 550 }, { y: 0, duration: 0.7 }, 2.15);
++        tl.fromTo(
++          scope + ' .notice',
++          { y: 200, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.55, ease: 'back.out(1.2)' },
++          2.7,
++        );
++        tl.fromTo(
++          scope + ' .cursor',
++          { x: 150, y: 170, opacity: 0 },
++          { x: 0, y: 0, opacity: 1, duration: 0.5 },
++          1.2,
++        );
++        tl.to(
++          [scope + ' .lead-form .button', scope + ' .cursor'],
++          { scale: 0.94, duration: 0.1, ease: 'power1.in' },
++          1.75,
++        );
++        tl.to(
++          [scope + ' .lead-form .button', scope + ' .cursor'],
++          { scale: 1, duration: 0.3, ease: 'back.out(1.6)' },
++          1.85,
++        );
++        tl.fromTo(
++          scope + ' .click-rays',
++          { scale: 0.55, opacity: 0 },
++          { scale: 1, opacity: 1, duration: 0.1 },
++          1.75,
++        );
++        tl.to(scope + ' .click-rays', { scale: 1.3, opacity: 0, duration: 0.35 }, 1.85);
++        tl.to(scope + ' .cursor', { opacity: 0, duration: 0.25 }, 2.25);
++        window.__timelines['scene-05'] = tl;
++      </script></template
++    >
++  </body>
++</html>
+--- before/animation/compositions/scene-04.html
++++ after/animation/compositions/scene-04.html
+@@ -1,25 +1,133 @@
+-<!DOCTYPE html><html lang="uk"><head></head><body><template id="scene-04-template"><style>
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-cyrillic.woff2');font-weight:400 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-latin.woff2');font-weight:400 900}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-cyrillic.woff2');font-weight:400 700;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-latin.woff2');font-weight:400 700}
+-:root{--cream:#FBF8F1;--tile:#F2EBDB;--ink:#211D16;--coral:#B4453C;--line:#211d1626}*{box-sizing:border-box}body{margin:0;background:var(--tile);color:var(--ink);font-family:Onest,Arial,sans-serif}main{max-width:1440px;margin:auto;padding:52px 40px 64px}header{border-top:1px solid var(--ink);padding-top:20px;display:flex;justify-content:space-between;gap:30px;margin-bottom:35px}.eyebrow{font:600 11px Mono,monospace;letter-spacing:.12em;text-transform:uppercase}h1{font-size:clamp(28px,3vw,46px);line-height:1.04;letter-spacing:-.04em;margin:15px 0 10px;max-width:840px}header p{font-size:15px;margin:0;max-width:700px;line-height:1.5}.badge{font:12px Mono,monospace;white-space:nowrap;align-self:flex-start;padding:10px;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 24px}.frame{position:relative;aspect-ratio:9/16;container-type:size;overflow:hidden;background:var(--cream);border:1px solid var(--line)}.inner{position:absolute;left:7cqw;right:12.3cqw;top:16cqw;bottom:34cqw}.kicker{font:600 2.45cqw Mono,monospace;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:3cqw;display:flex;justify-content:space-between}.headline{font-size:9.2cqw;line-height:1.05;letter-spacing:-.05em;font-weight:800;margin:5cqw 0 5cqw}.headline.long{font-size:7.7cqw}.photo{position:relative;overflow:hidden;background:var(--tile);height:52cqw;border-radius:8px;border:1px solid var(--line)}.photo img{position:absolute;width:115%;max-width:none;top:-31cqw;left:-7cqw}.line{border-top:1px solid var(--line);padding-top:3cqw;margin-top:4cqw}.model{font-size:4.2cqw;font-weight:700;line-height:1.15}.spec{font-size:3.3cqw;line-height:1.35;margin-top:2cqw}.price{font-size:7.1cqw;font-weight:800;letter-spacing:-.035em;margin-top:4cqw}.coral{background:var(--coral);color:var(--cream)}.pill{font-size:3.5cqw;font-weight:600;padding:3cqw 4cqw;border-radius:6px;margin-top:4cqw;display:inline-block}.panel{background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:4cqw}.panel .photo{height:32cqw;background:var(--cream)}.panel .photo img{top:-25cqw}.field{display:flex;justify-content:space-between;gap:2cqw;font-size:3.5cqw;border-bottom:1px solid var(--line);padding:2cqw 0}.field span{opacity:.65}.field b{font-weight:600}.button{padding:3.5cqw 2cqw;border-radius:6px;text-align:center;font-size:4.1cqw;font-weight:700;margin-top:4cqw}.public-window{height:76cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:8px 8px 0 0}.public-window img{width:100%;position:absolute;top:-28cqw}.public-cta{height:14cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px}.public-cta img{width:100%;position:absolute;top:-124cqw}.tg-header{font-size:3.5cqw;font-weight:600;padding-bottom:3cqw;border-bottom:1px solid var(--line);margin-bottom:3cqw}.panel .tg-photo{height:28cqw}.tg-title{font-weight:800;font-size:5.3cqw;margin-top:3cqw;line-height:1.1}.tg-link{font-size:3.8cqw;padding:2.5cqw;background:var(--coral);color:var(--cream);border-radius:6px;margin-top:3cqw}.lead .model{font-size:4.7cqw}.lead .field{display:block}.lead .field b{display:block;margin-top:1cqw}.arrow{text-align:center;font-size:6cqw;padding:1cqw 0}.notification{padding:3cqw;border:1px solid var(--line);border-radius:8px;background:var(--tile);position:relative}.notification .new{font-weight:800;font-size:5cqw;line-height:1.1}.notification .spec{font-size:3.4cqw}.notification:before{content:'●';color:var(--ink);position:absolute;right:4cqw;top:4cqw;font-size:3cqw}.brand{font-size:8cqw;font-weight:800;letter-spacing:-.04em}.brand span{font-size:4cqw;display:inline-block;background:var(--ink);color:var(--cream);padding:1.2cqw 2cqw;border-radius:5px;margin-right:2cqw;vertical-align:middle}.closing .headline{font-size:10cqw;margin-top:12cqw;margin-bottom:6cqw}.closing .photo{height:31cqw}.closing .photo img{top:-34cqw}.closing .button{margin-top:5cqw}.folio{position:absolute;left:7cqw;right:12.3cqw;bottom:12cqw;font:600 2.4cqw Mono,monospace;letter-spacing:.07em;border-top:1px solid var(--line);padding-top:3cqw;display:flex;justify-content:space-between}.caption{display:flex;justify-content:space-between;font:600 11px Mono,monospace;margin-top:13px;gap:8px;line-height:1.4}.notes{font-size:13px;line-height:1.5;margin-top:8px;max-width:45em}.notes strong{font-weight:700}.chip{display:inline-block;font:10px Mono,monospace;border:1px solid var(--line);padding:5px 7px;margin-top:7px}.footer{margin-top:40px;padding-top:25px;border-top:1px solid var(--ink);display:grid;grid-template-columns:1fr 1fr;gap:35px}.footer h2{font-size:16px;margin:0 0 10px}.footer p{font-size:13px;line-height:1.5;margin:0 0 10px}.swatches{display:flex;gap:8px;margin-top:14px}.swatches span{width:35px;height:35px;border:1px solid var(--line);border-radius:3px}.status{margin-top:25px;font:12px Mono,monospace;padding:15px 0;border-top:1px solid var(--line)}@media(max-width:950px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{display:block}.badge{display:inline-block;margin-top:15px}}@media(max-width:600px){main{padding:25px 18px 35px}.grid{grid-template-columns:1fr;gap:30px}h1{font-size:32px}.footer{grid-template-columns:1fr;gap:20px}.caption{font-size:10px}header p{font-size:14px}}
+-
+-/* v2: scene-specific overrides; frames 02 and 03 retain their original styles. */
+-.v2-photo .headline{font-size:12cqw;line-height:1.03;margin-bottom:8cqw}.v2-photo .raw-photo{position:absolute;top:43cqw;left:-7cqw;right:-12.3cqw;height:82cqw;overflow:hidden;background:var(--tile)}.v2-photo .raw-photo img{position:absolute;width:120%;left:-10%;top:-39cqw}.v2-photo .raw-label{position:absolute;top:130cqw;font:600 3.1cqw Mono,monospace;letter-spacing:.04em}.v2-phone .phone{position:absolute;left:3cqw;top:34cqw;width:74cqw;height:94cqw;border:1.2cqw solid #181515;border-radius:7cqw;background:var(--cream);overflow:hidden;padding:0 3cqw;box-shadow:0 1px 3px #211d1614}.v2-phone .statusbar{height:7cqw;font-size:2.9cqw;font-weight:700;display:flex;align-items:center;justify-content:space-between;padding:0 1cqw}.v2-phone .island{position:absolute;top:1cqw;left:25cqw;width:22cqw;height:4.8cqw;border-radius:3cqw;background:#181515}.v2-phone .status-icons{letter-spacing:-.1em;font-size:2.4cqw}.v2-phone .chatnav{height:10cqw;margin:0 -3cqw;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:2cqw;padding:1cqw 3cqw;background:var(--cream)}.v2-phone .back{font-size:6cqw;line-height:1}.v2-phone .avatar{width:6.5cqw;height:6.5cqw;border-radius:50%;background:var(--ink);color:var(--cream);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:3cqw}.v2-phone .chatname{font-size:3.4cqw;font-weight:700;line-height:1.2}.v2-phone .chatmeta{font-size:2.5cqw;line-height:1.3;opacity:.65;font-weight:400}.v2-phone .post{margin:3cqw 0 0;background:var(--tile);border:1px solid var(--line);border-radius:3cqw;overflow:hidden}.v2-phone .post-photo{height:31cqw;position:relative;overflow:hidden}.v2-phone .post-photo img{position:absolute;width:120%;left:-10%;top:-26cqw}.v2-phone .post-copy{padding:3cqw}.v2-phone .post-title{font-size:4.6cqw;font-weight:800;letter-spacing:-.03em;line-height:1.1}.v2-phone .post-price{font-size:6cqw;font-weight:800;margin:2cqw 0 1cqw}.v2-phone .post-spec{font-size:3cqw;line-height:1.4}.v2-phone .post-link{font-size:3.6cqw;background:var(--coral);color:var(--cream);padding:2.5cqw;border-radius:1cqw;margin-top:3cqw;font-weight:600}.v2-phone .post-stamp{font-size:2.4cqw;text-align:right;opacity:.65;margin-top:1.5cqw}.v2-phone .chatinput{position:absolute;bottom:3.5cqw;left:3cqw;right:3cqw;border:1px solid var(--line);border-radius:4cqw;padding:2cqw 3cqw;font-size:2.9cqw;opacity:.6}.v2-phone .homebar{position:absolute;bottom:1cqw;left:24cqw;width:24cqw;height:.7cqw;border-radius:1cqw;background:var(--ink)}.v2-manager .phone{background:var(--tile)}.v2-manager .lead-bubble{margin-top:7cqw;padding:5cqw 4cqw;background:var(--cream);border:1px solid var(--line);border-radius:3cqw}.v2-manager .bot-label{font:600 2.8cqw Mono,monospace;margin-bottom:3cqw}.v2-manager .lead-title{font-size:7cqw;line-height:1.05;font-weight:800;letter-spacing:-.035em;margin:0 0 5cqw}.v2-manager .lead-car{font-size:4.3cqw;font-weight:700;line-height:1.15;border-top:1px solid var(--line);padding-top:3cqw}.v2-manager .sender{margin-top:4cqw;font-size:3cqw;opacity:.65}.v2-manager .buyer-message{font-size:5.2cqw;line-height:1.2;margin:1.5cqw 0 4cqw}.v2-manager .incoming{color:var(--coral);font-size:5cqw}.v2-ending .headline{font-size:11cqw;margin-top:20cqw;line-height:1.05}.v2-ending .button{margin-top:12cqw;font-size:4.8cqw;padding:4cqw}.revision{margin-top:25px;border-top:1px solid var(--line);padding-top:20px}.revision h2{font-size:16px}.revision p,.revision blockquote{font-size:13px;line-height:1.6}.revision blockquote{margin:15px 0;padding:15px 20px;border-left:1px solid var(--ink);background:var(--cream)}
+-
+-/* v2 crop and phone-content fit pass. */
+-.v2-photo .raw-photo{height:82cqw}.v2-photo .raw-photo img{width:150%;left:-25%;top:-34.5cqw}
+-.v2-phone .post-photo{height:22cqw}.v2-phone .post-copy{padding:2cqw}.v2-phone .post-title{font-size:3.9cqw}.v2-phone .post-price{font-size:5.4cqw;margin:1cqw 0}.v2-phone .post-spec{font-size:2.7cqw}.v2-phone .post-link{font-size:3.1cqw;padding:2cqw;margin-top:2cqw}.v2-phone .post-stamp{font-size:2cqw;margin-top:1cqw}
+-.v2-manager .lead-bubble{margin-top:4cqw;padding:3.5cqw 3cqw}.v2-manager .bot-label{font-size:2.4cqw;margin-bottom:2cqw}.v2-manager .lead-title{font-size:6cqw;margin-bottom:3cqw}.v2-manager .lead-car{font-size:3.4cqw;padding-top:2cqw}.v2-manager .sender{margin-top:2cqw;font-size:2.7cqw}.v2-manager .buyer-message{font-size:4.2cqw;margin:1.5cqw 0 3cqw}.v2-manager .incoming{font-size:3cqw}
+-
+-.v2-phone .chatinput{padding:.8cqw 2cqw;font-size:2.4cqw;bottom:3cqw}.v2-phone .back{color:#2AABEE}.v2-phone .post-link{background:var(--cream);color:#287AAE;border:1px solid var(--line);padding:1.7cqw 2cqw}.v2-phone .channel-action{text-align:center;border-color:transparent}
+-
+-.frame{position:absolute;inset:0;width:100%;height:100%;border:0;aspect-ratio:auto;container-type:size}.folio{bottom:18cqw;font-size:2.35cqw}.v2-photo .raw-photo{background:var(--tile)}.v2-phone .post-photo{height:22cqw;background:var(--cream);padding:1cqw}.v2-phone .post-photo img{position:static;width:100%;height:100%;object-fit:contain;max-width:100%}.field{color:var(--ink)}.field span,.chatmeta,.sender,.post-stamp{opacity:1;color:#625B4B}.v2-phone .statusbar,.v2-phone .chatinput,.v2-phone .post-stamp{opacity:1;color:#625B4B}.v2-phone .post-link,.v2-phone .back{color:#1D6698}.v2-phone .phone{width:55.5cqw;height:99cqw;left:12.6cqw;top:28cqw}.v2-phone .island{left:calc(50% - 10cqw);width:20cqw}.v2-phone .homebar{left:calc(50% - 12cqw)}.v2-phone .headline.long{font-size:7.2cqw;line-height:1.0}
+-
+-#scene-04{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}[data-scene-view="04"] .headline,[data-scene-view="04"] .phone,[data-scene-view="04"] .post,[data-scene-view="04"] .post-title,[data-scene-view="04"] .post-price,[data-scene-view="04"] .post-spec,[data-scene-view="04"] .post-link{opacity:0}</style><div id="scene-04" data-composition-id="scene-04" data-width="1080" data-height="1920" data-duration="5" data-hf-id="hf-flow-scene-04-001"><div class="frame v2-phone" id="scene-04-view" data-scene-view="04" data-hf-id="hf-flow-scene-04-002"><div class="inner" data-hf-id="hf-flow-scene-04-003"><div class="kicker" data-hf-id="hf-flow-scene-04-004"><span data-hf-id="hf-flow-scene-04-005">Telegram</span><span data-hf-id="hf-flow-scene-04-006">04 / 06</span></div><h2 class="headline long" data-hf-id="hf-flow-scene-04-007">І у вашому<br data-hf-id="hf-x5px">Telegram-каналі</h2><div class="phone" data-hf-id="hf-flow-scene-04-008"><div class="island" data-hf-id="hf-flow-scene-04-009"></div><div class="statusbar" data-hf-id="hf-flow-scene-04-010"><span data-hf-id="hf-flow-scene-04-011">9:41</span><span class="status-icons" data-hf-id="hf-flow-scene-04-012">▮▮▮ ▰</span></div><div class="chatnav" data-hf-id="hf-flow-scene-04-013"><span class="back" data-hf-id="hf-flow-scene-04-014">‹</span><div class="avatar" data-hf-id="hf-flow-scene-04-015">А</div><div class="chatname" data-hf-id="hf-flow-scene-04-016">Ваш автомайданчик<div class="chatmeta" data-hf-id="hf-flow-scene-04-017">канал</div></div></div><div class="post" data-hf-id="hf-flow-scene-04-018"><div class="post-photo" data-hf-id="hf-flow-scene-04-019"><img src="assets/images/camry-original-01.jpeg" alt="Toyota Camry у макеті опублікованого Telegram-поста" data-hf-id="hf-flow-scene-04-020"></div><div class="post-copy" data-hf-id="hf-flow-scene-04-021"><div class="post-title" data-hf-id="hf-flow-scene-04-022">Toyota Camry<br data-hf-id="hf-rsrt">3.5 V6 · 2022</div><div class="post-price" data-hf-id="hf-flow-scene-04-023">$ 33 900</div><div class="post-spec" data-hf-id="hf-flow-scene-04-024">28 тис. км · 3.5 л · Київ</div><div class="post-link" data-hf-id="hf-flow-scene-04-025">Переглянути авто ↗</div><div class="post-stamp" data-hf-id="hf-flow-scene-04-026">Опубліковано</div></div></div><div class="chatinput channel-action" data-hf-id="hf-flow-scene-04-027">Сповіщення вимкнено</div><div class="homebar" data-hf-id="hf-flow-scene-04-028"></div></div></div><div class="folio" data-hf-id="hf-flow-scene-04-029"><span data-hf-id="hf-flow-scene-04-030">Фото · ціна · посилання</span><span data-hf-id="hf-flow-scene-04-031">Ваш канал</span></div></div></div><script>const tl=gsap.timeline({paused:true,defaults:{ease:'power3.out'}});
+-tl.fromTo('[data-scene-view="04"] .headline',{y:24,opacity:0},{y:0,opacity:1,duration:.42},.06);
+-tl.fromTo('[data-scene-view="04"] .phone',{x:65,opacity:0},{x:0,opacity:1,duration:.55},0);
+-tl.fromTo('[data-scene-view="04"] .post',{y:65,opacity:0},{y:0,opacity:1,duration:.55},1.1);
+-tl.fromTo('[data-scene-view="04"] .post-title,[data-scene-view="04"] .post-price,[data-scene-view="04"] .post-spec,[data-scene-view="04"] .post-link',{opacity:0,y:14},{opacity:1,y:0,duration:.3,stagger:.45},1.5);
+-window.__timelines['scene-04']=tl;</script></template></body></html>+<!doctype html>
++<html lang="uk">
++  <head></head>
++  <body>
++    <template
++      ><div
++        data-hf-id="hf-d6mp"
++        id="scene-04"
++        class="scene"
++        data-scene-view="04"
++        data-composition-id="scene-04"
++        data-width="1080"
++        data-height="1920"
++        data-duration="5"
++      >
++        <div data-hf-id="hf-9r3x" class="scene-body">
++          <div data-hf-id="hf-3fbd" class="arc" data-layout-ignore=""></div>
++          <div data-hf-id="hf-tt2s" class="arc bottom" data-layout-ignore=""></div>
++          <h2 data-hf-id="hf-t43f" class="headline">
++            <span data-hf-id="hf-bcym">І воно автоматично</span
++            ><span data-hf-id="hf-16j4">з’явиться у вашому</span
++            ><span data-hf-id="hf-0hly" class="red">Telegram-каналі</span>
++          </h2>
++          <div data-hf-id="hf-puuw" class="phone" style="top: 660px; left: 252px">
++            <div data-hf-id="hf-9o7x" class="phone-screen">
++              <div data-hf-id="hf-7sfr" class="island"></div>
++              <div data-hf-id="hf-8kim" class="status">
++                <span data-hf-id="hf-zwmt">9:41</span><span data-hf-id="hf-22t9">▮▮▮ ▰</span>
++              </div>
++              <div data-hf-id="hf-7rtw" class="phone-nav">
++                <div data-hf-id="hf-y97l" class="telegram-mark">
++                  <svg data-hf-id="hf-ulu9" viewBox="0 0 24 24">
++                    <path
++                      data-hf-id="hf-wxll"
++                      d="m2 11 19-8c.9-.4 1.6.2 1.3 1.4L19 21c-.2 1-1 1.3-1.8.7L12 18l-2.5 2.4c-.3.3-.5.5-1 .5l.4-5.6L19.1 6c.4-.4-.1-.6-.6-.3L5.8 13.7l-3.5-1.1C1.3 12.3 1.3 11.5 2 11Z"
++                    />
++                  </svg>
++                </div>
++                <div data-hf-id="hf-qneg" class="nav-title">
++                  Авто в наявності
++                  <div data-hf-id="hf-pdzj" class="nav-meta">Ваш Telegram-канал</div>
++                </div>
++              </div>
++              <div data-hf-id="hf-47vj" class="chat-pattern"></div>
++              <div data-hf-id="hf-j2jy" class="post">
++                <div data-hf-id="hf-or0u" class="post-image">
++                  <img
++                    data-hf-id="hf-znqy"
++                    src="assets/images/mercedes-e2025-w214.png"
++                    alt="Білий Mercedes-Benz E-Class 2025"
++                  />
++                </div>
++                <div data-hf-id="hf-4ei1" class="car-title">Mercedes-Benz E-Class</div>
++                <p data-hf-id="hf-w3v8" class="car-meta">2025</p>
++                <p data-hf-id="hf-bsk6" class="price">Ціна за запитом</p>
++                <div data-hf-id="hf-u04b" class="post-link">
++                  <span data-hf-id="hf-d3iz">Переглянути авто</span
++                  ><span data-hf-id="hf-o03m">↗</span>
++                </div>
++              </div>
++              <div data-hf-id="hf-i260" class="homebar"></div>
++            </div>
++          </div>
++          <div
++            data-hf-id="hf-cmoh"
++            class="handwriting"
++            style="top: 650px; left: 55px; width: 245px; transform: rotate(-9deg)"
++          >
++            Ваші авто там, де є покупці!
++          </div>
++          <svg
++            data-hf-id="hf-zxwv"
++            class="draw-arrow"
++            style="left: 90px; top: 890px; width: 170px; height: 180px; stroke: #141414"
++            viewBox="0 0 170 180"
++          >
++            <path data-hf-id="hf-7lz5" d="M35 5Q-5 110 140 157M115 130l28 29-38 7" />
++          </svg>
++          <div data-hf-id="hf-57kq" class="telegram-mark tg-badge">
++            <svg data-hf-id="hf-1tol" viewBox="0 0 24 24">
++              <path
++                data-hf-id="hf-y419"
++                d="m2 11 19-8c.9-.4 1.6.2 1.3 1.4L19 21c-.2 1-1 1.3-1.8.7L12 18l-2.5 2.4c-.3.3-.5.5-1 .5l.4-5.6L19.1 6c.4-.4-.1-.6-.6-.3L5.8 13.7l-3.5-1.1C1.3 12.3 1.3 11.5 2 11Z"
++              />
++            </svg>
++          </div>
++        </div>
++      </div>
++      <script>
++        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
++        const scope = '[data-scene-view="04"]';
++        tl.fromTo(
++          scope + ' .headline span',
++          { y: 65, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.58, stagger: 0.11 },
++          0.05,
++        );
++        tl.fromTo(scope + ' .arc', { rotation: -6 }, { rotation: 0, duration: 5, ease: 'none' }, 0);
++        const paths = document.querySelectorAll(scope + ' .draw-arrow path');
++        paths.forEach((path) => {
++          const length = path.getTotalLength();
++          path.style.strokeDasharray = length;
++          tl.fromTo(
++            path,
++            { strokeDashoffset: length },
++            { strokeDashoffset: 0, duration: 0.55, ease: 'none' },
++            1.5,
++          );
++        });
++        tl.fromTo(
++          scope + ' .phone',
++          { y: 130, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.65 },
++          0.45,
++        );
++        tl.fromTo(
++          scope + ' .post',
++          { y: 230, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.65 },
++          1.25,
++        );
++        tl.fromTo(scope + ' .handwriting', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 1.6);
++        tl.fromTo(
++          scope + ' .tg-badge',
++          { scale: 0.3, y: 80, opacity: 0 },
++          { scale: 1, y: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.5)' },
++          2.2,
++        );
++        window.__timelines['scene-04'] = tl;
++      </script></template
++    >
++  </body>
++</html>
+--- before/animation/compositions/scene-03.html
++++ after/animation/compositions/scene-03.html
+@@ -1,26 +1,185 @@
+-<!DOCTYPE html><html lang="uk"><head></head><body><template id="scene-03-template"><style>
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-cyrillic.woff2');font-weight:400 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-latin.woff2');font-weight:400 900}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-cyrillic.woff2');font-weight:400 700;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-latin.woff2');font-weight:400 700}
+-:root{--cream:#FBF8F1;--tile:#F2EBDB;--ink:#211D16;--coral:#B4453C;--line:#211d1626}*{box-sizing:border-box}body{margin:0;background:var(--tile);color:var(--ink);font-family:Onest,Arial,sans-serif}main{max-width:1440px;margin:auto;padding:52px 40px 64px}header{border-top:1px solid var(--ink);padding-top:20px;display:flex;justify-content:space-between;gap:30px;margin-bottom:35px}.eyebrow{font:600 11px Mono,monospace;letter-spacing:.12em;text-transform:uppercase}h1{font-size:clamp(28px,3vw,46px);line-height:1.04;letter-spacing:-.04em;margin:15px 0 10px;max-width:840px}header p{font-size:15px;margin:0;max-width:700px;line-height:1.5}.badge{font:12px Mono,monospace;white-space:nowrap;align-self:flex-start;padding:10px;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 24px}.frame{position:relative;aspect-ratio:9/16;container-type:size;overflow:hidden;background:var(--cream);border:1px solid var(--line)}.inner{position:absolute;left:7cqw;right:12.3cqw;top:16cqw;bottom:34cqw}.kicker{font:600 2.45cqw Mono,monospace;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:3cqw;display:flex;justify-content:space-between}.headline{font-size:9.2cqw;line-height:1.05;letter-spacing:-.05em;font-weight:800;margin:5cqw 0 5cqw}.headline.long{font-size:7.7cqw}.photo{position:relative;overflow:hidden;background:var(--tile);height:52cqw;border-radius:8px;border:1px solid var(--line)}.photo img{position:absolute;width:115%;max-width:none;top:-31cqw;left:-7cqw}.line{border-top:1px solid var(--line);padding-top:3cqw;margin-top:4cqw}.model{font-size:4.2cqw;font-weight:700;line-height:1.15}.spec{font-size:3.3cqw;line-height:1.35;margin-top:2cqw}.price{font-size:7.1cqw;font-weight:800;letter-spacing:-.035em;margin-top:4cqw}.coral{background:var(--coral);color:var(--cream)}.pill{font-size:3.5cqw;font-weight:600;padding:3cqw 4cqw;border-radius:6px;margin-top:4cqw;display:inline-block}.panel{background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:4cqw}.panel .photo{height:32cqw;background:var(--cream)}.panel .photo img{top:-25cqw}.field{display:flex;justify-content:space-between;gap:2cqw;font-size:3.5cqw;border-bottom:1px solid var(--line);padding:2cqw 0}.field span{opacity:.65}.field b{font-weight:600}.button{padding:3.5cqw 2cqw;border-radius:6px;text-align:center;font-size:4.1cqw;font-weight:700;margin-top:4cqw}.public-window{height:76cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:8px 8px 0 0}.public-window img{width:100%;position:absolute;top:-28cqw}.public-cta{height:14cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px}.public-cta img{width:100%;position:absolute;top:-124cqw}.tg-header{font-size:3.5cqw;font-weight:600;padding-bottom:3cqw;border-bottom:1px solid var(--line);margin-bottom:3cqw}.panel .tg-photo{height:28cqw}.tg-title{font-weight:800;font-size:5.3cqw;margin-top:3cqw;line-height:1.1}.tg-link{font-size:3.8cqw;padding:2.5cqw;background:var(--coral);color:var(--cream);border-radius:6px;margin-top:3cqw}.lead .model{font-size:4.7cqw}.lead .field{display:block}.lead .field b{display:block;margin-top:1cqw}.arrow{text-align:center;font-size:6cqw;padding:1cqw 0}.notification{padding:3cqw;border:1px solid var(--line);border-radius:8px;background:var(--tile);position:relative}.notification .new{font-weight:800;font-size:5cqw;line-height:1.1}.notification .spec{font-size:3.4cqw}.notification:before{content:'●';color:var(--ink);position:absolute;right:4cqw;top:4cqw;font-size:3cqw}.brand{font-size:8cqw;font-weight:800;letter-spacing:-.04em}.brand span{font-size:4cqw;display:inline-block;background:var(--ink);color:var(--cream);padding:1.2cqw 2cqw;border-radius:5px;margin-right:2cqw;vertical-align:middle}.closing .headline{font-size:10cqw;margin-top:12cqw;margin-bottom:6cqw}.closing .photo{height:31cqw}.closing .photo img{top:-34cqw}.closing .button{margin-top:5cqw}.folio{position:absolute;left:7cqw;right:12.3cqw;bottom:12cqw;font:600 2.4cqw Mono,monospace;letter-spacing:.07em;border-top:1px solid var(--line);padding-top:3cqw;display:flex;justify-content:space-between}.caption{display:flex;justify-content:space-between;font:600 11px Mono,monospace;margin-top:13px;gap:8px;line-height:1.4}.notes{font-size:13px;line-height:1.5;margin-top:8px;max-width:45em}.notes strong{font-weight:700}.chip{display:inline-block;font:10px Mono,monospace;border:1px solid var(--line);padding:5px 7px;margin-top:7px}.footer{margin-top:40px;padding-top:25px;border-top:1px solid var(--ink);display:grid;grid-template-columns:1fr 1fr;gap:35px}.footer h2{font-size:16px;margin:0 0 10px}.footer p{font-size:13px;line-height:1.5;margin:0 0 10px}.swatches{display:flex;gap:8px;margin-top:14px}.swatches span{width:35px;height:35px;border:1px solid var(--line);border-radius:3px}.status{margin-top:25px;font:12px Mono,monospace;padding:15px 0;border-top:1px solid var(--line)}@media(max-width:950px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{display:block}.badge{display:inline-block;margin-top:15px}}@media(max-width:600px){main{padding:25px 18px 35px}.grid{grid-template-columns:1fr;gap:30px}h1{font-size:32px}.footer{grid-template-columns:1fr;gap:20px}.caption{font-size:10px}header p{font-size:14px}}
+-
+-/* v2: scene-specific overrides; frames 02 and 03 retain their original styles. */
+-.v2-photo .headline{font-size:12cqw;line-height:1.03;margin-bottom:8cqw}.v2-photo .raw-photo{position:absolute;top:43cqw;left:-7cqw;right:-12.3cqw;height:82cqw;overflow:hidden;background:var(--tile)}.v2-photo .raw-photo img{position:absolute;width:120%;left:-10%;top:-39cqw}.v2-photo .raw-label{position:absolute;top:130cqw;font:600 3.1cqw Mono,monospace;letter-spacing:.04em}.v2-phone .phone{position:absolute;left:3cqw;top:34cqw;width:74cqw;height:94cqw;border:1.2cqw solid #181515;border-radius:7cqw;background:var(--cream);overflow:hidden;padding:0 3cqw;box-shadow:0 1px 3px #211d1614}.v2-phone .statusbar{height:7cqw;font-size:2.9cqw;font-weight:700;display:flex;align-items:center;justify-content:space-between;padding:0 1cqw}.v2-phone .island{position:absolute;top:1cqw;left:25cqw;width:22cqw;height:4.8cqw;border-radius:3cqw;background:#181515}.v2-phone .status-icons{letter-spacing:-.1em;font-size:2.4cqw}.v2-phone .chatnav{height:10cqw;margin:0 -3cqw;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:2cqw;padding:1cqw 3cqw;background:var(--cream)}.v2-phone .back{font-size:6cqw;line-height:1}.v2-phone .avatar{width:6.5cqw;height:6.5cqw;border-radius:50%;background:var(--ink);color:var(--cream);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:3cqw}.v2-phone .chatname{font-size:3.4cqw;font-weight:700;line-height:1.2}.v2-phone .chatmeta{font-size:2.5cqw;line-height:1.3;opacity:.65;font-weight:400}.v2-phone .post{margin:3cqw 0 0;background:var(--tile);border:1px solid var(--line);border-radius:3cqw;overflow:hidden}.v2-phone .post-photo{height:31cqw;position:relative;overflow:hidden}.v2-phone .post-photo img{position:absolute;width:120%;left:-10%;top:-26cqw}.v2-phone .post-copy{padding:3cqw}.v2-phone .post-title{font-size:4.6cqw;font-weight:800;letter-spacing:-.03em;line-height:1.1}.v2-phone .post-price{font-size:6cqw;font-weight:800;margin:2cqw 0 1cqw}.v2-phone .post-spec{font-size:3cqw;line-height:1.4}.v2-phone .post-link{font-size:3.6cqw;background:var(--coral);color:var(--cream);padding:2.5cqw;border-radius:1cqw;margin-top:3cqw;font-weight:600}.v2-phone .post-stamp{font-size:2.4cqw;text-align:right;opacity:.65;margin-top:1.5cqw}.v2-phone .chatinput{position:absolute;bottom:3.5cqw;left:3cqw;right:3cqw;border:1px solid var(--line);border-radius:4cqw;padding:2cqw 3cqw;font-size:2.9cqw;opacity:.6}.v2-phone .homebar{position:absolute;bottom:1cqw;left:24cqw;width:24cqw;height:.7cqw;border-radius:1cqw;background:var(--ink)}.v2-manager .phone{background:var(--tile)}.v2-manager .lead-bubble{margin-top:7cqw;padding:5cqw 4cqw;background:var(--cream);border:1px solid var(--line);border-radius:3cqw}.v2-manager .bot-label{font:600 2.8cqw Mono,monospace;margin-bottom:3cqw}.v2-manager .lead-title{font-size:7cqw;line-height:1.05;font-weight:800;letter-spacing:-.035em;margin:0 0 5cqw}.v2-manager .lead-car{font-size:4.3cqw;font-weight:700;line-height:1.15;border-top:1px solid var(--line);padding-top:3cqw}.v2-manager .sender{margin-top:4cqw;font-size:3cqw;opacity:.65}.v2-manager .buyer-message{font-size:5.2cqw;line-height:1.2;margin:1.5cqw 0 4cqw}.v2-manager .incoming{color:var(--coral);font-size:5cqw}.v2-ending .headline{font-size:11cqw;margin-top:20cqw;line-height:1.05}.v2-ending .button{margin-top:12cqw;font-size:4.8cqw;padding:4cqw}.revision{margin-top:25px;border-top:1px solid var(--line);padding-top:20px}.revision h2{font-size:16px}.revision p,.revision blockquote{font-size:13px;line-height:1.6}.revision blockquote{margin:15px 0;padding:15px 20px;border-left:1px solid var(--ink);background:var(--cream)}
+-
+-/* v2 crop and phone-content fit pass. */
+-.v2-photo .raw-photo{height:82cqw}.v2-photo .raw-photo img{width:150%;left:-25%;top:-34.5cqw}
+-.v2-phone .post-photo{height:22cqw}.v2-phone .post-copy{padding:2cqw}.v2-phone .post-title{font-size:3.9cqw}.v2-phone .post-price{font-size:5.4cqw;margin:1cqw 0}.v2-phone .post-spec{font-size:2.7cqw}.v2-phone .post-link{font-size:3.1cqw;padding:2cqw;margin-top:2cqw}.v2-phone .post-stamp{font-size:2cqw;margin-top:1cqw}
+-.v2-manager .lead-bubble{margin-top:4cqw;padding:3.5cqw 3cqw}.v2-manager .bot-label{font-size:2.4cqw;margin-bottom:2cqw}.v2-manager .lead-title{font-size:6cqw;margin-bottom:3cqw}.v2-manager .lead-car{font-size:3.4cqw;padding-top:2cqw}.v2-manager .sender{margin-top:2cqw;font-size:2.7cqw}.v2-manager .buyer-message{font-size:4.2cqw;margin:1.5cqw 0 3cqw}.v2-manager .incoming{font-size:3cqw}
+-
+-.v2-phone .chatinput{padding:.8cqw 2cqw;font-size:2.4cqw;bottom:3cqw}.v2-phone .back{color:#2AABEE}.v2-phone .post-link{background:var(--cream);color:#287AAE;border:1px solid var(--line);padding:1.7cqw 2cqw}.v2-phone .channel-action{text-align:center;border-color:transparent}
+-
+-.frame{position:absolute;inset:0;width:100%;height:100%;border:0;aspect-ratio:auto;container-type:size}.folio{bottom:18cqw;font-size:2.35cqw}.v2-photo .raw-photo{background:var(--tile)}.v2-phone .post-photo{height:22cqw;background:var(--cream);padding:1cqw}.v2-phone .post-photo img{position:static;width:100%;height:100%;object-fit:contain;max-width:100%}.field{color:var(--ink)}.field span,.chatmeta,.sender,.post-stamp{opacity:1;color:#625B4B}.v2-phone .statusbar,.v2-phone .chatinput,.v2-phone .post-stamp{opacity:1;color:#625B4B}.v2-phone .post-link,.v2-phone .back{color:#1D6698}.v2-phone .phone{width:55.5cqw;height:99cqw;left:12.6cqw;top:28cqw}.v2-phone .island{left:calc(50% - 10cqw);width:20cqw}.v2-phone .homebar{left:calc(50% - 12cqw)}.v2-phone .headline.long{font-size:7.2cqw;line-height:1.0}
+-
+-#scene-03{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}[data-scene-view="03"] .headline,[data-scene-view="03"] .public-window,[data-scene-view="03"] .public-cta{opacity:0}</style><div id="scene-03" data-composition-id="scene-03" data-width="1080" data-height="1920" data-duration="5" data-hf-id="hf-flow-scene-03-001"><div class="frame" id="scene-03-view" data-scene-view="03" data-hf-id="hf-flow-scene-03-002"><div class="inner" data-hf-id="hf-flow-scene-03-003"><div class="kicker" data-hf-id="hf-flow-scene-03-004"><span data-hf-id="hf-flow-scene-03-005">Вітрина</span><span data-hf-id="hf-flow-scene-03-006">03 / 06</span></div><h2 class="headline" data-hf-id="hf-flow-scene-03-007">На вашому<br data-hf-id="hf-x5px">сайті</h2><div class="public-window" data-hf-id="hf-flow-scene-03-008"><img data-layout-allow-overflow="" src="assets/images/public-camry.png" alt="Реальний скриншот сторінки Toyota Camry 3.5 V6 2022 на AutoFlow" data-hf-id="hf-flow-scene-03-009"></div><div class="public-cta" data-hf-id="hf-flow-scene-03-010"><img data-layout-allow-overflow="" src="assets/images/public-camry.png" alt="Реальна кнопка Залишити заявку на сайті" data-hf-id="hf-flow-scene-03-011"></div></div><div class="folio" data-hf-id="hf-flow-scene-03-012"><span data-hf-id="hf-flow-scene-03-013">Те саме авто</span><span data-hf-id="hf-flow-scene-03-014">Відкрите покупцю</span></div></div></div><script>const tl=gsap.timeline({paused:true,defaults:{ease:'power3.out'}});
+-tl.fromTo('[data-scene-view="03"] .headline',{y:24,opacity:0},{y:0,opacity:1,duration:.42},.06);
+-tl.fromTo('[data-scene-view="03"] .public-window,[data-scene-view="03"] .public-cta',{y:52,opacity:0},{y:0,opacity:1,duration:.65},.06);
+-tl.to('[data-scene-view="03"] .public-cta',{scale:.975,duration:.12,ease:'power2.inOut'},3.7);
+-tl.to('[data-scene-view="03"] .public-cta',{scale:1,duration:.2},3.83);
+-tl.to('[data-scene-view="03"] .public-window,[data-scene-view="03"] .public-cta',{x:-65,opacity:0,duration:.45,ease:'power2.in'},4.55);
+-window.__timelines['scene-03']=tl;</script></template></body></html>+<!doctype html>
++<html lang="uk">
++  <head></head>
++  <body>
++    <template
++      ><div
++        data-hf-id="hf-513u"
++        id="scene-03"
++        class="scene"
++        data-scene-view="03"
++        data-composition-id="scene-03"
++        data-width="1080"
++        data-height="1920"
++        data-duration="5"
++      >
++        <div data-hf-id="hf-9r3x" class="scene-body">
++          <div data-hf-id="hf-3fbd" class="arc" data-layout-ignore=""></div>
++          <div data-hf-id="hf-tt2s" class="arc bottom" data-layout-ignore=""></div>
++          <h2 data-hf-id="hf-t43f" class="headline">
++            <span data-hf-id="hf-kp78">Опублікуйте авто</span
++            ><span data-hf-id="hf-t235" class="red">на своєму сайті</span>
++          </h2>
++          <div data-hf-id="hf-w50w" class="button publish">Опублікувати</div>
++          <div data-hf-id="hf-u0ad" class="cursor" style="left: 430px; top: 535px">
++            <svg data-hf-id="hf-trex" viewBox="0 0 70 90">
++              <path data-hf-id="hf-8tz5" d="M8 3v69l18-17 15 30 14-7-16-29 25-2Z" />
++            </svg>
++          </div>
++          <svg
++            data-hf-id="hf-4odl"
++            class="click-rays"
++            style="left: 368px; top: 470px"
++            viewBox="0 0 100 100"
++          >
++            <path
++              data-hf-id="hf-g72y"
++              d="M50 5v15M18 18l12 12M5 50h15M82 18 70 30M18 82l12-12"
++            /></svg
++          ><svg
++            data-hf-id="hf-qixm"
++            class="draw-arrow"
++            style="left: 550px; top: 550px; width: 200px; height: 185px"
++            viewBox="0 0 200 185"
++          >
++            <path data-hf-id="hf-a9qo" d="M10 8Q135 20 150 155M123 137l27 24 20-36" />
++          </svg>
++          <div data-hf-id="hf-2m1a" class="browser ui">
++            <div data-hf-id="hf-s60r" class="browser-chrome">
++              <i data-hf-id="hf-wt6k"></i><i data-hf-id="hf-zeb8"></i><i data-hf-id="hf-y7e5"></i>
++            </div>
++            <div data-hf-id="hf-t5p5" class="site-nav">
++              <strong data-hf-id="hf-o60h">ВАШ АВТОСАЛОН</strong
++              ><span data-hf-id="hf-0zhd">Авто　Послуги　Про нас　☰</span>
++            </div>
++            <div data-hf-id="hf-e584" class="site-gallery">
++              <div data-hf-id="hf-wcox" class="site-main">
++                <img
++                  data-hf-id="hf-znqy"
++                  src="assets/images/mercedes-e2025-w214.png"
++                  alt="Білий Mercedes-Benz E-Class 2025"
++                />
++              </div>
++              <div data-hf-id="hf-go5f" class="thumbs">
++                <div data-hf-id="hf-mixc" class="thumb">
++                  <img
++                    data-hf-id="hf-uhsu"
++                    src="assets/images/mercedes-e2025-w214.png"
++                    alt="Білий Mercedes-Benz E-Class 2025"
++                  />
++                </div>
++                <div data-hf-id="hf-gz0r" class="thumb detail">
++                  <img
++                    data-hf-id="hf-uw3v"
++                    src="assets/images/mercedes-e2025-w214.png"
++                    alt="Білий Mercedes-Benz E-Class 2025"
++                  />
++                </div>
++                <div data-hf-id="hf-apwr" class="thumb detail">
++                  <img
++                    data-hf-id="hf-vaew"
++                    src="assets/images/mercedes-e2025-w214.png"
++                    alt="Білий Mercedes-Benz E-Class 2025"
++                  />
++                </div>
++              </div>
++            </div>
++            <div data-hf-id="hf-4ei1" class="car-title">Mercedes-Benz E-Class</div>
++            <p data-hf-id="hf-y6uh" class="car-meta">2025　|　Бензин　|　Автомат</p>
++            <p data-hf-id="hf-bsk6" class="price">Ціна за запитом</p>
++            <div data-hf-id="hf-dta7" class="button">Залишити заявку</div>
++          </div>
++          <div data-hf-id="hf-8sgz" class="site-footer">
++            Ваш сайт.
++            <div data-hf-id="hf-at5j">Більше клієнтів.</div>
++            <div data-hf-id="hf-1h9w">Більше продажів.</div>
++          </div>
++        </div>
++      </div>
++      <script>
++        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
++        const scope = '[data-scene-view="03"]';
++        tl.fromTo(
++          scope + ' .headline span',
++          { y: 65, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.58, stagger: 0.11 },
++          0.05,
++        );
++        tl.fromTo(scope + ' .arc', { rotation: -6 }, { rotation: 0, duration: 5, ease: 'none' }, 0);
++        const paths = document.querySelectorAll(scope + ' .draw-arrow path');
++        paths.forEach((path) => {
++          const length = path.getTotalLength();
++          path.style.strokeDasharray = length;
++          tl.fromTo(
++            path,
++            { strokeDashoffset: length },
++            { strokeDashoffset: 0, duration: 0.55, ease: 'none' },
++            2.0,
++          );
++        });
++        tl.fromTo(
++          scope + ' .publish',
++          { scale: 0.8, opacity: 0 },
++          { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.2)' },
++          0.35,
++        );
++        tl.fromTo(
++          scope + ' .browser',
++          { y: 170, scale: 0.91, opacity: 0 },
++          { y: 0, scale: 1, opacity: 1, duration: 0.65 },
++          1.3,
++        );
++        tl.fromTo(
++          scope + ' .site-gallery',
++          { y: 35, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.45 },
++          1.6,
++        );
++        tl.fromTo(
++          scope +
++            ' .browser .car-title,' +
++            scope +
++            ' .browser .car-meta,' +
++            scope +
++            ' .browser .price,' +
++            scope +
++            ' .browser .button',
++          { y: 22, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.35, stagger: 0.1 },
++          1.95,
++        );
++        tl.fromTo(
++          scope + ' .site-footer',
++          { y: 35, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.45 },
++          2.7,
++        );
++        tl.fromTo(
++          scope + ' .cursor',
++          { x: 150, y: 170, opacity: 0 },
++          { x: 0, y: 0, opacity: 1, duration: 0.5 },
++          0.25,
++        );
++        tl.to(
++          [scope + ' .publish', scope + ' .cursor'],
++          { scale: 0.94, duration: 0.1, ease: 'power1.in' },
++          0.8,
++        );
++        tl.to(
++          [scope + ' .publish', scope + ' .cursor'],
++          { scale: 1, duration: 0.3, ease: 'back.out(1.6)' },
++          0.9,
++        );
++        tl.fromTo(
++          scope + ' .click-rays',
++          { scale: 0.55, opacity: 0 },
++          { scale: 1, opacity: 1, duration: 0.1 },
++          0.8,
++        );
++        tl.to(scope + ' .click-rays', { scale: 1.3, opacity: 0, duration: 0.35 }, 0.9);
++        tl.to(scope + ' .cursor', { opacity: 0, duration: 0.25 }, 1.3);
++        window.__timelines['scene-03'] = tl;
++      </script></template
++    >
++  </body>
++</html>
+--- before/animation/compositions/scene-02.html
++++ after/animation/compositions/scene-02.html
+@@ -1,28 +1,150 @@
+-<!DOCTYPE html><html lang="uk"><head></head><body><template id="scene-02-template"><style>
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-cyrillic.woff2');font-weight:400 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-latin.woff2');font-weight:400 900}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-cyrillic.woff2');font-weight:400 700;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-latin.woff2');font-weight:400 700}
+-:root{--cream:#FBF8F1;--tile:#F2EBDB;--ink:#211D16;--coral:#B4453C;--line:#211d1626}*{box-sizing:border-box}body{margin:0;background:var(--tile);color:var(--ink);font-family:Onest,Arial,sans-serif}main{max-width:1440px;margin:auto;padding:52px 40px 64px}header{border-top:1px solid var(--ink);padding-top:20px;display:flex;justify-content:space-between;gap:30px;margin-bottom:35px}.eyebrow{font:600 11px Mono,monospace;letter-spacing:.12em;text-transform:uppercase}h1{font-size:clamp(28px,3vw,46px);line-height:1.04;letter-spacing:-.04em;margin:15px 0 10px;max-width:840px}header p{font-size:15px;margin:0;max-width:700px;line-height:1.5}.badge{font:12px Mono,monospace;white-space:nowrap;align-self:flex-start;padding:10px;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 24px}.frame{position:relative;aspect-ratio:9/16;container-type:size;overflow:hidden;background:var(--cream);border:1px solid var(--line)}.inner{position:absolute;left:7cqw;right:12.3cqw;top:16cqw;bottom:34cqw}.kicker{font:600 2.45cqw Mono,monospace;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:3cqw;display:flex;justify-content:space-between}.headline{font-size:9.2cqw;line-height:1.05;letter-spacing:-.05em;font-weight:800;margin:5cqw 0 5cqw}.headline.long{font-size:7.7cqw}.photo{position:relative;overflow:hidden;background:var(--tile);height:52cqw;border-radius:8px;border:1px solid var(--line)}.photo img{position:absolute;width:115%;max-width:none;top:-31cqw;left:-7cqw}.line{border-top:1px solid var(--line);padding-top:3cqw;margin-top:4cqw}.model{font-size:4.2cqw;font-weight:700;line-height:1.15}.spec{font-size:3.3cqw;line-height:1.35;margin-top:2cqw}.price{font-size:7.1cqw;font-weight:800;letter-spacing:-.035em;margin-top:4cqw}.coral{background:var(--coral);color:var(--cream)}.pill{font-size:3.5cqw;font-weight:600;padding:3cqw 4cqw;border-radius:6px;margin-top:4cqw;display:inline-block}.panel{background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:4cqw}.panel .photo{height:32cqw;background:var(--cream)}.panel .photo img{top:-25cqw}.field{display:flex;justify-content:space-between;gap:2cqw;font-size:3.5cqw;border-bottom:1px solid var(--line);padding:2cqw 0}.field span{opacity:.65}.field b{font-weight:600}.button{padding:3.5cqw 2cqw;border-radius:6px;text-align:center;font-size:4.1cqw;font-weight:700;margin-top:4cqw}.public-window{height:76cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:8px 8px 0 0}.public-window img{width:100%;position:absolute;top:-28cqw}.public-cta{height:14cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px}.public-cta img{width:100%;position:absolute;top:-124cqw}.tg-header{font-size:3.5cqw;font-weight:600;padding-bottom:3cqw;border-bottom:1px solid var(--line);margin-bottom:3cqw}.panel .tg-photo{height:28cqw}.tg-title{font-weight:800;font-size:5.3cqw;margin-top:3cqw;line-height:1.1}.tg-link{font-size:3.8cqw;padding:2.5cqw;background:var(--coral);color:var(--cream);border-radius:6px;margin-top:3cqw}.lead .model{font-size:4.7cqw}.lead .field{display:block}.lead .field b{display:block;margin-top:1cqw}.arrow{text-align:center;font-size:6cqw;padding:1cqw 0}.notification{padding:3cqw;border:1px solid var(--line);border-radius:8px;background:var(--tile);position:relative}.notification .new{font-weight:800;font-size:5cqw;line-height:1.1}.notification .spec{font-size:3.4cqw}.notification:before{content:'●';color:var(--ink);position:absolute;right:4cqw;top:4cqw;font-size:3cqw}.brand{font-size:8cqw;font-weight:800;letter-spacing:-.04em}.brand span{font-size:4cqw;display:inline-block;background:var(--ink);color:var(--cream);padding:1.2cqw 2cqw;border-radius:5px;margin-right:2cqw;vertical-align:middle}.closing .headline{font-size:10cqw;margin-top:12cqw;margin-bottom:6cqw}.closing .photo{height:31cqw}.closing .photo img{top:-34cqw}.closing .button{margin-top:5cqw}.folio{position:absolute;left:7cqw;right:12.3cqw;bottom:12cqw;font:600 2.4cqw Mono,monospace;letter-spacing:.07em;border-top:1px solid var(--line);padding-top:3cqw;display:flex;justify-content:space-between}.caption{display:flex;justify-content:space-between;font:600 11px Mono,monospace;margin-top:13px;gap:8px;line-height:1.4}.notes{font-size:13px;line-height:1.5;margin-top:8px;max-width:45em}.notes strong{font-weight:700}.chip{display:inline-block;font:10px Mono,monospace;border:1px solid var(--line);padding:5px 7px;margin-top:7px}.footer{margin-top:40px;padding-top:25px;border-top:1px solid var(--ink);display:grid;grid-template-columns:1fr 1fr;gap:35px}.footer h2{font-size:16px;margin:0 0 10px}.footer p{font-size:13px;line-height:1.5;margin:0 0 10px}.swatches{display:flex;gap:8px;margin-top:14px}.swatches span{width:35px;height:35px;border:1px solid var(--line);border-radius:3px}.status{margin-top:25px;font:12px Mono,monospace;padding:15px 0;border-top:1px solid var(--line)}@media(max-width:950px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{display:block}.badge{display:inline-block;margin-top:15px}}@media(max-width:600px){main{padding:25px 18px 35px}.grid{grid-template-columns:1fr;gap:30px}h1{font-size:32px}.footer{grid-template-columns:1fr;gap:20px}.caption{font-size:10px}header p{font-size:14px}}
+-
+-/* v2: scene-specific overrides; frames 02 and 03 retain their original styles. */
+-.v2-photo .headline{font-size:12cqw;line-height:1.03;margin-bottom:8cqw}.v2-photo .raw-photo{position:absolute;top:43cqw;left:-7cqw;right:-12.3cqw;height:82cqw;overflow:hidden;background:var(--tile)}.v2-photo .raw-photo img{position:absolute;width:120%;left:-10%;top:-39cqw}.v2-photo .raw-label{position:absolute;top:130cqw;font:600 3.1cqw Mono,monospace;letter-spacing:.04em}.v2-phone .phone{position:absolute;left:3cqw;top:34cqw;width:74cqw;height:94cqw;border:1.2cqw solid #181515;border-radius:7cqw;background:var(--cream);overflow:hidden;padding:0 3cqw;box-shadow:0 1px 3px #211d1614}.v2-phone .statusbar{height:7cqw;font-size:2.9cqw;font-weight:700;display:flex;align-items:center;justify-content:space-between;padding:0 1cqw}.v2-phone .island{position:absolute;top:1cqw;left:25cqw;width:22cqw;height:4.8cqw;border-radius:3cqw;background:#181515}.v2-phone .status-icons{letter-spacing:-.1em;font-size:2.4cqw}.v2-phone .chatnav{height:10cqw;margin:0 -3cqw;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:2cqw;padding:1cqw 3cqw;background:var(--cream)}.v2-phone .back{font-size:6cqw;line-height:1}.v2-phone .avatar{width:6.5cqw;height:6.5cqw;border-radius:50%;background:var(--ink);color:var(--cream);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:3cqw}.v2-phone .chatname{font-size:3.4cqw;font-weight:700;line-height:1.2}.v2-phone .chatmeta{font-size:2.5cqw;line-height:1.3;opacity:.65;font-weight:400}.v2-phone .post{margin:3cqw 0 0;background:var(--tile);border:1px solid var(--line);border-radius:3cqw;overflow:hidden}.v2-phone .post-photo{height:31cqw;position:relative;overflow:hidden}.v2-phone .post-photo img{position:absolute;width:120%;left:-10%;top:-26cqw}.v2-phone .post-copy{padding:3cqw}.v2-phone .post-title{font-size:4.6cqw;font-weight:800;letter-spacing:-.03em;line-height:1.1}.v2-phone .post-price{font-size:6cqw;font-weight:800;margin:2cqw 0 1cqw}.v2-phone .post-spec{font-size:3cqw;line-height:1.4}.v2-phone .post-link{font-size:3.6cqw;background:var(--coral);color:var(--cream);padding:2.5cqw;border-radius:1cqw;margin-top:3cqw;font-weight:600}.v2-phone .post-stamp{font-size:2.4cqw;text-align:right;opacity:.65;margin-top:1.5cqw}.v2-phone .chatinput{position:absolute;bottom:3.5cqw;left:3cqw;right:3cqw;border:1px solid var(--line);border-radius:4cqw;padding:2cqw 3cqw;font-size:2.9cqw;opacity:.6}.v2-phone .homebar{position:absolute;bottom:1cqw;left:24cqw;width:24cqw;height:.7cqw;border-radius:1cqw;background:var(--ink)}.v2-manager .phone{background:var(--tile)}.v2-manager .lead-bubble{margin-top:7cqw;padding:5cqw 4cqw;background:var(--cream);border:1px solid var(--line);border-radius:3cqw}.v2-manager .bot-label{font:600 2.8cqw Mono,monospace;margin-bottom:3cqw}.v2-manager .lead-title{font-size:7cqw;line-height:1.05;font-weight:800;letter-spacing:-.035em;margin:0 0 5cqw}.v2-manager .lead-car{font-size:4.3cqw;font-weight:700;line-height:1.15;border-top:1px solid var(--line);padding-top:3cqw}.v2-manager .sender{margin-top:4cqw;font-size:3cqw;opacity:.65}.v2-manager .buyer-message{font-size:5.2cqw;line-height:1.2;margin:1.5cqw 0 4cqw}.v2-manager .incoming{color:var(--coral);font-size:5cqw}.v2-ending .headline{font-size:11cqw;margin-top:20cqw;line-height:1.05}.v2-ending .button{margin-top:12cqw;font-size:4.8cqw;padding:4cqw}.revision{margin-top:25px;border-top:1px solid var(--line);padding-top:20px}.revision h2{font-size:16px}.revision p,.revision blockquote{font-size:13px;line-height:1.6}.revision blockquote{margin:15px 0;padding:15px 20px;border-left:1px solid var(--ink);background:var(--cream)}
+-
+-/* v2 crop and phone-content fit pass. */
+-.v2-photo .raw-photo{height:82cqw}.v2-photo .raw-photo img{width:150%;left:-25%;top:-34.5cqw}
+-.v2-phone .post-photo{height:22cqw}.v2-phone .post-copy{padding:2cqw}.v2-phone .post-title{font-size:3.9cqw}.v2-phone .post-price{font-size:5.4cqw;margin:1cqw 0}.v2-phone .post-spec{font-size:2.7cqw}.v2-phone .post-link{font-size:3.1cqw;padding:2cqw;margin-top:2cqw}.v2-phone .post-stamp{font-size:2cqw;margin-top:1cqw}
+-.v2-manager .lead-bubble{margin-top:4cqw;padding:3.5cqw 3cqw}.v2-manager .bot-label{font-size:2.4cqw;margin-bottom:2cqw}.v2-manager .lead-title{font-size:6cqw;margin-bottom:3cqw}.v2-manager .lead-car{font-size:3.4cqw;padding-top:2cqw}.v2-manager .sender{margin-top:2cqw;font-size:2.7cqw}.v2-manager .buyer-message{font-size:4.2cqw;margin:1.5cqw 0 3cqw}.v2-manager .incoming{font-size:3cqw}
+-
+-.v2-phone .chatinput{padding:.8cqw 2cqw;font-size:2.4cqw;bottom:3cqw}.v2-phone .back{color:#2AABEE}.v2-phone .post-link{background:var(--cream);color:#287AAE;border:1px solid var(--line);padding:1.7cqw 2cqw}.v2-phone .channel-action{text-align:center;border-color:transparent}
+-
+-.frame{position:absolute;inset:0;width:100%;height:100%;border:0;aspect-ratio:auto;container-type:size}.folio{bottom:18cqw;font-size:2.35cqw}.v2-photo .raw-photo{background:var(--tile)}.v2-phone .post-photo{height:22cqw;background:var(--cream);padding:1cqw}.v2-phone .post-photo img{position:static;width:100%;height:100%;object-fit:contain;max-width:100%}.field{color:var(--ink)}.field span,.chatmeta,.sender,.post-stamp{opacity:1;color:#625B4B}.v2-phone .statusbar,.v2-phone .chatinput,.v2-phone .post-stamp{opacity:1;color:#625B4B}.v2-phone .post-link,.v2-phone .back{color:#1D6698}.v2-phone .phone{width:55.5cqw;height:99cqw;left:12.6cqw;top:28cqw}.v2-phone .island{left:calc(50% - 10cqw);width:20cqw}.v2-phone .homebar{left:calc(50% - 12cqw)}.v2-phone .headline.long{font-size:7.2cqw;line-height:1.0}
+-
+-#scene-02{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}[data-scene-view="02"] .headline,[data-scene-view="02"] .panel,[data-scene-view="02"] .field,[data-scene-view="02"] .button{opacity:0}</style><div id="scene-02" data-composition-id="scene-02" data-width="1080" data-height="1920" data-duration="6" data-hf-id="hf-flow-scene-02-001"><div class="frame" id="scene-02-view" data-scene-view="02" data-hf-id="hf-flow-scene-02-002"><div class="inner" data-hf-id="hf-flow-scene-02-003"><div class="kicker" data-hf-id="hf-flow-scene-02-004"><span data-hf-id="hf-flow-scene-02-005">Оголошення</span><span data-hf-id="hf-flow-scene-02-006">02 / 06</span></div><h2 class="headline" data-hf-id="hf-flow-scene-02-007">Додайте його<br data-hf-id="hf-x5px">в AutoFlow</h2><div class="panel" data-hf-id="hf-flow-scene-02-008"><div class="photo" id="editor-photo-slot" data-hf-id="hf-flow-scene-02-009"></div><div class="field" data-hf-id="hf-flow-scene-02-010"><span data-hf-id="hf-flow-scene-02-011">Автомобіль</span><b data-hf-id="hf-db8x">Toyota Camry</b></div><div class="field" data-hf-id="hf-flow-scene-02-012"><span data-hf-id="hf-flow-scene-02-013">Рік</span><b data-hf-id="hf-t7nj">2022</b></div><div class="field" data-hf-id="hf-flow-scene-02-014"><span data-hf-id="hf-flow-scene-02-015">Пробіг</span><b data-hf-id="hf-eyfu">28 тис. км</b></div><div class="field" data-hf-id="hf-flow-scene-02-016"><span data-hf-id="hf-flow-scene-02-017">Ціна</span><b data-hf-id="hf-rwk4">$ 33 900</b></div><div class="button coral" data-hf-id="hf-flow-scene-02-018">Опублікувати</div></div></div><div class="folio" data-hf-id="hf-flow-scene-02-019"><span data-hf-id="hf-flow-scene-02-020">Фото · дані · ціна</span><span data-hf-id="hf-flow-scene-02-021">Одне введення</span></div></div></div><script>const tl=gsap.timeline({paused:true,defaults:{ease:'power3.out'}});
+-tl.fromTo('[data-scene-view="02"] .headline',{y:24,opacity:0},{y:0,opacity:1,duration:.42},.06);
+-tl.fromTo('[data-scene-view="02"] .panel',{y:60,opacity:0},{y:0,opacity:1,duration:.65},.04);
+-tl.fromTo('[data-scene-view="02"] .field',{x:22,opacity:0},{x:0,opacity:1,duration:.4,stagger:.58},1.0);
+-tl.fromTo('[data-scene-view="02"] .button',{opacity:0},{opacity:1,duration:.35},3.6);
+-tl.to('[data-scene-view="02"] .button',{scale:.96,duration:.12,ease:'power2.inOut'},4.25);
+-tl.to('[data-scene-view="02"] .button',{scale:1,duration:.18},4.37);
+-tl.to('[data-scene-view="02"] .panel',{y:-45,opacity:0,duration:.35,ease:'power2.in'},5.62);
+-window.__timelines['scene-02']=tl;</script></template></body></html>+<!doctype html>
++<html lang="uk">
++  <head></head>
++  <body>
++    <template
++      ><div
++        data-hf-id="hf-1kis"
++        id="scene-02"
++        class="scene"
++        data-scene-view="02"
++        data-composition-id="scene-02"
++        data-width="1080"
++        data-height="1920"
++        data-duration="4.8"
++      >
++        <div data-hf-id="hf-9r3x" class="scene-body">
++          <div data-hf-id="hf-3fbd" class="arc" data-layout-ignore=""></div>
++          <div data-hf-id="hf-tt2s" class="arc bottom" data-layout-ignore=""></div>
++          <h2 data-hf-id="hf-t43f" class="headline">
++            <span data-hf-id="hf-paeq">Створіть</span
++            ><span data-hf-id="hf-12si" class="red">оголошення</span
++            ><span data-hf-id="hf-mzut" class="red">про авто</span>
++          </h2>
++          <div data-hf-id="hf-utxn" class="editor ui">
++            <p data-hf-id="hf-i4mq" class="ui-title">
++              Додати авто <span data-hf-id="hf-jg87" style="float: right">⋯</span>
++            </p>
++            <div data-hf-id="hf-1pjo" class="photo">
++              <img
++                data-hf-id="hf-znqy"
++                src="assets/images/mercedes-e2025-w214.png"
++                alt="Білий Mercedes-Benz E-Class 2025"
++              />
++              <div data-hf-id="hf-3v24" class="edit-photo">◉ Змінити фото</div>
++            </div>
++            <div data-hf-id="hf-k42n" class="fields">
++              <div data-hf-id="hf-wgnt" class="field wide">
++                <span data-hf-id="hf-sxmw" class="field-label">Марка і модель</span>
++                <div data-hf-id="hf-u530" class="input">Mercedes-Benz E-Class</div>
++              </div>
++              <div data-hf-id="hf-0ztw" class="field">
++                <span data-hf-id="hf-t3re" class="field-label">Рік випуску</span>
++                <div data-hf-id="hf-l5ov" class="input">2025 ⌄</div>
++              </div>
++              <div data-hf-id="hf-bxgc" class="field">
++                <span data-hf-id="hf-jfsf" class="field-label">Ціна</span>
++                <div data-hf-id="hf-414s" class="input">Ціна за запитом</div>
++              </div>
++              <div data-hf-id="hf-ukh9" class="field wide">
++                <span data-hf-id="hf-wrc9" class="field-label"
++                  >Додаткова інформація (необов’язково)</span
++                >
++                <div data-hf-id="hf-b2v7" class="input empty">Опис, комплектація, особливості…</div>
++              </div>
++            </div>
++            <div data-hf-id="hf-n9wo" class="button" id="add-car">Додати авто</div>
++          </div>
++          <div data-hf-id="hf-ft2y" class="cursor" style="left: 770px; top: 1660px">
++            <svg data-hf-id="hf-trex" viewBox="0 0 70 90">
++              <path data-hf-id="hf-8tz5" d="M8 3v69l18-17 15 30 14-7-16-29 25-2Z" />
++            </svg>
++          </div>
++          <svg
++            data-hf-id="hf-ochs"
++            class="click-rays"
++            style="left: 708px; top: 1595px"
++            viewBox="0 0 100 100"
++          >
++            <path data-hf-id="hf-g72y" d="M50 5v15M18 18l12 12M5 50h15M82 18 70 30M18 82l12-12" />
++          </svg>
++        </div>
++      </div>
++      <script>
++        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
++        const scope = '[data-scene-view="02"]';
++        tl.fromTo(
++          scope + ' .headline span',
++          { y: 65, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.58, stagger: 0.11 },
++          0.05,
++        );
++        tl.fromTo(
++          scope + ' .arc',
++          { rotation: -6 },
++          { rotation: 0, duration: 4.8, ease: 'none' },
++          0,
++        );
++        const paths = document.querySelectorAll(scope + ' .draw-arrow path');
++        paths.forEach((path) => {
++          const length = path.getTotalLength();
++          path.style.strokeDasharray = length;
++          tl.fromTo(
++            path,
++            { strokeDashoffset: length },
++            { strokeDashoffset: 0, duration: 0.55, ease: 'none' },
++            2.0,
++          );
++        });
++        tl.fromTo(
++          scope + ' .editor',
++          { y: 85, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.62 },
++          0,
++        );
++        tl.fromTo(scope + ' .photo img', { opacity: 0 }, { opacity: 1, duration: 0.15 }, 0.65);
++        tl.fromTo(
++          scope + ' .field',
++          { y: 22, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.4, stagger: 0.18 },
++          0.8,
++        );
++        tl.fromTo(
++          scope + ' .button',
++          { y: 25, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.4 },
++          2.0,
++        );
++        tl.fromTo(
++          scope + ' .cursor',
++          { x: 150, y: 170, opacity: 0 },
++          { x: 0, y: 0, opacity: 1, duration: 0.5 },
++          2.6500000000000004,
++        );
++        tl.to(
++          [scope + ' .editor .button', scope + ' .cursor'],
++          { scale: 0.94, duration: 0.1, ease: 'power1.in' },
++          3.2,
++        );
++        tl.to(
++          [scope + ' .editor .button', scope + ' .cursor'],
++          { scale: 1, duration: 0.3, ease: 'back.out(1.6)' },
++          3.3000000000000003,
++        );
++        tl.fromTo(
++          scope + ' .click-rays',
++          { scale: 0.55, opacity: 0 },
++          { scale: 1, opacity: 1, duration: 0.1 },
++          3.2,
++        );
++        tl.to(
++          scope + ' .click-rays',
++          { scale: 1.3, opacity: 0, duration: 0.35 },
++          3.3000000000000003,
++        );
++        tl.to(scope + ' .cursor', { opacity: 0, duration: 0.25 }, 3.7);
++        window.__timelines['scene-02'] = tl;
++      </script></template
++    >
++  </body>
++</html>
+--- before/animation/compositions/scene-01.html
++++ after/animation/compositions/scene-01.html
+@@ -1,22 +1,106 @@
+-<!DOCTYPE html><html lang="uk"><head></head><body><template id="scene-01-template"><style>
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-cyrillic.woff2');font-weight:400 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-latin.woff2');font-weight:400 900}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-cyrillic.woff2');font-weight:400 700;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-latin.woff2');font-weight:400 700}
+-:root{--cream:#FBF8F1;--tile:#F2EBDB;--ink:#211D16;--coral:#B4453C;--line:#211d1626}*{box-sizing:border-box}body{margin:0;background:var(--tile);color:var(--ink);font-family:Onest,Arial,sans-serif}main{max-width:1440px;margin:auto;padding:52px 40px 64px}header{border-top:1px solid var(--ink);padding-top:20px;display:flex;justify-content:space-between;gap:30px;margin-bottom:35px}.eyebrow{font:600 11px Mono,monospace;letter-spacing:.12em;text-transform:uppercase}h1{font-size:clamp(28px,3vw,46px);line-height:1.04;letter-spacing:-.04em;margin:15px 0 10px;max-width:840px}header p{font-size:15px;margin:0;max-width:700px;line-height:1.5}.badge{font:12px Mono,monospace;white-space:nowrap;align-self:flex-start;padding:10px;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 24px}.frame{position:relative;aspect-ratio:9/16;container-type:size;overflow:hidden;background:var(--cream);border:1px solid var(--line)}.inner{position:absolute;left:7cqw;right:12.3cqw;top:16cqw;bottom:34cqw}.kicker{font:600 2.45cqw Mono,monospace;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:3cqw;display:flex;justify-content:space-between}.headline{font-size:9.2cqw;line-height:1.05;letter-spacing:-.05em;font-weight:800;margin:5cqw 0 5cqw}.headline.long{font-size:7.7cqw}.photo{position:relative;overflow:hidden;background:var(--tile);height:52cqw;border-radius:8px;border:1px solid var(--line)}.photo img{position:absolute;width:115%;max-width:none;top:-31cqw;left:-7cqw}.line{border-top:1px solid var(--line);padding-top:3cqw;margin-top:4cqw}.model{font-size:4.2cqw;font-weight:700;line-height:1.15}.spec{font-size:3.3cqw;line-height:1.35;margin-top:2cqw}.price{font-size:7.1cqw;font-weight:800;letter-spacing:-.035em;margin-top:4cqw}.coral{background:var(--coral);color:var(--cream)}.pill{font-size:3.5cqw;font-weight:600;padding:3cqw 4cqw;border-radius:6px;margin-top:4cqw;display:inline-block}.panel{background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:4cqw}.panel .photo{height:32cqw;background:var(--cream)}.panel .photo img{top:-25cqw}.field{display:flex;justify-content:space-between;gap:2cqw;font-size:3.5cqw;border-bottom:1px solid var(--line);padding:2cqw 0}.field span{opacity:.65}.field b{font-weight:600}.button{padding:3.5cqw 2cqw;border-radius:6px;text-align:center;font-size:4.1cqw;font-weight:700;margin-top:4cqw}.public-window{height:76cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:8px 8px 0 0}.public-window img{width:100%;position:absolute;top:-28cqw}.public-cta{height:14cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px}.public-cta img{width:100%;position:absolute;top:-124cqw}.tg-header{font-size:3.5cqw;font-weight:600;padding-bottom:3cqw;border-bottom:1px solid var(--line);margin-bottom:3cqw}.panel .tg-photo{height:28cqw}.tg-title{font-weight:800;font-size:5.3cqw;margin-top:3cqw;line-height:1.1}.tg-link{font-size:3.8cqw;padding:2.5cqw;background:var(--coral);color:var(--cream);border-radius:6px;margin-top:3cqw}.lead .model{font-size:4.7cqw}.lead .field{display:block}.lead .field b{display:block;margin-top:1cqw}.arrow{text-align:center;font-size:6cqw;padding:1cqw 0}.notification{padding:3cqw;border:1px solid var(--line);border-radius:8px;background:var(--tile);position:relative}.notification .new{font-weight:800;font-size:5cqw;line-height:1.1}.notification .spec{font-size:3.4cqw}.notification:before{content:'●';color:var(--ink);position:absolute;right:4cqw;top:4cqw;font-size:3cqw}.brand{font-size:8cqw;font-weight:800;letter-spacing:-.04em}.brand span{font-size:4cqw;display:inline-block;background:var(--ink);color:var(--cream);padding:1.2cqw 2cqw;border-radius:5px;margin-right:2cqw;vertical-align:middle}.closing .headline{font-size:10cqw;margin-top:12cqw;margin-bottom:6cqw}.closing .photo{height:31cqw}.closing .photo img{top:-34cqw}.closing .button{margin-top:5cqw}.folio{position:absolute;left:7cqw;right:12.3cqw;bottom:12cqw;font:600 2.4cqw Mono,monospace;letter-spacing:.07em;border-top:1px solid var(--line);padding-top:3cqw;display:flex;justify-content:space-between}.caption{display:flex;justify-content:space-between;font:600 11px Mono,monospace;margin-top:13px;gap:8px;line-height:1.4}.notes{font-size:13px;line-height:1.5;margin-top:8px;max-width:45em}.notes strong{font-weight:700}.chip{display:inline-block;font:10px Mono,monospace;border:1px solid var(--line);padding:5px 7px;margin-top:7px}.footer{margin-top:40px;padding-top:25px;border-top:1px solid var(--ink);display:grid;grid-template-columns:1fr 1fr;gap:35px}.footer h2{font-size:16px;margin:0 0 10px}.footer p{font-size:13px;line-height:1.5;margin:0 0 10px}.swatches{display:flex;gap:8px;margin-top:14px}.swatches span{width:35px;height:35px;border:1px solid var(--line);border-radius:3px}.status{margin-top:25px;font:12px Mono,monospace;padding:15px 0;border-top:1px solid var(--line)}@media(max-width:950px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{display:block}.badge{display:inline-block;margin-top:15px}}@media(max-width:600px){main{padding:25px 18px 35px}.grid{grid-template-columns:1fr;gap:30px}h1{font-size:32px}.footer{grid-template-columns:1fr;gap:20px}.caption{font-size:10px}header p{font-size:14px}}
+-
+-/* v2: scene-specific overrides; frames 02 and 03 retain their original styles. */
+-.v2-photo .headline{font-size:12cqw;line-height:1.03;margin-bottom:8cqw}.v2-photo .raw-photo{position:absolute;top:43cqw;left:-7cqw;right:-12.3cqw;height:82cqw;overflow:hidden;background:var(--tile)}.v2-photo .raw-photo img{position:absolute;width:120%;left:-10%;top:-39cqw}.v2-photo .raw-label{position:absolute;top:130cqw;font:600 3.1cqw Mono,monospace;letter-spacing:.04em}.v2-phone .phone{position:absolute;left:3cqw;top:34cqw;width:74cqw;height:94cqw;border:1.2cqw solid #181515;border-radius:7cqw;background:var(--cream);overflow:hidden;padding:0 3cqw;box-shadow:0 1px 3px #211d1614}.v2-phone .statusbar{height:7cqw;font-size:2.9cqw;font-weight:700;display:flex;align-items:center;justify-content:space-between;padding:0 1cqw}.v2-phone .island{position:absolute;top:1cqw;left:25cqw;width:22cqw;height:4.8cqw;border-radius:3cqw;background:#181515}.v2-phone .status-icons{letter-spacing:-.1em;font-size:2.4cqw}.v2-phone .chatnav{height:10cqw;margin:0 -3cqw;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:2cqw;padding:1cqw 3cqw;background:var(--cream)}.v2-phone .back{font-size:6cqw;line-height:1}.v2-phone .avatar{width:6.5cqw;height:6.5cqw;border-radius:50%;background:var(--ink);color:var(--cream);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:3cqw}.v2-phone .chatname{font-size:3.4cqw;font-weight:700;line-height:1.2}.v2-phone .chatmeta{font-size:2.5cqw;line-height:1.3;opacity:.65;font-weight:400}.v2-phone .post{margin:3cqw 0 0;background:var(--tile);border:1px solid var(--line);border-radius:3cqw;overflow:hidden}.v2-phone .post-photo{height:31cqw;position:relative;overflow:hidden}.v2-phone .post-photo img{position:absolute;width:120%;left:-10%;top:-26cqw}.v2-phone .post-copy{padding:3cqw}.v2-phone .post-title{font-size:4.6cqw;font-weight:800;letter-spacing:-.03em;line-height:1.1}.v2-phone .post-price{font-size:6cqw;font-weight:800;margin:2cqw 0 1cqw}.v2-phone .post-spec{font-size:3cqw;line-height:1.4}.v2-phone .post-link{font-size:3.6cqw;background:var(--coral);color:var(--cream);padding:2.5cqw;border-radius:1cqw;margin-top:3cqw;font-weight:600}.v2-phone .post-stamp{font-size:2.4cqw;text-align:right;opacity:.65;margin-top:1.5cqw}.v2-phone .chatinput{position:absolute;bottom:3.5cqw;left:3cqw;right:3cqw;border:1px solid var(--line);border-radius:4cqw;padding:2cqw 3cqw;font-size:2.9cqw;opacity:.6}.v2-phone .homebar{position:absolute;bottom:1cqw;left:24cqw;width:24cqw;height:.7cqw;border-radius:1cqw;background:var(--ink)}.v2-manager .phone{background:var(--tile)}.v2-manager .lead-bubble{margin-top:7cqw;padding:5cqw 4cqw;background:var(--cream);border:1px solid var(--line);border-radius:3cqw}.v2-manager .bot-label{font:600 2.8cqw Mono,monospace;margin-bottom:3cqw}.v2-manager .lead-title{font-size:7cqw;line-height:1.05;font-weight:800;letter-spacing:-.035em;margin:0 0 5cqw}.v2-manager .lead-car{font-size:4.3cqw;font-weight:700;line-height:1.15;border-top:1px solid var(--line);padding-top:3cqw}.v2-manager .sender{margin-top:4cqw;font-size:3cqw;opacity:.65}.v2-manager .buyer-message{font-size:5.2cqw;line-height:1.2;margin:1.5cqw 0 4cqw}.v2-manager .incoming{color:var(--coral);font-size:5cqw}.v2-ending .headline{font-size:11cqw;margin-top:20cqw;line-height:1.05}.v2-ending .button{margin-top:12cqw;font-size:4.8cqw;padding:4cqw}.revision{margin-top:25px;border-top:1px solid var(--line);padding-top:20px}.revision h2{font-size:16px}.revision p,.revision blockquote{font-size:13px;line-height:1.6}.revision blockquote{margin:15px 0;padding:15px 20px;border-left:1px solid var(--ink);background:var(--cream)}
+-
+-/* v2 crop and phone-content fit pass. */
+-.v2-photo .raw-photo{height:82cqw}.v2-photo .raw-photo img{width:150%;left:-25%;top:-34.5cqw}
+-.v2-phone .post-photo{height:22cqw}.v2-phone .post-copy{padding:2cqw}.v2-phone .post-title{font-size:3.9cqw}.v2-phone .post-price{font-size:5.4cqw;margin:1cqw 0}.v2-phone .post-spec{font-size:2.7cqw}.v2-phone .post-link{font-size:3.1cqw;padding:2cqw;margin-top:2cqw}.v2-phone .post-stamp{font-size:2cqw;margin-top:1cqw}
+-.v2-manager .lead-bubble{margin-top:4cqw;padding:3.5cqw 3cqw}.v2-manager .bot-label{font-size:2.4cqw;margin-bottom:2cqw}.v2-manager .lead-title{font-size:6cqw;margin-bottom:3cqw}.v2-manager .lead-car{font-size:3.4cqw;padding-top:2cqw}.v2-manager .sender{margin-top:2cqw;font-size:2.7cqw}.v2-manager .buyer-message{font-size:4.2cqw;margin:1.5cqw 0 3cqw}.v2-manager .incoming{font-size:3cqw}
+-
+-.v2-phone .chatinput{padding:.8cqw 2cqw;font-size:2.4cqw;bottom:3cqw}.v2-phone .back{color:#2AABEE}.v2-phone .post-link{background:var(--cream);color:#287AAE;border:1px solid var(--line);padding:1.7cqw 2cqw}.v2-phone .channel-action{text-align:center;border-color:transparent}
+-
+-.frame{position:absolute;inset:0;width:100%;height:100%;border:0;aspect-ratio:auto;container-type:size}.folio{bottom:18cqw;font-size:2.35cqw}.v2-photo .raw-photo{background:var(--tile)}.v2-phone .post-photo{height:22cqw;background:var(--cream);padding:1cqw}.v2-phone .post-photo img{position:static;width:100%;height:100%;object-fit:contain;max-width:100%}.field{color:var(--ink)}.field span,.chatmeta,.sender,.post-stamp{opacity:1;color:#625B4B}.v2-phone .statusbar,.v2-phone .chatinput,.v2-phone .post-stamp{opacity:1;color:#625B4B}.v2-phone .post-link,.v2-phone .back{color:#1D6698}.v2-phone .phone{width:55.5cqw;height:99cqw;left:12.6cqw;top:28cqw}.v2-phone .island{left:calc(50% - 10cqw);width:20cqw}.v2-phone .homebar{left:calc(50% - 12cqw)}.v2-phone .headline.long{font-size:7.2cqw;line-height:1.0}
+-
+-#scene-01{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}[data-scene-view="01"] .headline{opacity:0}</style><div id="scene-01" data-composition-id="scene-01" data-width="1080" data-height="1920" data-duration="3" data-hf-id="hf-flow-scene-01-001"><div class="frame v2-photo" id="scene-01-view" data-scene-view="01" data-hf-id="hf-flow-scene-01-002"><div class="inner" data-hf-id="hf-flow-scene-01-003"><div class="kicker" data-hf-id="hf-flow-scene-01-004"><span data-hf-id="hf-flow-scene-01-005">AutoFlow</span><span data-hf-id="hf-flow-scene-01-006">01 / 06</span></div><h2 class="headline" data-hf-id="hf-flow-scene-01-007">У вас<br data-hf-id="hf-x5px">є авто.</h2><div class="raw-photo" id="source-photo-slot" data-hf-id="hf-flow-scene-01-008"></div></div><div class="folio" data-hf-id="hf-flow-scene-01-009"><span data-hf-id="hf-flow-scene-01-010">Одне авто</span><span data-hf-id="hf-flow-scene-01-011">Один початок</span></div></div></div><script>const tl=gsap.timeline({paused:true,defaults:{ease:'power3.out'}});
+-tl.fromTo('[data-scene-view="01"] .headline',{y:38,opacity:0},{y:0,opacity:1,duration:.42},.06);
+-window.__timelines['scene-01']=tl;</script></template></body></html>+<!doctype html>
++<html lang="uk">
++  <head></head>
++  <body>
++    <template
++      ><div
++        data-hf-id="hf-fcih"
++        id="scene-01"
++        class="scene"
++        data-scene-view="01"
++        data-composition-id="scene-01"
++        data-width="1080"
++        data-height="1920"
++        data-duration="4.2"
++      >
++        <div data-hf-id="hf-9r3x" class="scene-body">
++          <div data-hf-id="hf-3fbd" class="arc" data-layout-ignore=""></div>
++          <div data-hf-id="hf-tt2s" class="arc bottom" data-layout-ignore=""></div>
++          <h2 data-hf-id="hf-t43f" class="headline">
++            <span data-hf-id="hf-vkc8">Маєте авто</span
++            ><span data-hf-id="hf-tq8v" class="red">на продаж?</span>
++          </h2>
++          <p data-hf-id="hf-ivco" class="subtitle">Покажіть його покупцям</p>
++          <div data-hf-id="hf-u4kc" class="benefits">
++            <div data-hf-id="hf-wol1" class="benefit">
++              <div data-hf-id="hf-eto3" class="icon">
++                <svg data-hf-id="hf-ulu9" viewBox="0 0 24 24">
++                  <path data-hf-id="hf-wc13" d="M20 3H12L3 12l9 9 9-9V3Z" />
++                  <circle data-hf-id="hf-i63b" cx="16.5" cy="7.5" r="1" />
++                </svg>
++              </div>
++              <div data-hf-id="hf-4fo3">Більше цікавих покупців</div>
++            </div>
++            <div data-hf-id="hf-0nu1" class="benefit">
++              <div data-hf-id="hf-dez7" class="icon">
++                <svg data-hf-id="hf-1tol" viewBox="0 0 24 24">
++                  <circle data-hf-id="hf-jd47" cx="9" cy="7" r="3" />
++                  <path
++                    data-hf-id="hf-h12m"
++                    d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v2"
++                  />
++                </svg>
++              </div>
++              <div data-hf-id="hf-3nks">Швидший продаж</div>
++            </div>
++            <div data-hf-id="hf-1ur4" class="benefit">
++              <div data-hf-id="hf-d0o6" class="icon">
++                <svg data-hf-id="hf-30lo" viewBox="0 0 24 24">
++                  <path data-hf-id="hf-bt9z" d="M4 21v-5h4v5M10 21V9h4v12M16 21V3h4v18" />
++                </svg>
++              </div>
++              <div data-hf-id="hf-jn6c">Розвиток вашого бізнесу</div>
++            </div>
++          </div>
++        </div>
++      </div>
++      <script>
++        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
++        const scope = '[data-scene-view="01"]';
++        tl.fromTo(
++          scope + ' .headline span',
++          { y: 65, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.58, stagger: 0.11 },
++          0.05,
++        );
++        tl.fromTo(
++          scope + ' .subtitle',
++          { y: 24, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.4 },
++          0.5,
++        );
++        tl.fromTo(
++          scope + ' .arc',
++          { rotation: -6 },
++          { rotation: 0, duration: 4.2, ease: 'none' },
++          0,
++        );
++        const paths = document.querySelectorAll(scope + ' .draw-arrow path');
++        paths.forEach((path) => {
++          const length = path.getTotalLength();
++          path.style.strokeDasharray = length;
++          tl.fromTo(
++            path,
++            { strokeDashoffset: length },
++            { strokeDashoffset: 0, duration: 0.55, ease: 'none' },
++            2.0,
++          );
++        });
++        tl.fromTo(
++          scope + ' .benefit',
++          { y: 35, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.5, stagger: 0.12 },
++          1.2,
++        );
++        tl.fromTo(
++          scope + ' .benefit .icon svg',
++          { scale: 0.68, rotation: -12 },
++          { scale: 1, rotation: 0, duration: 0.6, stagger: 0.1, ease: 'back.out(1.4)' },
++          1.3,
++        );
++        tl.to(scope + ' .benefits', { y: 60, opacity: 0, duration: 0.4 }, 3.7);
++        window.__timelines['scene-01'] = tl;
++      </script></template
++    >
++  </body>
++</html>
+--- before/animation/compositions/scene-06.html
++++ after/animation/compositions/scene-06.html
+@@ -1,25 +1,131 @@
+-<!DOCTYPE html><html lang="uk"><head></head><body><template id="scene-06-template"><style>
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-cyrillic.woff2');font-weight:400 900;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Onest;src:url('assets/fonts/gf-onest-latin.woff2');font-weight:400 900}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-cyrillic.woff2');font-weight:400 700;unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+-@font-face{font-family:Mono;src:url('assets/fonts/gf-jetbrainsmono-latin.woff2');font-weight:400 700}
+-:root{--cream:#FBF8F1;--tile:#F2EBDB;--ink:#211D16;--coral:#B4453C;--line:#211d1626}*{box-sizing:border-box}body{margin:0;background:var(--tile);color:var(--ink);font-family:Onest,Arial,sans-serif}main{max-width:1440px;margin:auto;padding:52px 40px 64px}header{border-top:1px solid var(--ink);padding-top:20px;display:flex;justify-content:space-between;gap:30px;margin-bottom:35px}.eyebrow{font:600 11px Mono,monospace;letter-spacing:.12em;text-transform:uppercase}h1{font-size:clamp(28px,3vw,46px);line-height:1.04;letter-spacing:-.04em;margin:15px 0 10px;max-width:840px}header p{font-size:15px;margin:0;max-width:700px;line-height:1.5}.badge{font:12px Mono,monospace;white-space:nowrap;align-self:flex-start;padding:10px;border:1px solid var(--line)}.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 24px}.frame{position:relative;aspect-ratio:9/16;container-type:size;overflow:hidden;background:var(--cream);border:1px solid var(--line)}.inner{position:absolute;left:7cqw;right:12.3cqw;top:16cqw;bottom:34cqw}.kicker{font:600 2.45cqw Mono,monospace;letter-spacing:.12em;text-transform:uppercase;border-bottom:1px solid var(--line);padding-bottom:3cqw;display:flex;justify-content:space-between}.headline{font-size:9.2cqw;line-height:1.05;letter-spacing:-.05em;font-weight:800;margin:5cqw 0 5cqw}.headline.long{font-size:7.7cqw}.photo{position:relative;overflow:hidden;background:var(--tile);height:52cqw;border-radius:8px;border:1px solid var(--line)}.photo img{position:absolute;width:115%;max-width:none;top:-31cqw;left:-7cqw}.line{border-top:1px solid var(--line);padding-top:3cqw;margin-top:4cqw}.model{font-size:4.2cqw;font-weight:700;line-height:1.15}.spec{font-size:3.3cqw;line-height:1.35;margin-top:2cqw}.price{font-size:7.1cqw;font-weight:800;letter-spacing:-.035em;margin-top:4cqw}.coral{background:var(--coral);color:var(--cream)}.pill{font-size:3.5cqw;font-weight:600;padding:3cqw 4cqw;border-radius:6px;margin-top:4cqw;display:inline-block}.panel{background:var(--tile);border:1px solid var(--line);border-radius:8px;padding:4cqw}.panel .photo{height:32cqw;background:var(--cream)}.panel .photo img{top:-25cqw}.field{display:flex;justify-content:space-between;gap:2cqw;font-size:3.5cqw;border-bottom:1px solid var(--line);padding:2cqw 0}.field span{opacity:.65}.field b{font-weight:600}.button{padding:3.5cqw 2cqw;border-radius:6px;text-align:center;font-size:4.1cqw;font-weight:700;margin-top:4cqw}.public-window{height:76cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-radius:8px 8px 0 0}.public-window img{width:100%;position:absolute;top:-28cqw}.public-cta{height:14cqw;position:relative;overflow:hidden;border:1px solid var(--line);border-top:0;border-radius:0 0 8px 8px}.public-cta img{width:100%;position:absolute;top:-124cqw}.tg-header{font-size:3.5cqw;font-weight:600;padding-bottom:3cqw;border-bottom:1px solid var(--line);margin-bottom:3cqw}.panel .tg-photo{height:28cqw}.tg-title{font-weight:800;font-size:5.3cqw;margin-top:3cqw;line-height:1.1}.tg-link{font-size:3.8cqw;padding:2.5cqw;background:var(--coral);color:var(--cream);border-radius:6px;margin-top:3cqw}.lead .model{font-size:4.7cqw}.lead .field{display:block}.lead .field b{display:block;margin-top:1cqw}.arrow{text-align:center;font-size:6cqw;padding:1cqw 0}.notification{padding:3cqw;border:1px solid var(--line);border-radius:8px;background:var(--tile);position:relative}.notification .new{font-weight:800;font-size:5cqw;line-height:1.1}.notification .spec{font-size:3.4cqw}.notification:before{content:'●';color:var(--ink);position:absolute;right:4cqw;top:4cqw;font-size:3cqw}.brand{font-size:8cqw;font-weight:800;letter-spacing:-.04em}.brand span{font-size:4cqw;display:inline-block;background:var(--ink);color:var(--cream);padding:1.2cqw 2cqw;border-radius:5px;margin-right:2cqw;vertical-align:middle}.closing .headline{font-size:10cqw;margin-top:12cqw;margin-bottom:6cqw}.closing .photo{height:31cqw}.closing .photo img{top:-34cqw}.closing .button{margin-top:5cqw}.folio{position:absolute;left:7cqw;right:12.3cqw;bottom:12cqw;font:600 2.4cqw Mono,monospace;letter-spacing:.07em;border-top:1px solid var(--line);padding-top:3cqw;display:flex;justify-content:space-between}.caption{display:flex;justify-content:space-between;font:600 11px Mono,monospace;margin-top:13px;gap:8px;line-height:1.4}.notes{font-size:13px;line-height:1.5;margin-top:8px;max-width:45em}.notes strong{font-weight:700}.chip{display:inline-block;font:10px Mono,monospace;border:1px solid var(--line);padding:5px 7px;margin-top:7px}.footer{margin-top:40px;padding-top:25px;border-top:1px solid var(--ink);display:grid;grid-template-columns:1fr 1fr;gap:35px}.footer h2{font-size:16px;margin:0 0 10px}.footer p{font-size:13px;line-height:1.5;margin:0 0 10px}.swatches{display:flex;gap:8px;margin-top:14px}.swatches span{width:35px;height:35px;border:1px solid var(--line);border-radius:3px}.status{margin-top:25px;font:12px Mono,monospace;padding:15px 0;border-top:1px solid var(--line)}@media(max-width:950px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}header{display:block}.badge{display:inline-block;margin-top:15px}}@media(max-width:600px){main{padding:25px 18px 35px}.grid{grid-template-columns:1fr;gap:30px}h1{font-size:32px}.footer{grid-template-columns:1fr;gap:20px}.caption{font-size:10px}header p{font-size:14px}}
+-
+-/* v2: scene-specific overrides; frames 02 and 03 retain their original styles. */
+-.v2-photo .headline{font-size:12cqw;line-height:1.03;margin-bottom:8cqw}.v2-photo .raw-photo{position:absolute;top:43cqw;left:-7cqw;right:-12.3cqw;height:82cqw;overflow:hidden;background:var(--tile)}.v2-photo .raw-photo img{position:absolute;width:120%;left:-10%;top:-39cqw}.v2-photo .raw-label{position:absolute;top:130cqw;font:600 3.1cqw Mono,monospace;letter-spacing:.04em}.v2-phone .phone{position:absolute;left:3cqw;top:34cqw;width:74cqw;height:94cqw;border:1.2cqw solid #181515;border-radius:7cqw;background:var(--cream);overflow:hidden;padding:0 3cqw;box-shadow:0 1px 3px #211d1614}.v2-phone .statusbar{height:7cqw;font-size:2.9cqw;font-weight:700;display:flex;align-items:center;justify-content:space-between;padding:0 1cqw}.v2-phone .island{position:absolute;top:1cqw;left:25cqw;width:22cqw;height:4.8cqw;border-radius:3cqw;background:#181515}.v2-phone .status-icons{letter-spacing:-.1em;font-size:2.4cqw}.v2-phone .chatnav{height:10cqw;margin:0 -3cqw;border-top:1px solid var(--line);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:2cqw;padding:1cqw 3cqw;background:var(--cream)}.v2-phone .back{font-size:6cqw;line-height:1}.v2-phone .avatar{width:6.5cqw;height:6.5cqw;border-radius:50%;background:var(--ink);color:var(--cream);font-weight:700;display:flex;align-items:center;justify-content:center;font-size:3cqw}.v2-phone .chatname{font-size:3.4cqw;font-weight:700;line-height:1.2}.v2-phone .chatmeta{font-size:2.5cqw;line-height:1.3;opacity:.65;font-weight:400}.v2-phone .post{margin:3cqw 0 0;background:var(--tile);border:1px solid var(--line);border-radius:3cqw;overflow:hidden}.v2-phone .post-photo{height:31cqw;position:relative;overflow:hidden}.v2-phone .post-photo img{position:absolute;width:120%;left:-10%;top:-26cqw}.v2-phone .post-copy{padding:3cqw}.v2-phone .post-title{font-size:4.6cqw;font-weight:800;letter-spacing:-.03em;line-height:1.1}.v2-phone .post-price{font-size:6cqw;font-weight:800;margin:2cqw 0 1cqw}.v2-phone .post-spec{font-size:3cqw;line-height:1.4}.v2-phone .post-link{font-size:3.6cqw;background:var(--coral);color:var(--cream);padding:2.5cqw;border-radius:1cqw;margin-top:3cqw;font-weight:600}.v2-phone .post-stamp{font-size:2.4cqw;text-align:right;opacity:.65;margin-top:1.5cqw}.v2-phone .chatinput{position:absolute;bottom:3.5cqw;left:3cqw;right:3cqw;border:1px solid var(--line);border-radius:4cqw;padding:2cqw 3cqw;font-size:2.9cqw;opacity:.6}.v2-phone .homebar{position:absolute;bottom:1cqw;left:24cqw;width:24cqw;height:.7cqw;border-radius:1cqw;background:var(--ink)}.v2-manager .phone{background:var(--tile)}.v2-manager .lead-bubble{margin-top:7cqw;padding:5cqw 4cqw;background:var(--cream);border:1px solid var(--line);border-radius:3cqw}.v2-manager .bot-label{font:600 2.8cqw Mono,monospace;margin-bottom:3cqw}.v2-manager .lead-title{font-size:7cqw;line-height:1.05;font-weight:800;letter-spacing:-.035em;margin:0 0 5cqw}.v2-manager .lead-car{font-size:4.3cqw;font-weight:700;line-height:1.15;border-top:1px solid var(--line);padding-top:3cqw}.v2-manager .sender{margin-top:4cqw;font-size:3cqw;opacity:.65}.v2-manager .buyer-message{font-size:5.2cqw;line-height:1.2;margin:1.5cqw 0 4cqw}.v2-manager .incoming{color:var(--coral);font-size:5cqw}.v2-ending .headline{font-size:11cqw;margin-top:20cqw;line-height:1.05}.v2-ending .button{margin-top:12cqw;font-size:4.8cqw;padding:4cqw}.revision{margin-top:25px;border-top:1px solid var(--line);padding-top:20px}.revision h2{font-size:16px}.revision p,.revision blockquote{font-size:13px;line-height:1.6}.revision blockquote{margin:15px 0;padding:15px 20px;border-left:1px solid var(--ink);background:var(--cream)}
+-
+-/* v2 crop and phone-content fit pass. */
+-.v2-photo .raw-photo{height:82cqw}.v2-photo .raw-photo img{width:150%;left:-25%;top:-34.5cqw}
+-.v2-phone .post-photo{height:22cqw}.v2-phone .post-copy{padding:2cqw}.v2-phone .post-title{font-size:3.9cqw}.v2-phone .post-price{font-size:5.4cqw;margin:1cqw 0}.v2-phone .post-spec{font-size:2.7cqw}.v2-phone .post-link{font-size:3.1cqw;padding:2cqw;margin-top:2cqw}.v2-phone .post-stamp{font-size:2cqw;margin-top:1cqw}
+-.v2-manager .lead-bubble{margin-top:4cqw;padding:3.5cqw 3cqw}.v2-manager .bot-label{font-size:2.4cqw;margin-bottom:2cqw}.v2-manager .lead-title{font-size:6cqw;margin-bottom:3cqw}.v2-manager .lead-car{font-size:3.4cqw;padding-top:2cqw}.v2-manager .sender{margin-top:2cqw;font-size:2.7cqw}.v2-manager .buyer-message{font-size:4.2cqw;margin:1.5cqw 0 3cqw}.v2-manager .incoming{font-size:3cqw}
+-
+-.v2-phone .chatinput{padding:.8cqw 2cqw;font-size:2.4cqw;bottom:3cqw}.v2-phone .back{color:#2AABEE}.v2-phone .post-link{background:var(--cream);color:#287AAE;border:1px solid var(--line);padding:1.7cqw 2cqw}.v2-phone .channel-action{text-align:center;border-color:transparent}
+-
+-.frame{position:absolute;inset:0;width:100%;height:100%;border:0;aspect-ratio:auto;container-type:size}.folio{bottom:18cqw;font-size:2.35cqw}.v2-photo .raw-photo{background:var(--tile)}.v2-phone .post-photo{height:22cqw;background:var(--cream);padding:1cqw}.v2-phone .post-photo img{position:static;width:100%;height:100%;object-fit:contain;max-width:100%}.field{color:var(--ink)}.field span,.chatmeta,.sender,.post-stamp{opacity:1;color:#625B4B}.v2-phone .statusbar,.v2-phone .chatinput,.v2-phone .post-stamp{opacity:1;color:#625B4B}.v2-phone .post-link,.v2-phone .back{color:#1D6698}.v2-phone .phone{width:55.5cqw;height:99cqw;left:12.6cqw;top:28cqw}.v2-phone .island{left:calc(50% - 10cqw);width:20cqw}.v2-phone .homebar{left:calc(50% - 12cqw)}.v2-phone .headline.long{font-size:7.2cqw;line-height:1.0}
+-
+-#scene-06{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}[data-scene-view="06"] .headline,[data-scene-view="06"] .brand,[data-scene-view="06"] .button{opacity:0}</style><div id="scene-06" data-composition-id="scene-06" data-width="1080" data-height="1920" data-duration="5" data-hf-id="hf-flow-scene-06-001"><div class="frame closing v2-ending" id="scene-06-view" data-scene-view="06" data-hf-id="hf-flow-scene-06-002"><div class="inner" data-hf-id="hf-flow-scene-06-003"><div class="brand" data-hf-id="hf-flow-scene-06-004"><span data-hf-id="hf-flow-scene-06-005">A</span>AutoFlow</div><h2 class="headline" data-hf-id="hf-flow-scene-06-006">Менше<br data-hf-id="hf-x5px">рутини.<br data-hf-id="hf-rsrt">Більше уваги<br data-hf-id="hf-szow">клієнтам.</h2><div class="button coral" data-hf-id="hf-flow-scene-06-007">Переглянути демо ↗</div></div><div class="folio" data-hf-id="hf-flow-scene-06-008"><span data-hf-id="hf-flow-scene-06-009">Одне авто · один шлях</span><span data-hf-id="hf-flow-scene-06-010">AutoFlow</span></div></div></div><script>const tl=gsap.timeline({paused:true,defaults:{ease:'power3.out'}});
+-tl.fromTo('[data-scene-view="06"] .headline',{y:24,opacity:0},{y:0,opacity:1,duration:.42},.06);
+-tl.fromTo('[data-scene-view="06"] .brand',{y:24,opacity:0},{y:0,opacity:1,duration:.4},.02);
+-tl.fromTo('[data-scene-view="06"] .button',{y:24,opacity:0},{y:0,opacity:1,duration:.45},2.0);
+-tl.to('[data-scene-view="06"] .button',{opacity:1,duration:2.55,ease:'none'},2.45);
+-window.__timelines['scene-06']=tl;</script></template></body></html>+<!doctype html>
++<html lang="uk">
++  <head></head>
++  <body>
++    <template
++      ><div
++        data-hf-id="hf-tgmj"
++        id="scene-06"
++        class="scene"
++        data-scene-view="06"
++        data-composition-id="scene-06"
++        data-width="1080"
++        data-height="1920"
++        data-duration="5"
++      >
++        <div data-hf-id="hf-86kk" class="scene-body closing">
++          <div data-hf-id="hf-3fbd" class="arc" data-layout-ignore=""></div>
++          <div data-hf-id="hf-tt2s" class="arc bottom" data-layout-ignore=""></div>
++          <div data-hf-id="hf-3z8c" class="logo-fallback">
++            <div data-hf-id="hf-mxik" class="logo-bars">
++              <i data-hf-id="hf-wt6k"></i><i data-hf-id="hf-zeb8"></i>
++            </div>
++            <div data-hf-id="hf-yeow">
++              <div data-hf-id="hf-5yhc" class="wordmark">AutoFlow</div>
++              <div data-hf-id="hf-56z8" class="brand-tag">ПРОГРАМНЕ РІШЕННЯ ДЛЯ АВТОБІЗНЕСУ</div>
++            </div>
++          </div>
++          <h2 data-hf-id="hf-t43f" class="headline">
++            <span data-hf-id="hf-z9w6">Менше рутини.</span
++            ><span data-hf-id="hf-kgtl" class="red">Більше уваги</span
++            ><span data-hf-id="hf-d93y" class="red">клієнтам.</span>
++          </h2>
++          <div data-hf-id="hf-u4kc" class="benefits">
++            <div data-hf-id="hf-wol1" class="benefit">
++              <div data-hf-id="hf-eto3" class="icon">
++                <svg data-hf-id="hf-ulu9" viewBox="0 0 24 24">
++                  <circle data-hf-id="hf-jd47" cx="9" cy="7" r="3" />
++                  <path
++                    data-hf-id="hf-h12m"
++                    d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v2"
++                  />
++                </svg>
++              </div>
++              <div data-hf-id="hf-2jzr">Продажі зростають</div>
++            </div>
++            <div data-hf-id="hf-0nu1" class="benefit">
++              <div data-hf-id="hf-dez7" class="icon">
++                <svg data-hf-id="hf-1tol" viewBox="0 0 24 24">
++                  <circle data-hf-id="hf-1iwn" cx="12" cy="12" r="9" />
++                  <path data-hf-id="hf-pebm" d="M12 6v6l4 2" />
++                </svg>
++              </div>
++              <div data-hf-id="hf-banb">Час на головне</div>
++            </div>
++            <div data-hf-id="hf-1ur4" class="benefit">
++              <div data-hf-id="hf-d0o6" class="icon">
++                <svg data-hf-id="hf-30lo" viewBox="0 0 24 24">
++                  <path
++                    data-hf-id="hf-zjup"
++                    d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"
++                  />
++                </svg>
++              </div>
++              <div data-hf-id="hf-t5ds">Задоволені клієнти</div>
++            </div>
++          </div>
++          <div data-hf-id="hf-amq9" class="button">
++            Переглянути демо <span data-hf-id="hf-p70p">→</span>
++          </div>
++          <div data-hf-id="hf-ukzm" class="handwriting">Розвиваємо автобізнес разом</div>
++          <svg
++            data-hf-id="hf-de76"
++            class="draw-arrow note-arrow"
++            data-layout-ignore
++            viewBox="0 0 170 150"
++          >
++            <path data-hf-id="hf-c2hm" d="M10 125Q100 150 150 30M125 45l30-22 2 34" />
++          </svg>
++        </div>
++      </div>
++      <script>
++        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
++        const scope = '[data-scene-view="06"]';
++        tl.fromTo(
++          scope + ' .headline span',
++          { y: 65, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.58, stagger: 0.11 },
++          0.05,
++        );
++        tl.fromTo(scope + ' .arc', { rotation: -6 }, { rotation: 0, duration: 5, ease: 'none' }, 0);
++        const paths = document.querySelectorAll(scope + ' .draw-arrow path');
++        paths.forEach((path) => {
++          const length = path.getTotalLength();
++          path.style.strokeDasharray = length;
++          tl.fromTo(
++            path,
++            { strokeDashoffset: length },
++            { strokeDashoffset: 0, duration: 0.55, ease: 'none' },
++            2.0,
++          );
++        });
++        tl.fromTo(
++          scope + ' .benefit',
++          { y: 35, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.5, stagger: 0.12 },
++          1.2,
++        );
++        tl.fromTo(
++          scope + ' .benefit .icon svg',
++          { scale: 0.68, rotation: -12 },
++          { scale: 1, rotation: 0, duration: 0.6, stagger: 0.1, ease: 'back.out(1.4)' },
++          1.3,
++        );
++        tl.fromTo(
++          scope + ' .logo-fallback',
++          { y: -35, opacity: 0 },
++          { y: 0, opacity: 1, duration: 0.6 },
++          0.05,
++        );
++        tl.fromTo(
++          scope + ' .button',
++          { y: 50, opacity: 0, scale: 0.93 },
++          { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: 'back.out(1.2)' },
++          2.1,
++        );
++        tl.fromTo(scope + ' .handwriting', { opacity: 0 }, { opacity: 1, duration: 0.55 }, 2.6);
++        window.__timelines['scene-06'] = tl;
++      </script></template
++    >
++  </body>
++</html>

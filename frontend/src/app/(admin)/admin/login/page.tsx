@@ -60,37 +60,39 @@ export default function AdminLoginPage() {
   const disabled = pending || locked;
 
   return (
-    <main className="flex min-h-dvh flex-col bg-[#14161B] px-6 py-10 text-white">
+    <main className="cinematic-login flex min-h-dvh flex-col px-6 py-10">
       <div className="mx-auto flex w-full max-w-[400px] flex-1 flex-col justify-center">
         {/* Brand */}
         <div className="mb-7 flex items-center gap-2.5">
           <span
             aria-hidden
-            className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-accent font-heading text-[16px] font-extrabold text-on-accent"
+            className="flex h-8 w-8 items-center justify-center rounded-none bg-transparent font-heading text-[1rem] font-medium text-lot-gold"
           >
             A
           </span>
-          <span className="font-heading text-[19px] font-extrabold tracking-tight">AutoFlow</span>
-          <span className="mt-0.5 rounded-[5px] border border-white/20 px-[7px] py-[2px] text-[10px] font-semibold text-[#9BA0AB]">
+          <span className="cinematic-wordmark">
+            AutoFlow
+          </span>
+          <span className="mt-0.5 rounded-none border border-white/20 px-[7px] py-[2px] text-[0.625rem] font-medium text-ink-3">
             {t('badge')}
           </span>
         </div>
 
-        <h1 className="font-heading text-[22px] font-extrabold tracking-tight">{t('title')}</h1>
-        <p className="mt-[5px] text-[13px] text-[#9BA0AB]">{t('subtitle')}</p>
+        <h1 className="font-heading text-[1.375rem] font-medium tracking-tight">{t('title')}</h1>
+        <p className="mt-[5px] text-[0.8125rem] text-ink-3">{t('subtitle')}</p>
 
         {/* Lockout block */}
         {locked && (
           <div
             role="alert"
-            className="mt-6 rounded-[13px] border border-[#F3E2B8]/40 bg-[#FFF9EC] p-[18px] text-left"
+            className="mt-6 rounded-none border border-ratelimit-line bg-ratelimit-bg p-[18px] text-left"
           >
             <div className="flex items-center gap-2.5">
-              <span className="font-heading text-[16px] font-bold text-[#8A6300]">
+              <span className="font-heading text-[1rem] font-medium text-ratelimit">
                 {t('lockTitle')}
               </span>
             </div>
-            <p className="mt-2 text-[13px] font-medium leading-relaxed text-[#9A7A2E]">
+            <p className="mt-2 text-[0.8125rem] font-medium leading-relaxed text-ratelimit-2">
               {t('lockBody', {
                 count: MAX_ATTEMPTS,
                 time: formatCountdown(remainingSeconds(lockout, now)),
@@ -102,7 +104,7 @@ export default function AdminLoginPage() {
         <form action={action} className="mt-6" aria-busy={pending}>
           <label
             htmlFor="login-email"
-            className="mb-1.5 block text-[12px] font-semibold text-[#C7CAD1]"
+            className="mb-1.5 block text-[0.75rem] font-medium text-ink-2"
           >
             {t('email')}
           </label>
@@ -114,14 +116,14 @@ export default function AdminLoginPage() {
             autoComplete="username"
             disabled={locked}
             className={cn(
-              'focus-ring mb-4 h-[46px] w-full rounded-[10px] border bg-white/5 px-3.5 text-[14px] font-medium text-white outline-none transition-none',
-              'placeholder:text-[#7C818C] disabled:opacity-50',
+              'focus-ring mb-4 h-[46px] w-full rounded-none border bg-white/5 px-3.5 text-[0.875rem] font-medium text-white outline-none transition-none',
+              'placeholder:text-ink-3 disabled:opacity-50',
               'border-white/[0.14]',
             )}
           />
           <label
             htmlFor="login-password"
-            className="mb-1.5 block text-[12px] font-semibold text-[#C7CAD1]"
+            className="mb-1.5 block text-[0.75rem] font-medium text-ink-2"
           >
             {t('password')}
           </label>
@@ -135,9 +137,9 @@ export default function AdminLoginPage() {
             aria-invalid={invalid || undefined}
             aria-describedby={invalid ? 'login-error' : undefined}
             className={cn(
-              'focus-ring h-[46px] w-full rounded-[10px] px-3.5 text-[14px] font-medium outline-none transition-none disabled:opacity-50',
+              'focus-ring h-[46px] w-full rounded-none px-3.5 text-[0.875rem] font-medium outline-none transition-none disabled:opacity-50',
               invalid
-                ? 'border-[1.5px] border-[#D9534F] bg-[#FDF3F2] text-[#14161B]'
+                ? 'border-[1.5px] border-danger bg-danger-bg text-ink'
                 : 'border border-white/[0.14] bg-white/5 text-white',
             )}
           />
@@ -145,14 +147,14 @@ export default function AdminLoginPage() {
             <p
               id="login-error"
               role="alert"
-              className="mt-2 flex items-center gap-1.5 text-[12.5px] font-medium text-[#E07B70]"
+              className="mt-2 flex items-center gap-1.5 text-[0.78125rem] font-medium text-danger"
             >
               <span aria-hidden>⚠</span>
               {state?.error === 'required' ? t('errorRequired') : t('errorInvalid')}
             </p>
           )}
           {!locked && state?.error === 'generic' && (
-            <p role="alert" className="mt-2 text-[12.5px] font-medium text-[#E07B70]">
+            <p role="alert" className="mt-2 text-[0.78125rem] font-medium text-danger">
               ⚠ {t('errorGeneric')}
             </p>
           )}
@@ -161,10 +163,10 @@ export default function AdminLoginPage() {
             type="submit"
             disabled={disabled}
             className={cn(
-              'focus-ring mt-[22px] h-[50px] w-full rounded-[11px] text-[15px] font-bold transition-colors',
+              'focus-ring mt-[22px] h-[50px] w-full rounded-none text-[0.9375rem] font-medium transition-colors',
               disabled && locked
-                ? 'cursor-not-allowed bg-[#2A2D34] text-[#7C818C]'
-                : 'bg-accent text-on-accent hover:bg-accent-hover disabled:opacity-70',
+                ? 'cursor-not-allowed bg-surface-2 text-ink-3'
+                : 'platform-primary disabled:opacity-70',
             )}
           >
             {pending ? t('submitting') : t('submit')}

@@ -71,9 +71,9 @@ export default async function AdminAuditPage({
 
   return (
     <div className="mx-auto max-w-[760px]">
-      <div className="overflow-hidden rounded-[14px] border border-line bg-surface shadow-panel">
+      <div className="overflow-hidden rounded-none border border-line bg-surface shadow-none">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-4 md:px-[22px] md:py-5">
-          <h1 className="font-heading text-[20px] font-extrabold tracking-tight">
+          <h1 className="font-heading text-[1.25rem] font-medium tracking-tight">
             {t('audit.title')}
           </h1>
           <AuditFilters entityType={entityType} period={period} />
@@ -86,9 +86,7 @@ export default async function AdminAuditPage({
             {items.map((row) => {
               const p = presentAuditAction(row.action);
               const actor =
-                (row.actorId && emailById.get(row.actorId)) ||
-                row.actorRole ||
-                t('audit.system');
+                (row.actorId && emailById.get(row.actorId)) || row.actorRole || t('audit.system');
               const target = shortId(row.entityId);
               return (
                 <li
@@ -98,22 +96,22 @@ export default async function AdminAuditPage({
                   <span
                     aria-hidden
                     className={cn(
-                      'flex h-[30px] w-[30px] flex-none items-center justify-center rounded-[8px] text-[13px]',
+                      'flex h-[30px] w-[30px] flex-none items-center justify-center rounded-none text-[0.8125rem]',
                       TONE_CLS[p.tone],
                     )}
                   >
                     {p.glyph}
                   </span>
-                  <p className="min-w-0 flex-1 text-[13px] font-medium leading-snug text-ink-2">
-                    <b className="font-bold text-ink">{actor}</b>{' '}
+                  <p className="min-w-0 flex-1 text-[0.8125rem] font-medium leading-snug text-ink-2">
+                    <b className="font-medium text-ink">{actor}</b>{' '}
                     {p.labelKey === 'fallback'
                       ? t('audit.action.fallback', { action: row.action })
                       : t(`audit.action.${p.labelKey}` as never)}
-                    {target && <b className="font-semibold text-ink"> {target}</b>}
+                    {target && <b className="font-medium text-ink"> {target}</b>}
                   </p>
                   <time
                     dateTime={row.createdAt}
-                    className="flex-none whitespace-nowrap text-[12px] font-medium text-ink-3"
+                    className="flex-none whitespace-nowrap text-[0.75rem] font-medium text-ink-3"
                   >
                     {formatRelativeDay(row.createdAt, labels, locale)}
                   </time>

@@ -35,16 +35,18 @@ export function FavoriteButton({ slug, variant = 'overlay', className }: Favorit
         // the finger; motion-reduce users get only the colour change.
         'focus-ring inline-flex items-center justify-center transition-[transform,background-color,border-color,color] duration-100 motion-safe:active:scale-[0.9]',
         variant === 'overlay' &&
-          'h-9 w-9 rounded-btn bg-surface/85 shadow-sm backdrop-blur-sm hover:bg-surface',
+          'inventory-photo-control h-9 w-9 rounded-btn shadow-none backdrop-blur-sm',
         variant === 'inline' &&
-          'h-[38px] gap-2 rounded-btn border border-line-input bg-surface px-3 text-sub font-semibold text-ink hover:border-line-hover',
+          'h-[38px] gap-2 rounded-btn border border-line-input bg-surface px-3 text-sub font-medium text-ink hover:border-line-hover',
         className,
       )}
     >
       <HeartIcon
         className={cn(
           'h-[18px] w-[18px] transition-colors',
-          active ? 'fill-danger stroke-danger' : 'fill-transparent stroke-ink-2',
+          variant === 'overlay'
+            ? active ? 'photo-favorite-active' : 'fill-transparent photo-overlay-icon'
+            : active ? 'fill-danger stroke-danger' : 'fill-transparent stroke-ink-2',
         )}
       />
       {variant === 'inline' && (active ? t('saved') : t('save'))}

@@ -1,0 +1,32 @@
+{
+  "ok": true,
+  "errorCount": 0,
+  "warningCount": 2,
+  "infoCount": 0,
+  "findings": [
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"continuity-clip\"> is a timeline element that contains nested <img>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "continuity-clip",
+      "fixHint": "Move <div id=\"continuity-clip\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/animation/index.html",
+      "line": 91,
+      "column": 7
+    },
+    {
+      "code": "duplicate_media_discovery_risk",
+      "severity": "warning",
+      "message": "Detected 4 matching img entries with the same source/start/duration.",
+      "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation.",
+      "snippet": "img src=assets/images/mercedes-e2025-w214.png data-start= data-duration=",
+      "file": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/animation/compositions/scene-03.html"
+    }
+  ],
+  "filesScanned": 7,
+  "_meta": {
+    "version": "0.8.142",
+    "latestVersion": "0.8.158",
+    "updateAvailable": true
+  }
+}

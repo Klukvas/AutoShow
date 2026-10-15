@@ -3,7 +3,13 @@
 /* eslint-disable @next/next/no-img-element -- object-URL previews of local
    uploads can't go through next/image */
 
-import { motion, useReducedMotion } from 'framer-motion';
+import {
+  motion,
+  useDragControls,
+  useMotionValue,
+  useReducedMotion,
+  type PanInfo,
+} from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/cn';
 import { CarThumb } from '@/components/admin/ui/car-thumb';
@@ -15,9 +21,12 @@ interface MediaTileProps {
   isDropTarget: boolean;
   isDragging: boolean;
   onMakeCover: () => void;
+  onPhotoAi?: () => void;
   onDelete: () => void;
   onRetry: () => void;
-  onHandlePointerDown: (e: React.PointerEvent) => void;
+  onReorderStart: () => void;
+  onReorderMove: (point: PanInfo['point']) => void;
+  onReorderEnd: (cancelled: boolean) => void;
   onHandleKeyDown: (e: React.KeyboardEvent) => void;
 }
 
@@ -32,28 +41,53 @@ export function MediaTile({
   isDropTarget,
   isDragging,
   onMakeCover,
+  onPhotoAi,
   onDelete,
   onRetry,
-  onHandlePointerDown,
+  onReorderStart,
+  onReorderMove,
+  onReorderEnd,
   onHandleKeyDown,
 }: MediaTileProps) {
   const t = useTranslations('admin.media');
   const interactive = tile.phase === 'ready';
   const reduce = useReducedMotion();
+  const dragControls = useDragControls();
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+
+  const finishDrag = (cancelled: boolean) => {
+    if (reduce) {
+      x.jump(0);
+      y.jump(0);
+    }
+    onReorderEnd(cancelled);
+  };
 
   return (
     <motion.div
       // Reorders happen on drop/keyboard, so `layout` springs each tile into
       // its new grid slot instead of snapping (§6). The dragged tile isn't
       // layout-animated mid-gesture (reorder only fires on release).
-      layout={reduce ? false : 'position'}
-      transition={reduce ? { duration: 0 } : { type: 'spring', bounce: 0.16, duration: 0.35 }}
+      layout={reduce || isDragging ? false : 'position'}
+      drag={interactive}
+      dragListener={false}
+      dragControls={dragControls}
+      dragSnapToOrigin={!reduce}
+      dragMomentum={false}
+      dragTransition={{ bounceStiffness: 500, bounceDamping: 40 }}
+      onDragStart={onReorderStart}
+      onDrag={(_, info) => onReorderMove(info.point)}
+      onDragEnd={(event) => finishDrag(event.type === 'pointercancel')}
+      onPointerCancel={() => finishDrag(true)}
+      style={{ x, y, zIndex: isDragging ? 10 : undefined }}
+      transition={reduce ? { duration: 0 } : { type: 'spring', bounce: 0, duration: 0.35 }}
       data-media-tile={index}
       className={cn(
-        'relative h-24 select-none overflow-hidden rounded-[10px] border bg-ph-a',
+        'relative h-32 select-none overflow-hidden rounded-none border bg-ph-a',
         tile.isCover ? 'border-2 border-accent' : 'border-line-strong/60',
         isDropTarget && 'ring-2 ring-focus ring-offset-2 ring-offset-bg',
-        isDragging && 'opacity-60',
+        isDragging && 'opacity-80 shadow-none',
       )}
       role="group"
       aria-label={`${t('tile', { index: index + 1 })}${tile.isCover ? ` · ${t('cover')}` : ''}`}
@@ -70,14 +104,14 @@ export function MediaTile({
         <CarThumb className="absolute inset-0 h-full w-full" />
       )}
       {tile.type === 'video' && tile.phase === 'ready' && (
-        <span className="absolute bottom-1.5 right-1.5 rounded-[5px] bg-[rgba(20,22,27,0.7)] px-[7px] py-[2px] text-[9px] font-bold text-white">
+        <span className="absolute bottom-1.5 right-1.5 rounded-none bg-[rgba(20,22,27,0.7)] px-[7px] py-[2px] text-[0.5625rem] font-medium text-white">
           {t('video')}
         </span>
       )}
 
       {/* Cover badge / make-cover star */}
       {tile.isCover ? (
-        <span className="absolute left-1.5 top-1.5 rounded-[5px] bg-accent px-[7px] py-[2px] text-[9.5px] font-bold text-on-accent">
+        <span className="absolute left-1.5 top-1.5 rounded-none bg-accent px-[7px] py-[2px] text-[0.59375rem] font-medium text-on-accent">
           ★ {t('cover')}
         </span>
       ) : (
@@ -87,7 +121,7 @@ export function MediaTile({
             aria-label={t('makeCover')}
             title={t('makeCover')}
             onClick={onMakeCover}
-            className="focus-ring absolute left-1.5 top-1.5 flex h-[22px] w-[22px] items-center justify-center rounded-[6px] bg-[rgba(255,255,255,0.9)] text-[12px] text-ink-2 hover:text-accent"
+            className="focus-ring absolute left-1.5 top-1.5 flex h-9 w-9 items-center justify-center rounded-none bg-surface/95 text-[0.75rem] text-ink-2 hover:text-accent"
           >
             ★
           </button>
@@ -100,9 +134,13 @@ export function MediaTile({
           type="button"
           aria-label={t('dragHandle')}
           title={t('dragHandle')}
-          onPointerDown={onHandlePointerDown}
+          onPointerDown={(event) => {
+            if (event.button !== 0 || !event.isPrimary) return;
+            event.currentTarget.setPointerCapture(event.pointerId);
+            dragControls.start(event);
+          }}
           onKeyDown={onHandleKeyDown}
-          className="focus-ring absolute right-1.5 top-1.5 flex h-[22px] w-[22px] touch-none items-center justify-center rounded-[6px] bg-[rgba(255,255,255,0.9)] text-[11px] text-ink-2"
+          className="focus-ring absolute right-1.5 top-1.5 flex h-9 w-9 touch-none items-center justify-center rounded-none bg-surface/95 text-[0.6875rem] text-ink-2"
         >
           ⠿
         </button>
@@ -116,7 +154,7 @@ export function MediaTile({
           title={t('deleteFile')}
           onClick={onDelete}
           className={cn(
-            'focus-ring absolute flex h-[22px] w-[22px] items-center justify-center rounded-[6px] bg-[rgba(255,255,255,0.9)] text-danger',
+            'focus-ring absolute flex h-9 w-9 items-center justify-center rounded-none bg-surface/95 text-danger',
             interactive ? 'bottom-1.5 left-1.5' : 'right-1.5 top-1.5',
           )}
         >
@@ -132,9 +170,11 @@ export function MediaTile({
         </button>
       )}
 
+      {interactive && tile.type === 'image' && tile.mediaId && onPhotoAi && <button type="button" onClick={onPhotoAi} className="focus-ring absolute bottom-1.5 right-1.5 min-h-11 bg-surface/95 px-2 text-xs font-medium text-ink">{t('photoAi')}</button>}
+
       {/* Status overlays */}
-      {tile.phase === 'ready' && !tile.isCover && (
-        <span className="absolute bottom-1.5 left-1.5 rounded-[5px] bg-[rgba(31,157,87,0.92)] px-[7px] py-[2px] text-[9px] font-bold text-white group-hover:opacity-0">
+      {tile.phase === 'ready' && !tile.isCover && tile.type !== 'image' && (
+        <span className="absolute bottom-1.5 right-1.5 pointer-events-none rounded-none bg-[rgba(31,157,87,0.92)] px-[7px] py-[2px] text-[0.5625rem] font-medium text-white group-hover:opacity-0">
           ✓ {t('statusReady')}
         </span>
       )}
@@ -144,7 +184,7 @@ export function MediaTile({
           className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-surface-2/95 px-3"
           aria-live="polite"
         >
-          <span className="font-heading text-[13px] font-bold text-accent tabular">
+          <span className="font-heading text-[0.8125rem] font-medium text-accent tabular">
             {Math.round(tile.progress)}%
           </span>
           <div
@@ -153,7 +193,7 @@ export function MediaTile({
             aria-valuemin={0}
             aria-valuemax={100}
             aria-label={t('statusUploading', { percent: Math.round(tile.progress) })}
-            className="h-[5px] w-full overflow-hidden rounded-[5px] bg-line-input"
+            className="h-[5px] w-full overflow-hidden rounded-none bg-line-input"
           >
             <div className="h-full bg-accent" style={{ width: `${tile.progress}%` }} />
           </div>
@@ -166,7 +206,7 @@ export function MediaTile({
             aria-hidden
             className="h-5 w-5 animate-spin rounded-full border-[2.5px] border-accent/25 border-t-accent motion-reduce:animate-none"
           />
-          <span className="text-[10px] font-semibold text-ink-3">{t('statusProcessing')}</span>
+          <span className="text-[0.625rem] font-medium text-ink-3">{t('statusProcessing')}</span>
         </div>
       )}
 
@@ -175,12 +215,12 @@ export function MediaTile({
           className="absolute inset-0 flex flex-col items-center justify-center gap-1 border border-danger-line bg-danger-bg px-2 text-center"
           title={tile.failureReason ?? undefined}
         >
-          <span aria-hidden className="text-[15px] leading-none text-danger">
+          <span aria-hidden className="text-[0.9375rem] leading-none text-danger">
             ✕
           </span>
-          <span className="text-[10px] font-semibold text-danger">{t('statusFailed')}</span>
+          <span className="text-[0.625rem] font-medium text-danger">{t('statusFailed')}</span>
           {tile.failureReason && (
-            <span className="line-clamp-2 text-[9px] font-medium leading-tight text-danger/80">
+            <span className="line-clamp-2 text-[0.5625rem] font-medium leading-tight text-danger/80">
               {tile.failureReason}
             </span>
           )}
@@ -188,7 +228,7 @@ export function MediaTile({
             <button
               type="button"
               onClick={onRetry}
-              className="focus-ring rounded-[4px] text-[9.5px] font-bold text-accent hover:text-accent-hover"
+              className="focus-ring rounded-none text-[0.59375rem] font-medium text-accent hover:text-accent-hover"
             >
               {t('retry')}
             </button>

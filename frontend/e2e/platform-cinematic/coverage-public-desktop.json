@@ -1,0 +1,73 @@
+[
+  {
+    "route": "/",
+    "status": 200,
+    "title": [
+      "Знайдіть авто.\nВідчуйте своє."
+    ]
+  },
+  {
+    "route": "/cars",
+    "status": 200,
+    "title": [
+      "Каталог"
+    ]
+  },
+  {
+    "route": "/cars/bmw-5-series-fixture",
+    "status": 200,
+    "title": [
+      "BMW 5 Series 530i xDrive",
+      "BMW 5 Series 530i xDrive"
+    ]
+  },
+  {
+    "route": "/collections/family",
+    "status": 200,
+    "title": [
+      " Сімейні авто"
+    ]
+  },
+  {
+    "route": "/about",
+    "status": 200,
+    "title": [
+      "Ретельно відібрані автомобілі для тих, хто цінує якість, стиль і свободу руху."
+    ]
+  },
+  {
+    "route": "/contacts",
+    "status": 200,
+    "title": [
+      "Контакти"
+    ]
+  },
+  {
+    "route": "/favorites",
+    "status": 200,
+    "title": [
+      "Обране"
+    ]
+  },
+  {
+    "route": "/compare",
+    "status": 200,
+    "title": [
+      "Порівняння авто"
+    ]
+  },
+  {
+    "route": "/cars?q=__empty",
+    "status": 200,
+    "title": [
+      "Каталог"
+    ]
+  },
+  {
+    "route": "/missing-platform-page",
+    "status": 404,
+    "title": [
+      "Сторінку не знайдено"
+    ]
+  }
+]

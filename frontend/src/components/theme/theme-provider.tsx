@@ -19,14 +19,14 @@ const ThemeContext = createContext<ThemeContextValue>({
 });
 
 function readDomTheme(): Theme {
-  return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
 }
 
 /**
  * Owns the `data-theme` attribute after hydration. The inline head script
  * (theme-script.tsx) already applied the right theme pre-paint; this provider
  * syncs React state to it, persists explicit choices to localStorage and
- * follows system changes while the visitor has not chosen explicitly.
+ * keeps the chosen palette stable when system appearance changes.
  */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme | null>(null);
@@ -49,24 +49,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme(readDomTheme() === 'dark' ? 'light' : 'dark');
   }, [setTheme]);
 
-  // Follow the OS theme live, but only while the visitor has no stored choice.
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = (event: MediaQueryListEvent) => {
-      let stored: string | null = null;
-      try {
-        stored = localStorage.getItem(THEME_STORAGE_KEY);
-      } catch {
-        stored = null;
-      }
-      if (stored === 'light' || stored === 'dark') return;
-      const next: Theme = event.matches ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', next);
-      setThemeState(next);
-    };
-    media.addEventListener('change', onChange);
-    return () => media.removeEventListener('change', onChange);
-  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggle }}>{children}</ThemeContext.Provider>

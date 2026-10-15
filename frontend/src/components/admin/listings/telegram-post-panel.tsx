@@ -72,14 +72,14 @@ export function TelegramPostPanel({
           {posts.map((post) => (
             <li
               key={post.chatId}
-              className="flex flex-wrap items-center gap-x-2 text-[13px] font-medium text-ink-2"
+              className="flex flex-wrap items-center gap-x-2 text-[0.8125rem] font-medium text-ink-2"
             >
-              <span className="font-semibold text-ink">{post.label ?? post.chatId}</span>
+              <span className="font-medium text-ink">{post.label ?? post.chatId}</span>
               <span className="text-ink-3">
                 {t('postedAt', { date: formatDate(post.postedAt) })}
               </span>
               {post.soldMarkedAt && (
-                <span className="rounded-[6px] bg-surface-2 px-1.5 py-0.5 text-[11.5px] font-bold text-ink-3">
+                <span className="rounded-none bg-surface-2 px-1.5 py-0.5 text-[0.71875rem] font-medium text-ink-3">
                   {t('soldMark')}
                 </span>
               )}
@@ -87,13 +87,13 @@ export function TelegramPostPanel({
           ))}
         </ul>
       ) : (
-        <p className="text-[13px] font-medium text-ink-3">
+        <p className="text-[0.8125rem] font-medium text-ink-3">
           {configured ? t('empty') : t('notConfigured')}
         </p>
       )}
 
       {!canPost && configured && (
-        <p className="text-[12.5px] font-medium text-ink-3">{t('notPublished')}</p>
+        <p className="text-[0.78125rem] font-medium text-ink-3">{t('notPublished')}</p>
       )}
 
       <div>
@@ -101,7 +101,7 @@ export function TelegramPostPanel({
           type="button"
           onClick={() => void submit()}
           disabled={pending || !canPost}
-          className="focus-ring inline-flex h-9 items-center rounded-[9px] border border-line-input bg-surface px-3.5 text-[12.5px] font-semibold text-ink hover:border-line-hover disabled:opacity-50"
+          className="focus-ring inline-flex h-9 items-center rounded-none border border-line-input bg-surface px-3.5 text-[0.78125rem] font-medium text-ink hover:border-line-hover disabled:opacity-50"
         >
           {pending ? t('posting') : t('postButton')}
         </button>

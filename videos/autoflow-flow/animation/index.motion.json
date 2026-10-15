@@ -1,0 +1,25 @@
+{
+  "duration": 30,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "[data-scene-view=\"01\"] .headline",
+      "bySec": 0.8
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-scene-view=\"04\"] .post",
+      "bySec": 16.2
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-scene-view=\"05\"] .notice",
+      "bySec": 22.8
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-scene-view=\"06\"] .button",
+      "bySec": 28
+    }
+  ]
+}

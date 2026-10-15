@@ -1,5 +1,12 @@
+import { StorageService } from '../storage/storage.service';
 import { InjectQueue } from '@nestjs/bullmq';
-import { ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Queue } from 'bullmq';
 import { IsNull, Repository } from 'typeorm';
@@ -48,11 +55,42 @@ export class CatalogAdminService {
     private readonly catalog: CatalogService,
     private readonly audit: AuditLogService,
     @InjectQueue(MAINTENANCE_QUEUE) private readonly maintenance: Queue,
+    private readonly storage: StorageService,
   ) {}
 
   private readonly logger = new Logger(CatalogAdminService.name);
 
   /* makes / models */
+  async listMakes() {
+    const makes = await this.makes
+      .createQueryBuilder('make')
+      .loadRelationCountAndMap('make.modelCount', 'make.models', 'model', (qb) =>
+        qb.andWhere('model.deleted_at IS NULL'),
+      )
+      .orderBy('make.name_uk', 'ASC')
+      .getMany();
+    return makes.map((make) => this.makeView(make));
+  }
+  async listModels(makeId?: string) {
+    if (makeId) await this.requireMake(makeId);
+    return this.models.find({ where: makeId ? { makeId } : {}, order: { nameUk: 'ASC' } });
+  }
+  private makeView(make: Make & { modelCount?: number }) {
+    return {
+      id: make.id,
+      slug: make.slug,
+      nameUk: make.nameUk,
+      nameEn: make.nameEn,
+      logoUrl: make.logoS3Key ? this.storage.publicUrlFor(make.logoS3Key) : null,
+      modelCount: make.modelCount ?? 0,
+    };
+  }
+  private async requireMake(id: string) {
+    const make = await this.makes.findOne({ where: { id, deletedAt: IsNull() } });
+    if (!make) throw new NotFoundException('Марку не знайдено');
+    return make;
+  }
+
   async createMake(dto: UpsertMakeDto, actor: AuthenticatedUser) {
     const saved = await this.create(this.makes, dto, 'make', actor);
     // Logo fetch is best-effort background work — a queue hiccup must not
@@ -66,31 +104,79 @@ export class CatalogAdminService {
     } catch (err) {
       this.logger.warn({ err, makeId: (saved as Make).id }, 'failed to enqueue make logo fetch');
     }
-    return saved;
+    return this.makeView(saved as Make);
   }
-  updateMake(id: string, dto: UpsertMakeDto, actor: AuthenticatedUser) {
-    return this.update(this.makes, id, dto, 'make', actor);
+  async updateMake(id: string, dto: UpsertMakeDto, actor: AuthenticatedUser) {
+    await this.update(this.makes, id, dto, 'make', actor);
+    return this.makeView(await this.requireMake(id));
   }
   async deleteMake(id: string, actor: AuthenticatedUser) {
-    const [models, listings] = await Promise.all([
-      this.models.count({ where: { makeId: id, deletedAt: IsNull() } }),
-      this.listings.count({ where: { makeId: id, deletedAt: IsNull() } }),
-    ]);
-    if (models > 0 || listings > 0) {
-      throw new ConflictException('make is in use by models or listings and cannot be deleted');
-    }
-    return this.softDelete(this.makes, id, 'make', actor);
+    // Catalog model creation takes the same parent lock, so a model cannot
+    // appear between the reference check and the make's soft deletion.
+    await this.makes.manager.transaction(async (manager) => {
+      const makes = manager.getRepository(Make);
+      const make = await makes.findOne({
+        where: { id, deletedAt: IsNull() },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!make) throw new NotFoundException('Марку не знайдено');
+      const [models, listings] = await Promise.all([
+        manager.getRepository(Model).count({ where: { makeId: id, deletedAt: IsNull() } }),
+        manager.getRepository(Listing).count({ where: { makeId: id, deletedAt: IsNull() } }),
+      ]);
+      if (models > 0 || listings > 0)
+        throw new ConflictException(
+          'Марка використовується моделями або оголошеннями. Спочатку приберіть зв’язки',
+        );
+      await makes.softDelete(id);
+    });
+    await this.catalog.invalidate();
+    await this.audit.record({
+      action: 'catalog.make.delete',
+      entityType: 'make',
+      entityId: id,
+      actorId: actor.id,
+      actorRole: actor.role,
+    });
   }
-  createModel(dto: UpsertModelDto, actor: AuthenticatedUser) {
-    return this.create(this.models, dto, 'model', actor);
+  async createModel(dto: UpsertModelDto, actor: AuthenticatedUser) {
+    const saved = await this.makes.manager.transaction(async (manager) => {
+      const make = await manager.getRepository(Make).findOne({
+        where: { id: dto.makeId, deletedAt: IsNull() },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!make) throw new NotFoundException('Марку не знайдено');
+      const models = manager.getRepository(Model);
+      return catchUniqueViolation(
+        () => models.save(models.create(dto)),
+        'Модель із такою назвою вже існує',
+      );
+    });
+    await this.catalog.invalidate();
+    await this.audit.record({
+      action: 'catalog.model.create',
+      entityType: 'model',
+      entityId: saved.id,
+      diff: { ...dto },
+      actorId: actor.id,
+      actorRole: actor.role,
+    });
+    return saved;
   }
-  updateModel(id: string, dto: UpsertModelDto, actor: AuthenticatedUser) {
+  async updateModel(id: string, dto: UpsertModelDto, actor: AuthenticatedUser) {
+    await this.requireMake(dto.makeId);
+    const model = await this.models.findOne({ where: { id, deletedAt: IsNull() } });
+    if (!model) throw new NotFoundException('Модель не знайдено');
+    if (model.makeId !== dto.makeId)
+      throw new BadRequestException('Марку моделі змінити неможливо');
     return this.update(this.models, id, dto, 'model', actor);
   }
   async deleteModel(id: string, actor: AuthenticatedUser) {
     const listings = await this.listings.count({ where: { modelId: id, deletedAt: IsNull() } });
     if (listings > 0) {
-      throw new ConflictException('model is in use by listings and cannot be deleted');
+      throw new ConflictException(
+        'Модель використовується оголошеннями. Спочатку приберіть зв’язки',
+      );
     }
     return this.softDelete(this.models, id, 'model', actor);
   }
@@ -171,7 +257,12 @@ export class CatalogAdminService {
       where: { id } as Parameters<Repository<T & { id: string }>['findOne']>[0]['where'],
     });
     if (!found) throw new NotFoundException(`${type} not found`);
-    const saved = await (repo as Repository<T & { id: string }>).save({ ...found, ...dto });
+    // Narrow updates cannot restore a stale logo while a file is being uploaded.
+    await catchUniqueViolation(
+      () => repo.update(id, dto as Parameters<Repository<T>['update']>[1]),
+      `${type} with this slug already exists`,
+    );
+    const saved = { ...found, ...dto };
     await this.catalog.invalidate();
     await this.audit.record({
       action: `catalog.${type}.update`,

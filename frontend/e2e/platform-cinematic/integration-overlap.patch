@@ -1,0 +1,51 @@
+--- design-frozen/frontend/messages/uk.json
++++ concurrent-current/frontend/messages/uk.json
+@@ -245,7 +245,8 @@
+     "sellerPrivate": "Продавець: {name} · приватна особа",
+     "sellerPrivateFallback": "приватна особа",
+     "sellerDealer": "Продавець: {name} · автосалон",
+-    "viewsCount": "{count, plural, one {# перегляд} few {# перегляди} many {# переглядів} other {# перегляду}}"
++    "viewsCount": "{count, plural, one {# перегляд} few {# перегляди} many {# переглядів} other {# перегляду}}",
++    "sceneAltered": "Сцену змінено ШІ"
+   },
+   "lead": {
+     "title": "Залишити заявку",
+@@ -557,7 +558,8 @@
+       "errType": "{name}: непідтримуваний формат",
+       "errSize": "{name}: файл завеликий (макс. {size} МБ)",
+       "video": "Відео",
+-      "tile": "Файл {index}"
++      "tile": "Файл {index}",
++      "photoAi": "Редагувати з ШІ"
+     },
+     "leads": {
+       "title": "Заявки",
+--- design-frozen/frontend/src/components/listing/gallery.tsx
++++ concurrent-current/frontend/src/components/listing/gallery.tsx
+@@ -146,6 +146,8 @@
+         </div>
+ 
+         {backHref && <BackOverlay href={backHref} label={t('backToCatalog')} />}
++
++        {lightboxMedia?.sceneAltered && <span className="pointer-events-none absolute bottom-14 left-3 bg-black/75 px-3 py-1.5 text-xs text-white">{t('sceneAltered')}</span>}
+ 
+         {/* Counter — top-right overlay */}
+         <div className="pointer-events-none absolute right-3 top-3 rounded-btn bg-black/65 px-2.5 py-1 text-sub font-medium text-white backdrop-blur-sm">
+@@ -261,6 +263,7 @@
+               ✕
+             </button>
+           </div>
++          {lightboxMedia.sceneAltered && <p className="px-4 pb-2 text-sm text-white">{t('sceneAltered')}</p>}
+           <div className="relative flex-1">
+             <Image
+               src={
+--- design-frozen/frontend/src/components/listing/listing-card.tsx
++++ concurrent-current/frontend/src/components/listing/listing-card.tsx
+@@ -48,6 +48,7 @@
+             <MediaPlaceholder ariaLabel={listing.title} className="absolute inset-0" />
+           )}
+         </Link>
++        {cover?.sceneAltered && <span className="pointer-events-none absolute bottom-3 left-3 bg-black/75 px-2 py-1 text-xs text-white">{tl('sceneAltered')}</span>}
+         <div className="home-listing-tools">
+           <FavoriteButton slug={listing.slug} />
+           <CompareButton slug={listing.slug} />

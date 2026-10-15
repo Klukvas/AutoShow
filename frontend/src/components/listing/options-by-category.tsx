@@ -27,7 +27,7 @@ export function OptionsByCategory({
     <div className="space-y-5">
       {groups.map(({ cat, items }) => (
         <div key={cat}>
-          <h3 className="mb-2.5 text-label font-semibold uppercase tracking-label-wide text-ink-3">
+          <h3 className="mb-2.5 text-label font-medium uppercase tracking-label-wide text-ink-3">
             {t(`optionCategories.${cat}`)}
           </h3>
           <ul className="flex flex-wrap gap-2">

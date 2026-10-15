@@ -24,7 +24,7 @@ export function MobileCtaBar({
   if (!phoneHref && !acceptsLeads) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 shadow-cta-sticky md:hidden">
+    <div className="material-bar fixed inset-x-0 bottom-0 z-40 border-t border-line px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 shadow-none md:hidden">
       <div className="flex items-center gap-2.5">
         {phoneHref && (
           <a
@@ -33,7 +33,7 @@ export function MobileCtaBar({
             className={
               acceptsLeads
                 ? 'focus-ring flex h-[52px] w-[52px] shrink-0 items-center justify-center rounded-input border-[1.5px] border-ink bg-surface text-xl'
-                : 'focus-ring flex h-[52px] flex-1 items-center justify-center gap-2 rounded-input border-[1.5px] border-ink bg-surface text-[15px] font-semibold'
+                : 'focus-ring flex h-[52px] flex-1 items-center justify-center gap-2 rounded-input border-[1.5px] border-ink bg-surface text-[0.9375rem] font-medium'
             }
           >
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className="h-5 w-5">

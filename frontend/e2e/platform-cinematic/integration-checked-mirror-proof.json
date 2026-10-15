@@ -1,0 +1,13 @@
+{
+  "filesCompared": 169,
+  "mirrorMismatches": [],
+  "concurrentDriftSinceInitialIntegrationSnapshot": [
+    "frontend/src/components/listing/listing-card.tsx",
+    "frontend/src/components/admin/media/media-manager.tsx",
+    "frontend/messages/uk.json",
+    "frontend/src/components/listing/gallery.tsx",
+    "frontend/src/lib/api/types.ts",
+    "frontend/src/components/admin/media/media-tile.tsx"
+  ],
+  "initialDesignAttributionManifestPreserved": true
+}

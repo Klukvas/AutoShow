@@ -1,0 +1,12 @@
+{
+  "integrationFilesCompared": 169,
+  "mismatchesAgainstIntegrationSnapshot": [
+    "frontend/src/lib/api/types.ts",
+    "frontend/src/components/listing/gallery.tsx",
+    "frontend/src/components/listing/listing-card.tsx",
+    "frontend/src/components/admin/media/media-manager.tsx",
+    "frontend/src/components/admin/media/media-tile.tsx",
+    "frontend/messages/uk.json"
+  ],
+  "designFrozenManifestPreserved": true
+}

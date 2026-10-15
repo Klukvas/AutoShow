@@ -27,7 +27,7 @@ export async function PublicFooter({ branding }: PublicFooterProps) {
       <div className="mx-auto grid grid-cols-1 gap-12 px-5 py-14 md:grid-cols-12 md:px-8">
         <div className="md:col-span-6">
           <Eyebrow as="div">{t('contactTitle')}</Eyebrow>
-          <div className="mt-4 space-y-1 font-heading text-title-sm font-bold tracking-tight">
+          <div className="mt-4 space-y-1 font-heading text-title-sm font-medium tracking-tight">
             {branding?.contactPhone && (
               <div>
                 <a

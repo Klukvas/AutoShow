@@ -1,0 +1,79 @@
+{
+  "status": "preview-awaiting-track-approval",
+  "music_title": "Funkorama",
+  "artist": "Kevin MacLeod",
+  "bpm": 101,
+  "source_offset_seconds": 9.50495,
+  "duration_seconds": 30,
+  "gain": 0.68,
+  "fade_in_seconds": 0.5,
+  "fade_out_start": 28.4,
+  "fade_out_seconds": 1.6,
+  "source_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funkorama.mp3",
+  "track_page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100474",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "Funkorama — Kevin MacLeod (incompetech.com). Licensed under CC BY 4.0: https://creativecommons.org/licenses/by/4.0/ . Excerpt, trim, gain and fades applied.",
+  "live_music_path": "assets/audio/funk/funkorama-30s.wav",
+  "live_envelope": "existing data-automation owns fade/gain; raw WAV has no fades/gain",
+  "narration": false,
+  "video": "copied compressed stream from preserved original final",
+  "sfx_tracks": [
+    {
+      "id": "sfx-photo",
+      "src": "assets/audio/whoosh.m4a",
+      "data-start": "3.6",
+      "data-duration": "0.7",
+      "data-track-index": "3",
+      "data-volume": "0.2"
+    },
+    {
+      "id": "sfx-publish",
+      "src": "assets/audio/tap.m4a",
+      "data-start": "7.4",
+      "data-duration": "0.24",
+      "data-track-index": "3",
+      "data-volume": "0.6"
+    },
+    {
+      "id": "sfx-site",
+      "src": "assets/audio/whoosh.m4a",
+      "data-start": "10.3",
+      "data-duration": "0.7",
+      "data-track-index": "3",
+      "data-volume": "0.22"
+    },
+    {
+      "id": "sfx-open",
+      "src": "assets/audio/tap.m4a",
+      "data-start": "9.8",
+      "data-duration": "0.24",
+      "data-track-index": "3",
+      "data-volume": "0.4"
+    },
+    {
+      "id": "sfx-post",
+      "src": "assets/audio/notification.m4a",
+      "data-start": "15.25",
+      "data-duration": "0.72",
+      "data-track-index": "3",
+      "data-volume": "0.65"
+    },
+    {
+      "id": "sfx-lead",
+      "src": "assets/audio/notification.m4a",
+      "data-start": "21.7",
+      "data-duration": "0.72",
+      "data-track-index": "3",
+      "data-volume": "0.65"
+    },
+    {
+      "id": "sfx-close",
+      "src": "assets/audio/chime.m4a",
+      "data-start": "27.1",
+      "data-duration": "2.5",
+      "data-track-index": "3",
+      "data-volume": "0.17"
+    }
+  ]
+}

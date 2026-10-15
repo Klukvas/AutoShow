@@ -68,20 +68,25 @@ export class AuthService implements OnModuleInit {
     }
 
     if (!ok) {
-      await this.registerFailedAttempt(user.id);
+      await this.registerFailedAttempt(user.id, user.authVersion);
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    await this.users.update(
-      { id: user.id },
-      { failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() },
-    );
-
-    const pair = await this.tokens.issuePair({
-      id: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    const updated = await this.users
+      .createQueryBuilder()
+      .update(AdminUser)
+      .set({ failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() })
+      .where(
+        'id = :id AND auth_version = :authVersion AND password_hash = :passwordHash AND is_active = true AND deleted_at IS NULL',
+        {
+          id: user.id,
+          authVersion: user.authVersion,
+          passwordHash: user.passwordHash,
+        },
+      )
+      .execute();
+    if (updated.affected !== 1) throw new UnauthorizedException('Invalid credentials');
+    const pair = await this.tokens.issuePair(user);
     return { ...pair, user };
   }
 
@@ -90,12 +95,15 @@ export class AuthService implements OnModuleInit {
    * so concurrent attempts can't lose increments, then apply the lock exactly
    * when the threshold is crossed.
    */
-  private async registerFailedAttempt(userId: string): Promise<void> {
+  private async registerFailedAttempt(userId: string, authVersion: number): Promise<void> {
     const res = await this.users
       .createQueryBuilder()
       .update(AdminUser)
       .set({ failedLoginAttempts: () => 'failed_login_attempts + 1' })
-      .where('id = :id', { id: userId })
+      .where('id = :id AND auth_version = :authVersion AND deleted_at IS NULL', {
+        id: userId,
+        authVersion,
+      })
       .returning(['failedLoginAttempts'])
       .execute();
     const attempts = Number(
@@ -103,7 +111,7 @@ export class AuthService implements OnModuleInit {
     );
     if (attempts >= this.config.AUTH_MAX_FAILED_ATTEMPTS) {
       await this.users.update(
-        { id: userId },
+        { id: userId, authVersion },
         {
           lockedUntil: new Date(Date.now() + this.config.AUTH_LOCKOUT_SECONDS * 1000),
           failedLoginAttempts: 0,
@@ -112,21 +120,30 @@ export class AuthService implements OnModuleInit {
     }
   }
 
-  async refresh(token: string): Promise<TokenPair> {
-    const result = await this.tokens.rotate(token, async (record) => {
-      const user = await this.users.findOne({
-        where: { id: record.userId, deletedAt: IsNull() },
-      });
-      if (!user || !user.isActive) {
-        await this.tokens.revokeAllForUser(record.userId);
-        throw new UnauthorizedException('Refresh token user is no longer active');
-      }
-      return {
-        id: user.id,
-        email: user.email,
-        role: user.role,
-      };
-    });
+  async refresh(token: string, retryProof?: string): Promise<TokenPair> {
+    const result = await this.tokens.rotate(
+      token,
+      async (record) => {
+        const user = await this.users.findOne({
+          where: { id: record.userId, deletedAt: IsNull() },
+        });
+        if (
+          !user ||
+          !user.isActive ||
+          !Number.isInteger(record.authVersion) ||
+          record.authVersion !== user.authVersion
+        ) {
+          throw new UnauthorizedException('Refresh token user is no longer active');
+        }
+        return {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          authVersion: user.authVersion,
+        };
+      },
+      retryProof,
+    );
     return {
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,

@@ -95,13 +95,13 @@ export function ReviewsManager({ initial }: ReviewsManagerProps) {
     <div className="flex flex-col gap-4">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="font-heading text-[22px] font-extrabold text-ink">{t('title')}</h1>
-          <p className="mt-0.5 text-[13px] font-medium text-ink-3">{t('subtitle')}</p>
+          <h1 className="font-heading text-[1.375rem] font-medium text-ink">{t('title')}</h1>
+          <p className="mt-0.5 text-[0.8125rem] font-medium text-ink-3">{t('subtitle')}</p>
         </div>
         <button
           type="button"
           onClick={() => setDraft({ ...EMPTY_DRAFT })}
-          className="focus-ring h-10 rounded-[9px] bg-accent px-4 text-[13px] font-bold text-on-accent transition-colors hover:bg-accent-hover"
+          className="focus-ring h-10 rounded-none bg-accent px-4 text-[0.8125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover"
         >
           + {t('add')}
         </button>
@@ -118,26 +118,31 @@ export function ReviewsManager({ initial }: ReviewsManagerProps) {
           {initial.map((review) => (
             <li
               key={review.id}
-              className="flex items-start gap-4 rounded-[12px] border border-line bg-surface p-4"
+              className="flex items-start gap-4 rounded-none border border-line bg-surface p-4"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-[14px] font-bold text-ink">{review.authorName}</span>
-                  {review.city && <span className="text-[12.5px] text-ink-3">{review.city}</span>}
-                  <span aria-label={`${review.rating}/5`} className="text-[12px] text-warn-strong">
+                  <span className="text-[0.875rem] font-medium text-ink">{review.authorName}</span>
+                  {review.city && (
+                    <span className="text-[0.78125rem] text-ink-3">{review.city}</span>
+                  )}
+                  <span
+                    aria-label={`${review.rating}/5`}
+                    className="text-[0.75rem] text-warn-strong"
+                  >
                     {'★'.repeat(review.rating)}
                   </span>
                   <span
                     className={
                       review.isPublished
-                        ? 'rounded-[5px] bg-st-published-bg px-2 py-[3px] text-[10.5px] font-bold text-st-published-fg'
-                        : 'rounded-[5px] bg-st-draft-bg px-2 py-[3px] text-[10.5px] font-bold text-st-draft-fg'
+                        ? 'rounded-none bg-st-published-bg px-2 py-[3px] text-[0.65625rem] font-medium text-st-published-fg'
+                        : 'rounded-none bg-st-draft-bg px-2 py-[3px] text-[0.65625rem] font-medium text-st-draft-fg'
                     }
                   >
                     {review.isPublished ? t('published') : t('hidden')}
                   </span>
                 </div>
-                <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-ink-2">
+                <p className="mt-1.5 line-clamp-2 text-[0.8125rem] leading-relaxed text-ink-2">
                   {review.text}
                 </p>
               </div>
@@ -178,7 +183,7 @@ export function ReviewsManager({ initial }: ReviewsManagerProps) {
               type="button"
               onClick={() => setDraft(null)}
               disabled={busy}
-              className="focus-ring h-10 rounded-[9px] border border-line-input bg-surface px-4 text-[13px] font-semibold text-ink"
+              className="focus-ring h-10 rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink"
             >
               {tc('cancel')}
             </button>
@@ -186,7 +191,7 @@ export function ReviewsManager({ initial }: ReviewsManagerProps) {
               type="button"
               onClick={() => void save()}
               disabled={busy || !draftValid}
-              className="focus-ring h-10 rounded-[9px] bg-accent px-4 text-[13px] font-bold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60"
+              className="focus-ring h-10 rounded-none bg-accent px-4 text-[0.8125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60"
             >
               {busy ? tc('saving') : t('save')}
             </button>
@@ -255,7 +260,7 @@ export function ReviewsManager({ initial }: ReviewsManagerProps) {
               type="button"
               onClick={() => setToDelete(null)}
               disabled={busy}
-              className="focus-ring h-10 rounded-[9px] border border-line-input bg-surface px-4 text-[13px] font-semibold text-ink"
+              className="focus-ring h-10 rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink"
             >
               {tc('cancel')}
             </button>
@@ -263,14 +268,14 @@ export function ReviewsManager({ initial }: ReviewsManagerProps) {
               type="button"
               onClick={() => void remove()}
               disabled={busy}
-              className="focus-ring h-10 rounded-[9px] bg-danger px-4 text-[13px] font-bold text-white transition-colors disabled:opacity-60"
+              className="focus-ring h-10 rounded-none platform-destructive px-4 text-[0.8125rem] font-medium transition-colors disabled:opacity-60"
             >
               {busy ? tc('saving') : t('delete')}
             </button>
           </>
         }
       >
-        <p className="text-[13.5px] font-medium leading-relaxed text-ink-2">
+        <p className="text-[0.84375rem] font-medium leading-relaxed text-ink-2">
           {toDelete && t('deleteConfirmBody', { author: toDelete.authorName })}
         </p>
       </Dialog>

@@ -18,9 +18,9 @@ export default function AdminError({ error, reset }: { error: Error; reset: () =
   }, [error]);
   return (
     <div className="mx-auto max-w-[560px] py-16">
-      <div className="rounded-[14px] border border-line bg-surface shadow-panel">
+      <div className="rounded-none border border-line bg-surface shadow-none">
         <EmptyState
-          icon={<span className="text-[20px]">⚠</span>}
+          icon={<span className="text-[1.25rem]">⚠</span>}
           title={t('errorTitle')}
           body={t('errorBody')}
           action={
@@ -28,13 +28,13 @@ export default function AdminError({ error, reset }: { error: Error; reset: () =
               <button
                 type="button"
                 onClick={reset}
-                className="focus-ring inline-flex h-10 items-center rounded-[9px] bg-accent px-4 text-[13px] font-bold text-on-accent transition-colors hover:bg-accent-hover"
+                className="focus-ring inline-flex h-10 items-center rounded-none bg-accent px-4 text-[0.8125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover"
               >
                 {t('retry')}
               </button>
               <Link
                 href="/admin/listings"
-                className="focus-ring inline-flex h-10 items-center rounded-[9px] border border-line-input bg-surface px-4 text-[13px] font-semibold text-ink"
+                className="focus-ring inline-flex h-10 items-center rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink"
               >
                 {t('toListings')}
               </Link>

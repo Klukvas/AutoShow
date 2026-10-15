@@ -1,3 +1,4 @@
+import { PhotoAiModule } from '../photo-ai/photo-ai.module';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,6 +13,7 @@ import { MediaService } from './media.service';
 
 @Module({
   imports: [
+    PhotoAiModule,
     TypeOrmModule.forFeature([ListingMedia, MediaRendition, Listing]),
     BullModule.registerQueue({ name: MEDIA_QUEUE }),
     AuditModule,

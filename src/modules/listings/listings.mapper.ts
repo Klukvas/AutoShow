@@ -1,3 +1,4 @@
+import { activeMedia, type PhotoAiRendition } from '../photo-ai/photo-ai.types';
 import { Inject, Injectable } from '@nestjs/common';
 import type { AppConfig } from '../../config/config.module';
 import { StorageService } from '../storage/storage.service';
@@ -21,6 +22,8 @@ export interface PublicListingMedia {
   isCover: boolean;
   alt: string | null;
   originalUrl: string;
+  sceneAltered: boolean;
+  aiEdited: boolean;
   renditions: SrcsetEntry[];
 }
 
@@ -39,6 +42,10 @@ export interface AdminMediaView {
   failureReason: string | null;
   thumbUrl: string | null;
   originalUrl: string;
+  aiRevision: number;
+  activeGenerationId: string | null;
+  sceneAltered: boolean;
+  aiEdited: boolean;
 }
 
 export type AdminListingView = Omit<Listing, 'media'> & { media: AdminMediaView[] };
@@ -140,7 +147,7 @@ export class ListingsMapper {
     // JSON-LD url and sitemap in sync with that route (they used to 404).
     const canonical = `${siteUrl}/cars/${listing.slug}`;
     const coverUrl = mediaSorted[0]
-      ? this.storage.publicUrlFor(mediaSorted[0].originalS3Key)
+      ? this.storage.publicUrlFor(activeMedia(mediaSorted[0]).s3Key)
       : null;
 
     return {
@@ -218,13 +225,13 @@ export class ListingsMapper {
   }
 
   private adminMedia(media: ListingMedia): AdminMediaView {
-    const renditions = media.renditions ?? [];
+    const active = activeMedia(media);
+    const renditions = active.renditions;
     const thumb =
       renditions.find((r) => r.variant === 'thumb' && r.format === 'webp') ??
       renditions.find((r) => r.variant === 'thumb');
     // Ready media without renditions (e.g. videos) falls back to the original.
-    const readyFallback =
-      media.status === 'ready' ? this.storage.publicUrlFor(media.originalS3Key) : null;
+    const readyFallback = media.status === 'ready' ? this.storage.publicUrlFor(active.s3Key) : null;
     return {
       id: media.id,
       type: media.type,
@@ -235,6 +242,10 @@ export class ListingsMapper {
       failureReason: media.failureReason,
       thumbUrl: thumb ? this.storage.publicUrlFor(thumb.s3Key) : readyFallback,
       originalUrl: this.storage.publicUrlFor(media.originalS3Key),
+      aiRevision: media.aiRevision ?? 0,
+      activeGenerationId: media.activeAiVariant?.generationId ?? null,
+      sceneAltered: active.sceneAltered,
+      aiEdited: Boolean(media.activeAiVariant),
     };
   }
 
@@ -245,12 +256,14 @@ export class ListingsMapper {
       position: media.position,
       isCover: media.isCover,
       alt: media.alt,
-      originalUrl: this.storage.publicUrlFor(media.originalS3Key),
-      renditions: (media.renditions ?? []).map((r) => this.mapRendition(r)),
+      originalUrl: this.storage.publicUrlFor(activeMedia(media).s3Key),
+      sceneAltered: activeMedia(media).sceneAltered,
+      aiEdited: Boolean(media.activeAiVariant),
+      renditions: activeMedia(media).renditions.map((r) => this.mapRendition(r)),
     };
   }
 
-  private mapRendition(rendition: MediaRendition): SrcsetEntry {
+  private mapRendition(rendition: MediaRendition | PhotoAiRendition): SrcsetEntry {
     return {
       url: this.storage.publicUrlFor(rendition.s3Key),
       width: rendition.width,

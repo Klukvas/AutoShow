@@ -21,10 +21,10 @@ export async function StatsBand() {
 
   return (
     <section className="border-t border-line bg-surface">
-      <div className="mx-auto grid max-w-[1200px] grid-cols-3 gap-4 px-5 py-9 md:px-8">
+      <div className="home-stats-inner mx-auto grid max-w-[1200px] grid-cols-3 gap-4 px-5 py-9 md:px-8">
         {items.map((item) => (
           <div key={item.label} className="text-center">
-            <div className="tabular font-heading text-[30px] font-extrabold text-ink md:text-[38px]">
+            <div className="home-stats-value tabular font-heading text-[1.875rem] font-extrabold text-ink md:text-[2.375rem]">
               {item.value.toLocaleString('uk-UA')}
             </div>
             <div className="mt-1 text-sub font-medium text-ink-3">{item.label}</div>

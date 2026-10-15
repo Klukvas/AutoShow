@@ -37,7 +37,7 @@ function MediaCount({ listing }: { listing: AdminListing }) {
   const failed = media.filter((m) => m.status === 'failed').length;
   return (
     <span
-      className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-2"
+      className="inline-flex items-center gap-1.5 text-[0.8125rem] font-medium text-ink-2"
       aria-label={t('mediaCount', { count: media.length })}
     >
       <svg
@@ -170,15 +170,15 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
 
       {/* Bulk toolbar (desktop selection) */}
       {selected.size > 0 && (
-        <div className="mb-3 hidden flex-wrap items-center gap-3 rounded-[11px] border border-line bg-surface px-4 py-2.5 md:flex">
-          <span className="text-[13px] font-semibold text-ink">
+        <div className="mb-3 hidden flex-wrap items-center gap-3 rounded-none border border-line bg-surface px-4 py-2.5 md:flex">
+          <span className="text-[0.8125rem] font-medium text-ink">
             {t('listings.bulkSelected', { count: selected.size })}
           </span>
           <button
             type="button"
             onClick={() => void runBulk('publish')}
             disabled={bulkRunning}
-            className="focus-ring h-9 rounded-[9px] bg-accent px-3.5 text-[12.5px] font-bold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="focus-ring h-9 rounded-none bg-accent px-3.5 text-[0.78125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             {bulkRunning ? t('common.saving') : t('listings.bulkPublish')}
           </button>
@@ -186,7 +186,7 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
             type="button"
             onClick={() => void runBulk('archive')}
             disabled={bulkRunning}
-            className="focus-ring h-9 rounded-[9px] bg-ink px-3.5 text-[12.5px] font-bold text-bg disabled:opacity-50"
+            className="focus-ring h-9 rounded-none bg-ink px-3.5 text-[0.78125rem] font-medium text-bg disabled:opacity-50"
           >
             {bulkRunning ? t('common.saving') : t('listings.bulkArchive')}
           </button>
@@ -195,7 +195,7 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
               type="button"
               onClick={() => setBulkDeleteOpen(true)}
               disabled={bulkRunning}
-              className="focus-ring h-9 rounded-[9px] border border-danger-line px-3.5 text-[12.5px] font-bold text-danger disabled:opacity-50"
+              className="focus-ring h-9 rounded-none border border-danger-line px-3.5 text-[0.78125rem] font-medium text-danger disabled:opacity-50"
             >
               {t('listings.bulkDelete')}
             </button>
@@ -204,7 +204,7 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
             type="button"
             onClick={() => setSelected(new Set())}
             disabled={bulkRunning}
-            className="focus-ring h-9 rounded-[9px] border border-line-input bg-surface px-3.5 text-[12.5px] font-semibold text-ink"
+            className="focus-ring h-9 rounded-none border border-line-input bg-surface px-3.5 text-[0.78125rem] font-medium text-ink"
           >
             {t('common.cancel')}
           </button>
@@ -214,7 +214,7 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
       {/* Desktop table */}
       <table className="hidden w-full border-collapse md:table">
         <thead>
-          <tr className="bg-thead text-left text-[11px] font-bold uppercase tracking-[0.05em] text-ink-3">
+          <tr className="bg-thead text-left text-[0.6875rem] font-medium uppercase tracking-[0.05em] text-ink-3">
             <th className="w-[44px] rounded-tl-[11px] py-3 pl-[18px]">
               <input
                 type="checkbox"
@@ -225,12 +225,12 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
                 className="h-4 w-4 accent-[rgb(var(--accent))]"
               />
             </th>
-            <th className="px-[18px] py-3 font-bold">{t('listings.colListing')}</th>
-            <th className="w-[140px] px-2 py-3 font-bold">{t('listings.colStatus')}</th>
-            <th className="w-[110px] px-2 py-3 font-bold">{t('listings.colPrice')}</th>
-            <th className="w-[80px] px-2 py-3 font-bold">{t('listings.colYear')}</th>
-            <th className="w-[100px] px-2 py-3 font-bold">{t('listings.colViews')}</th>
-            <th className="w-[90px] px-2 py-3 font-bold">{t('listings.colMedia')}</th>
+            <th className="px-[18px] py-3 font-medium">{t('listings.colListing')}</th>
+            <th className="w-[140px] px-2 py-3 font-medium">{t('listings.colStatus')}</th>
+            <th className="w-[110px] px-2 py-3 font-medium">{t('listings.colPrice')}</th>
+            <th className="w-[80px] px-2 py-3 font-medium">{t('listings.colYear')}</th>
+            <th className="w-[100px] px-2 py-3 font-medium">{t('listings.colViews')}</th>
+            <th className="w-[90px] px-2 py-3 font-medium">{t('listings.colMedia')}</th>
             <th className="w-[56px] rounded-tr-[11px] px-2 py-3" />
           </tr>
         </thead>
@@ -251,10 +251,10 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
               </td>
               <td className="px-[18px] py-[11px]">
                 <div className="flex min-w-0 items-center gap-[11px]">
-                  <CarThumb src={coverThumbUrl(l)} className="h-[38px] w-[50px] rounded-[7px]" />
+                  <CarThumb src={coverThumbUrl(l)} className="h-[38px] w-[50px] rounded-none" />
                   <Link
                     href={`/admin/listings/${l.id}/edit`}
-                    className="focus-ring truncate rounded-[4px] text-[13.5px] font-semibold text-ink hover:text-accent"
+                    className="focus-ring truncate rounded-none text-[0.84375rem] font-medium text-ink hover:text-accent"
                   >
                     {l.title}
                   </Link>
@@ -263,13 +263,13 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
               <td className="px-2 py-[11px]">
                 <ListingStatusBadge status={l.status} />
               </td>
-              <td className="px-2 py-[11px] text-[13px] font-semibold tabular">
+              <td className="px-2 py-[11px] text-[0.8125rem] font-medium tabular">
                 {formatMoney(l.priceAmount, l.priceCurrency)}
               </td>
-              <td className="px-2 py-[11px] text-[13px] font-medium text-ink-2 tabular">
+              <td className="px-2 py-[11px] text-[0.8125rem] font-medium text-ink-2 tabular">
                 {l.year}
               </td>
-              <td className="px-2 py-[11px] text-[13px] font-medium text-ink-2 tabular">
+              <td className="px-2 py-[11px] text-[0.8125rem] font-medium text-ink-2 tabular">
                 {l.viewsCount ?? 0}
               </td>
               <td className="px-2 py-[11px]">
@@ -288,23 +288,23 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
         {items.map((l) => (
           <li
             key={l.id}
-            className="relative flex items-center gap-3 rounded-[12px] border border-line bg-surface p-[11px]"
+            className="relative flex items-center gap-3 rounded-none border border-line bg-surface p-[11px]"
           >
-            <CarThumb src={coverThumbUrl(l)} className="h-14 w-[74px] rounded-[8px]" />
+            <CarThumb src={coverThumbUrl(l)} className="h-14 w-[74px] rounded-none" />
             <div className="min-w-0 flex-1">
               <Link
                 href={`/admin/listings/${l.id}/edit`}
-                className="focus-ring block truncate rounded-[4px] text-[14px] font-semibold text-ink after:absolute after:inset-0 after:content-['']"
+                className="focus-ring block truncate rounded-none text-[0.875rem] font-medium text-ink after:absolute after:inset-0 after:content-['']"
               >
                 {l.title}
               </Link>
               <div className="mt-[5px] flex items-center gap-2">
-                <ListingStatusBadge status={l.status} className="px-2 py-[3px] text-[10.5px]" />
+                <ListingStatusBadge status={l.status} className="px-2 py-[3px] text-[0.65625rem]" />
                 <MediaCount listing={l} />
               </div>
-              <div className="mt-1.5 font-heading text-[14px] font-bold tabular">
+              <div className="mt-1.5 font-heading text-[0.875rem] font-medium tabular">
                 {formatMoney(l.priceAmount, l.priceCurrency)}{' '}
-                <span className="font-sans text-[12px] font-medium text-ink-3">· {l.year}</span>
+                <span className="font-sans text-[0.75rem] font-medium text-ink-3">· {l.year}</span>
               </div>
             </div>
             {/* Menu sits above the stretched row link. */}
@@ -325,7 +325,7 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
               type="button"
               onClick={() => setToDelete(null)}
               disabled={deleting}
-              className="focus-ring h-10 rounded-[9px] border border-line-input bg-surface px-4 text-[13px] font-semibold text-ink"
+              className="focus-ring h-10 rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink"
             >
               {t('common.cancel')}
             </button>
@@ -333,14 +333,14 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
               type="button"
               onClick={confirmDelete}
               disabled={deleting}
-              className="focus-ring h-10 rounded-[9px] bg-danger px-4 text-[13px] font-bold text-white disabled:opacity-60"
+              className="focus-ring h-10 rounded-none platform-destructive px-4 text-[0.8125rem] font-medium disabled:opacity-60"
             >
               {deleting ? t('common.saving') : t('common.delete')}
             </button>
           </>
         }
       >
-        <p className="text-[13.5px] font-medium leading-relaxed text-ink-2">
+        <p className="text-[0.84375rem] font-medium leading-relaxed text-ink-2">
           {toDelete && t('listings.deleteBody', { title: toDelete.title })}
         </p>
       </Dialog>
@@ -355,7 +355,7 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
               type="button"
               onClick={() => setBulkDeleteOpen(false)}
               disabled={bulkRunning}
-              className="focus-ring h-10 rounded-[9px] border border-line-input bg-surface px-4 text-[13px] font-semibold text-ink"
+              className="focus-ring h-10 rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink"
             >
               {t('common.cancel')}
             </button>
@@ -363,14 +363,14 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
               type="button"
               onClick={() => void runBulk('delete')}
               disabled={bulkRunning}
-              className="focus-ring h-10 rounded-[9px] bg-danger px-4 text-[13px] font-bold text-white disabled:opacity-60"
+              className="focus-ring h-10 rounded-none platform-destructive px-4 text-[0.8125rem] font-medium disabled:opacity-60"
             >
               {bulkRunning ? t('common.saving') : t('common.delete')}
             </button>
           </>
         }
       >
-        <p className="text-[13.5px] font-medium leading-relaxed text-ink-2">
+        <p className="text-[0.84375rem] font-medium leading-relaxed text-ink-2">
           {t('listings.bulkDeleteBody', { count: selected.size })}
         </p>
       </Dialog>

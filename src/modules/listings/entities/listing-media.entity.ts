@@ -2,6 +2,7 @@ import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany } from 'typeorm
 import { BaseEntity } from '../../../database/base/base.entity';
 import { Listing } from './listing.entity';
 import { MediaRendition } from './media-rendition.entity';
+import type { PhotoAiManifest } from '../../photo-ai/photo-ai.types';
 
 export type MediaType = 'image' | 'video';
 export type MediaStatus = 'pending' | 'processing' | 'ready' | 'failed';
@@ -58,6 +59,12 @@ export class ListingMedia extends BaseEntity {
 
   @Column({ name: 'failure_reason', type: 'varchar', length: 512, nullable: true })
   failureReason!: string | null;
+
+  @Column({ name: 'active_ai_variant', type: 'jsonb', nullable: true })
+  activeAiVariant!: PhotoAiManifest | null;
+
+  @Column({ name: 'ai_revision', type: 'int', default: 0 })
+  aiRevision!: number;
 
   @OneToMany(() => MediaRendition, (r) => r.media, { cascade: true })
   renditions?: MediaRendition[];

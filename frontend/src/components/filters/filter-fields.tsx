@@ -130,13 +130,14 @@ export function SelectField({
   return (
     <label className="block">
       <Eyebrow className="mb-1.5 block">{label}</Eyebrow>
+      <span className="relative block">
       <select
         value={value ?? ''}
         disabled={disabled}
         onChange={(e) => onChange(e.target.value || undefined)}
         className={cn(
-          'focus-ring h-10 w-full appearance-none rounded-btn border border-line-input bg-surface px-3 pr-8 text-sub transition-colors',
-          'bg-[url("data:image/svg+xml;charset=utf-8,%3Csvg width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%23948C79%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E")] bg-[position:right_12px_center] bg-no-repeat',
+          'platform-select focus-ring h-10 w-full appearance-none rounded-btn border border-line-input bg-surface px-3 pr-8 text-sub transition-colors',
+
           value ? 'text-ink' : 'text-ink-3',
           disabled && 'cursor-not-allowed opacity-50',
         )}
@@ -148,6 +149,10 @@ export function SelectField({
           </option>
         ))}
       </select>
+        <svg aria-hidden viewBox="0 0 12 8" className="pointer-events-none absolute right-3 top-1/2 h-2 w-3 -translate-y-1/2 text-ink-3" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <path d="m1 1 5 5 5-5" />
+        </svg>
+      </span>
     </label>
   );
 }

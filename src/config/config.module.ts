@@ -21,6 +21,7 @@ export type AppConfig = EnvSchema;
         return Object.fromEntries(
           Object.keys(new EnvSchema())
             .concat([
+              'PHOTO_AI_ENCRYPTION_KEY',
               'DB_HOST',
               'DB_NAME',
               'DB_ADMIN_USER',
@@ -39,7 +40,6 @@ export type AppConfig = EnvSchema;
               'FX_STATIC_USD_UAH',
               'FX_STATIC_USD_EUR',
               'FX_STATIC_EUR_UAH',
-              'EMAIL_FROM',
             ])
             .map((k) => [k, config.get(k as keyof EnvSchema, { infer: true })]),
         ) as AppConfig;

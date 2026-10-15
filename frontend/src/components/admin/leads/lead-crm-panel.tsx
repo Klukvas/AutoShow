@@ -100,7 +100,7 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
         <div>
           <label
             htmlFor={`assignee-${lead.id}`}
-            className="mb-1.5 block text-[11.5px] font-medium text-ink-3"
+            className="mb-1.5 block text-[0.71875rem] font-medium text-ink-3"
           >
             {t('leads.assignLabel')}
           </label>
@@ -109,7 +109,7 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
             value={assigneeId ?? ''}
             disabled={busy}
             onChange={(e) => changeAssignee(e.target.value)}
-            className="focus-ring h-10 w-full rounded-[9px] border border-line-input bg-surface px-3 text-[13px] font-semibold text-ink disabled:opacity-60"
+            className="focus-ring h-10 w-full rounded-none border border-line-input bg-surface px-3 text-[0.8125rem] font-medium text-ink disabled:opacity-60"
           >
             <option value="">{t('leads.unassigned')}</option>
             {assignees.map((a) => (
@@ -124,7 +124,7 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
         <div>
           <label
             htmlFor={`followup-${lead.id}`}
-            className="mb-1.5 block text-[11.5px] font-medium text-ink-3"
+            className="mb-1.5 block text-[0.71875rem] font-medium text-ink-3"
           >
             {t('leads.followUpLabel')}
           </label>
@@ -135,13 +135,13 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
               value={followUp}
               disabled={busy}
               onChange={(e) => setFollowUp(e.target.value)}
-              className="focus-ring h-10 min-w-0 flex-1 rounded-[9px] border border-line-input bg-surface px-3 text-[13px] font-semibold text-ink disabled:opacity-60"
+              className="focus-ring h-10 min-w-0 flex-1 rounded-none border border-line-input bg-surface px-3 text-[0.8125rem] font-medium text-ink disabled:opacity-60"
             />
             <button
               type="button"
               onClick={saveFollowUp}
               disabled={busy}
-              className="focus-ring h-10 flex-none rounded-[9px] bg-ink px-3 text-[12.5px] font-bold text-bg disabled:opacity-60"
+              className="focus-ring h-10 flex-none rounded-none bg-ink px-3 text-[0.78125rem] font-medium text-bg disabled:opacity-60"
             >
               {t('common.save')}
             </button>
@@ -151,7 +151,7 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
                 onClick={clearFollowUp}
                 disabled={busy}
                 aria-label={t('leads.followUpClear')}
-                className="focus-ring h-10 flex-none rounded-[9px] border border-line-input px-3 text-[12.5px] font-semibold text-ink-2 disabled:opacity-60"
+                className="focus-ring h-10 flex-none rounded-none border border-line-input px-3 text-[0.78125rem] font-medium text-ink-2 disabled:opacity-60"
               >
                 ×
               </button>
@@ -162,7 +162,7 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
 
       {/* Notes thread */}
       <div className="mt-5">
-        <h3 className="mb-2 text-[12.5px] font-bold text-ink">{t('leads.notesTitle')}</h3>
+        <h3 className="mb-2 text-[0.78125rem] font-medium text-ink">{t('leads.notesTitle')}</h3>
         <div className="flex gap-2">
           <textarea
             value={draft}
@@ -170,28 +170,28 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
             onChange={(e) => setDraft(e.target.value)}
             placeholder={t('leads.notePlaceholder')}
             rows={2}
-            className="focus-ring min-h-[44px] flex-1 resize-y rounded-[9px] border border-line-input bg-surface px-3 py-2 text-[13px] text-ink disabled:opacity-60"
+            className="focus-ring min-h-[44px] flex-1 resize-y rounded-none border border-line-input bg-surface px-3 py-2 text-[0.8125rem] text-ink disabled:opacity-60"
           />
           <button
             type="button"
             onClick={addNote}
             disabled={busy || !draft.trim()}
-            className="focus-ring h-10 flex-none self-end rounded-[9px] bg-accent px-3.5 text-[12.5px] font-bold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
+            className="focus-ring h-10 flex-none self-end rounded-none bg-accent px-3.5 text-[0.78125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
           >
             {t('leads.noteAdd')}
           </button>
         </div>
 
         {notes.length === 0 ? (
-          <p className="mt-3 text-[12.5px] font-medium text-ink-3">{t('leads.notesEmpty')}</p>
+          <p className="mt-3 text-[0.78125rem] font-medium text-ink-3">{t('leads.notesEmpty')}</p>
         ) : (
           <ul className="mt-3 flex flex-col gap-2.5">
             {notes.map((note) => (
-              <li key={note.id} className="rounded-[10px] border border-line bg-surface-2 p-3">
-                <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-ink">
+              <li key={note.id} className="rounded-none border border-line bg-surface-2 p-3">
+                <p className="whitespace-pre-wrap text-[0.8125rem] leading-relaxed text-ink">
                   {note.text}
                 </p>
-                <p className="mt-1.5 text-[11px] font-medium text-ink-3">
+                <p className="mt-1.5 text-[0.6875rem] font-medium text-ink-3">
                   {emailOf(note.authorId) ?? note.authorRole ?? '—'} ·{' '}
                   {new Date(note.createdAt).toLocaleString()}
                 </p>
@@ -202,7 +202,7 @@ export function LeadCrmPanel({ lead, assignees, initialNotes }: LeadCrmPanelProp
       </div>
 
       {error && (
-        <p role="alert" className="mt-3 text-[12px] font-medium text-danger">
+        <p role="alert" className="mt-3 text-[0.75rem] font-medium text-danger">
           ⚠ {error}
         </p>
       )}

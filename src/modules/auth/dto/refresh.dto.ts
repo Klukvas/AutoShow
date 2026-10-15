@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, Matches, MaxLength } from 'class-validator';
+import { IsOptional, IsString, Matches, MaxLength } from 'class-validator';
 
 export class RefreshDto {
   @ApiProperty()
@@ -9,4 +9,9 @@ export class RefreshDto {
     message: 'refreshToken has invalid format',
   })
   refreshToken!: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^[a-f0-9]{64}$/)
+  retryProof?: string;
 }

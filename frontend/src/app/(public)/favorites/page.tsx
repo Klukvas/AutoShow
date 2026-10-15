@@ -48,7 +48,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="mx-auto max-w-[1200px] px-5 py-8 md:px-8 md:py-10">
-      <h1 className="font-heading text-title-lg font-extrabold text-ink">{t('title')}</h1>
+      <h1 className="font-heading text-title-lg font-medium text-ink">{t('title')}</h1>
 
       {items === null ? (
         <div className="mt-6 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
@@ -64,7 +64,7 @@ export default function FavoritesPage() {
           <p className="text-body-md text-ink-2">{t('empty')}</p>
           <Link
             href="/cars"
-            className="focus-ring inline-flex h-11 items-center rounded-btn bg-accent px-5 text-sub font-bold text-on-accent transition-colors hover:bg-accent-hover"
+            className="focus-ring inline-flex h-11 items-center rounded-btn bg-accent px-5 text-sub font-medium text-on-accent transition-colors hover:bg-accent-hover"
           >
             {t('goCatalog')}
           </Link>

@@ -18,7 +18,7 @@ export function Eyebrow({ children, tone = 'muted', as: Tag = 'span', className 
   return (
     <Tag
       className={cn(
-        'font-mono text-[0.625rem] font-bold uppercase tracking-[0.18em]',
+        'text-[0.6875rem] font-normal uppercase tracking-[0.18em]',
         tone === 'gold' ? 'text-lot-gold' : 'text-ink-2',
         className,
       )}

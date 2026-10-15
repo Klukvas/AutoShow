@@ -1,0 +1,17 @@
+{
+  "seek_sequence": [
+    4.8,
+    23.2,
+    7,
+    29.4,
+    4.8
+  ],
+  "exact_equal": true,
+  "difference_bbox": null,
+  "max_channel_difference": 0,
+  "mean_channel_difference": [
+    0.0,
+    0.0,
+    0.0
+  ]
+}

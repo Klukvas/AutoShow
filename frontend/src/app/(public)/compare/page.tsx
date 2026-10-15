@@ -84,12 +84,12 @@ export default function ComparePage() {
   if (items !== null && items.length === 0) {
     return (
       <div className="mx-auto max-w-[1200px] px-5 py-10 md:px-8">
-        <h1 className="font-heading text-title-lg font-extrabold text-ink">{t('title')}</h1>
+        <h1 className="font-heading text-title-lg font-medium text-ink">{t('title')}</h1>
         <div className="mt-8 flex flex-col items-start gap-4">
           <p className="text-body-md text-ink-2">{t('empty')}</p>
           <Link
             href="/cars"
-            className="focus-ring inline-flex h-11 items-center rounded-btn bg-accent px-5 text-sub font-bold text-on-accent transition-colors hover:bg-accent-hover"
+            className="focus-ring inline-flex h-11 items-center rounded-btn bg-accent px-5 text-sub font-medium text-on-accent transition-colors hover:bg-accent-hover"
           >
             {t('goCatalog')}
           </Link>
@@ -100,7 +100,7 @@ export default function ComparePage() {
 
   return (
     <div className="mx-auto max-w-[1200px] px-5 py-8 md:px-8 md:py-10">
-      <h1 className="mb-6 font-heading text-title-lg font-extrabold text-ink">{t('title')}</h1>
+      <h1 className="mb-6 font-heading text-title-lg font-medium text-ink">{t('title')}</h1>
 
       {items === null ? (
         <div className="h-[420px] animate-pulse rounded-card border border-line bg-surface" />
@@ -117,7 +117,7 @@ export default function ComparePage() {
                       <div className="flex flex-col gap-2">
                         <Link
                           href={`/cars/${l.slug}`}
-                          className="focus-ring relative block aspect-[4/3] overflow-hidden rounded-[10px] border border-line bg-surface-2"
+                          className="focus-ring relative block aspect-[4/3] overflow-hidden rounded-none border border-line bg-surface-2"
                         >
                           {cover ? (
                             <MediaPicture media={cover} alt={l.title} fill sizes="240px" />
@@ -125,14 +125,14 @@ export default function ComparePage() {
                         </Link>
                         <Link
                           href={`/cars/${l.slug}`}
-                          className="focus-ring text-left text-sub font-bold text-ink hover:text-lot-gold"
+                          className="focus-ring text-left text-sub font-medium text-ink hover:text-lot-gold"
                         >
                           {l.make.nameUk} {l.model.nameUk}
                         </Link>
                         <button
                           type="button"
                           onClick={() => removeColumn(l.slug)}
-                          className="focus-ring self-start text-[12px] font-semibold text-ink-3 hover:text-danger"
+                          className="focus-ring self-start text-[0.75rem] font-medium text-ink-3 hover:text-danger"
                         >
                           {t('remove')}
                         </button>
@@ -148,7 +148,7 @@ export default function ComparePage() {
                 const allSame = values.every((v) => v === values[0]);
                 return (
                   <tr key={row.key} className="border-t border-line/70">
-                    <th className="p-2 text-left text-[12px] font-semibold text-ink-3">
+                    <th className="p-2 text-left text-[0.75rem] font-medium text-ink-3">
                       {t(`rows.${row.key}`)}
                     </th>
                     {values.map((v, i) => (
@@ -156,7 +156,7 @@ export default function ComparePage() {
                         key={items[i].id}
                         className={
                           'p-2 text-sub tabular ' +
-                          (allSame ? 'text-ink-2' : 'font-semibold text-ink')
+                          (allSame ? 'text-ink-2' : 'font-medium text-ink')
                         }
                       >
                         {v}

@@ -59,7 +59,7 @@ export const publicApi = {
   listMakes() {
     return apiFetch<CatalogMake[]>('/catalog/makes', {
       method: 'GET',
-      next: { revalidate: 600, tags: ['catalog:makes'] },
+      cache: 'no-store',
     });
   },
 
@@ -67,7 +67,7 @@ export const publicApi = {
     return apiFetch<CatalogModel[]>('/catalog/models', {
       method: 'GET',
       query: makeSlug ? { make: makeSlug } : undefined,
-      next: { revalidate: 600, tags: ['catalog:models'] },
+      cache: 'no-store',
     });
   },
 

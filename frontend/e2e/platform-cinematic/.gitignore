@@ -1,0 +1,7 @@
+app/.next/
+app/next-env.d.ts
+app/node_modules
+app/src/
+app/messages/
+app/*.tsbuildinfo
+*.log

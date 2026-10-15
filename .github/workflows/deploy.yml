@@ -242,12 +242,6 @@ jobs:
             ensure_env FX_STATIC_USD_EUR 0.92
             ensure_env FX_STATIC_EUR_UAH 45.0
             ensure_env FX_CACHE_TTL 3600
-            ensure_env SMTP_HOST ""
-            ensure_env SMTP_PORT 587
-            ensure_env SMTP_USER ""
-            ensure_env SMTP_PASS ""
-            ensure_env EMAIL_FROM "AutoFlow <no-reply@autoflow.example>"
-            ensure_env LEAD_NOTIFY_TO ""
             ensure_env LEAD_RATE_PER_HOUR 5
             ensure_env PUBLIC_API_RATE_PER_MIN 120
             ensure_env VIEW_DEDUP_TTL_SECONDS 600

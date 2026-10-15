@@ -1,0 +1,194 @@
+◇  onion-skin screenshot saved /Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/.hyperframes/photo-path.png
+   15 elements · open it to verify the motion matches your target, then read the keyframes below.
+
+{
+  "project": "autoflow-flow",
+  "runtime": "all",
+  "compositions": [
+    {
+      "composition": "index.html",
+      "source": "index.html",
+      "tweens": [
+        {
+          "id": "#shared-photo-set-0",
+          "target": "#shared-photo",
+          "method": "set",
+          "start": 0,
+          "duration": 0,
+          "end": 0,
+          "shape": "flat",
+          "keyframes": [
+            {
+              "pct": 0,
+              "time": 0,
+              "properties": {
+                "x": 0,
+                "y": 0,
+                "scale": 1
+              }
+            },
+            {
+              "pct": 100,
+              "time": 0,
+              "properties": {
+                "x": 76,
+                "y": 720,
+                "scale": 0.9555555555555556
+              }
+            }
+          ],
+          "path": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 76,
+              "y": 720
+            }
+          ]
+        },
+        {
+          "id": "#shared-photo-fromTo-100-visual",
+          "target": "#shared-photo",
+          "method": "fromTo",
+          "group": "visual",
+          "start": 0.1,
+          "duration": 0.4,
+          "end": 0.5,
+          "shape": "flat",
+          "keyframes": [
+            {
+              "pct": 0,
+              "time": 0.1,
+              "properties": {
+                "opacity": 0
+              }
+            },
+            {
+              "pct": 100,
+              "time": 0.5,
+              "properties": {
+                "opacity": 1
+              }
+            }
+          ],
+          "path": null
+        },
+        {
+          "id": "#shared-photo-to-2700",
+          "target": "#shared-photo",
+          "method": "to",
+          "start": 2.7,
+          "duration": 0.85,
+          "end": 3.55,
+          "shape": "flat",
+          "keyframes": [
+            {
+              "pct": 0,
+              "time": 2.7,
+              "properties": {
+                "x": 0,
+                "y": 0,
+                "scale": 1
+              }
+            },
+            {
+              "pct": 100,
+              "time": 3.55,
+              "properties": {
+                "x": "__raw:b.x",
+                "y": "__raw:b.y",
+                "scale": "__raw:b.width/ow"
+              }
+            }
+          ],
+          "path": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ]
+        },
+        {
+          "id": "#shared-photo-to-8650",
+          "target": "#shared-photo",
+          "method": "to",
+          "start": 8.65,
+          "duration": 0.75,
+          "end": 9.4,
+          "shape": "flat",
+          "keyframes": [
+            {
+              "pct": 0,
+              "time": 8.65,
+              "properties": {
+                "x": 0,
+                "y": 0,
+                "scale": 1
+              }
+            },
+            {
+              "pct": 100,
+              "time": 9.4,
+              "properties": {
+                "x": 76,
+                "y": 580,
+                "scale": 0.83
+              }
+            }
+          ],
+          "path": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 76,
+              "y": 580
+            }
+          ]
+        },
+        {
+          "id": "#shared-photo-to-9350-visual",
+          "target": "#shared-photo",
+          "method": "to",
+          "group": "visual",
+          "start": 9.35,
+          "duration": 0.25,
+          "end": 9.6,
+          "shape": "flat",
+          "keyframes": [
+            {
+              "pct": 0,
+              "time": 9.35,
+              "properties": {
+                "opacity": 1
+              }
+            },
+            {
+              "pct": 100,
+              "time": 9.6,
+              "properties": {
+                "opacity": 0
+              }
+            }
+          ],
+          "path": null
+        }
+      ],
+      "traces": [],
+      "cssKeyframes": [],
+      "anime": []
+    }
+  ],
+  "_meta": {
+    "version": "0.8.142",
+    "latestVersion": "0.8.157",
+    "updateAvailable": true
+  }
+}

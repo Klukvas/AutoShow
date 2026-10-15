@@ -30,7 +30,11 @@ export function LeadCtaButton({
 }) {
   const activate = () => {
     window.dispatchEvent(new CustomEvent<LeadType>(LEAD_TYPE_EVENT, { detail: type }));
-    document.getElementById(LEAD_FORM_ID)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.getElementById(LEAD_FORM_ID)?.scrollIntoView({
+      behavior: reduce ? 'instant' : 'smooth',
+      block: 'start',
+    });
   };
 
   return (

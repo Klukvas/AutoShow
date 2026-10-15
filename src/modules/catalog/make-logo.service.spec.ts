@@ -4,13 +4,16 @@ import { MakeLogoService } from './make-logo.service';
 function buildService(make: Partial<Make> | null) {
   const makesRepo = {
     findOne: jest.fn(async () => make),
-    update: jest.fn(async () => undefined),
+    update: jest.fn(async () => ({ affected: 1 })),
     createQueryBuilder: jest.fn(),
   };
   const icons = {
     fetchIcon: jest.fn(async () => ({ buffer: Buffer.from('png'), contentType: 'image/png' })),
   };
-  const storage = { putBuffer: jest.fn(async () => undefined) };
+  const storage = {
+    putBuffer: jest.fn(async () => undefined),
+    delete: jest.fn(async () => undefined),
+  };
   const catalog = { invalidate: jest.fn(async () => undefined) };
   const svc = new MakeLogoService(
     makesRepo as never,
@@ -27,6 +30,8 @@ const MAKE: Partial<Make> = {
   nameUk: 'Мерседес-Бенц',
   nameEn: 'Mercedes-Benz',
   logoS3Key: null,
+  logoMode: 'auto',
+  version: 1,
   deletedAt: null,
 };
 
@@ -36,13 +41,13 @@ describe('MakeLogoService.fetchLogo', () => {
     await svc.fetchLogo('make-1');
     expect(icons.fetchIcon).toHaveBeenCalledWith('mercedes-benz', 'Mercedes-Benz');
     expect(storage.putBuffer).toHaveBeenCalledWith(
-      'catalog/makes/mercedes-benz.png',
+      expect.stringMatching(/^catalog\/makes\/make-1\/[a-f0-9-]+\.png$/),
       expect.any(Buffer),
       'image/png',
     );
     expect(makesRepo.update).toHaveBeenCalledWith(
-      { id: 'make-1' },
-      expect.objectContaining({ logoS3Key: 'catalog/makes/mercedes-benz.png' }),
+      expect.objectContaining({ id: 'make-1', version: 1, logoMode: 'auto' }),
+      expect.objectContaining({ logoS3Key: expect.stringMatching(/^catalog\/makes\/make-1\//) }),
     );
     // Cached /catalog/makes must reflect the new icon immediately.
     expect(catalog.invalidate).toHaveBeenCalled();
@@ -54,7 +59,7 @@ describe('MakeLogoService.fetchLogo', () => {
     await svc.fetchLogo('make-1');
     expect(storage.putBuffer).not.toHaveBeenCalled();
     expect(makesRepo.update).toHaveBeenCalledWith(
-      { id: 'make-1' },
+      expect.objectContaining({ id: 'make-1', version: 1, logoMode: 'auto' }),
       expect.objectContaining({ logoS3Key: null, logoCheckedAt: expect.any(Date) }),
     );
     expect(catalog.invalidate).not.toHaveBeenCalled();

@@ -43,11 +43,11 @@ export function Pager({
   const prev = prevPageParams(nav);
 
   const btn =
-    'inline-flex h-[34px] items-center rounded-[8px] border border-line-input bg-surface px-3.5 text-[12.5px] font-semibold focus-ring';
+    'inline-flex h-[34px] items-center rounded-none border border-line-input bg-surface px-3.5 text-[0.78125rem] font-medium focus-ring';
 
   return (
     <div className="flex items-center justify-between px-4 py-3 md:px-[18px]">
-      <span className="text-[12.5px] font-medium text-ink-3">
+      <span className="text-[0.78125rem] font-medium text-ink-3">
         {shownCount === 0
           ? null
           : total !== undefined
@@ -56,13 +56,14 @@ export function Pager({
       </span>
       <div className="flex gap-2">
         {prev ? (
-          <Link href={href(basePath, filters, prev)} className={cn(btn, 'text-ink hover:border-line-hover')}>
+          <Link
+            href={href(basePath, filters, prev)}
+            className={cn(btn, 'text-ink hover:border-line-hover')}
+          >
             ← {t('back')}
           </Link>
         ) : (
-          <span className={cn(btn, 'cursor-not-allowed text-ink-3/70')}>
-            ← {t('back')}
-          </span>
+          <span className={cn(btn, 'cursor-not-allowed text-ink-3/70')}>← {t('back')}</span>
         )}
         {nextCursor ? (
           <Link
@@ -72,9 +73,7 @@ export function Pager({
             {t('next')} →
           </Link>
         ) : (
-          <span className={cn(btn, 'cursor-not-allowed text-ink-3/70')}>
-            {t('next')} →
-          </span>
+          <span className={cn(btn, 'cursor-not-allowed text-ink-3/70')}>{t('next')} →</span>
         )}
       </div>
     </div>

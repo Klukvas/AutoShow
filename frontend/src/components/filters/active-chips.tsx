@@ -64,7 +64,7 @@ export function ActiveChipsRow({
       <button
         type="button"
         onClick={onResetAll}
-        className="focus-ring shrink-0 rounded-chip px-2 py-1 text-sub font-semibold text-accent-hover hover:underline dark:text-accent"
+        className="focus-ring shrink-0 rounded-chip px-2 py-1 text-sub font-medium text-accent-hover hover:underline dark:text-accent"
       >
         {resetLabel}
       </button>

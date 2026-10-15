@@ -1,0 +1,417 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 10,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "studio_missing_editable_id",
+        "severity": "warning",
+        "message": "<div class=\"shared-clip\" data-start=\"0\" data-track-index=\"1\"> has no id, so Studio cannot use a stable edit target for its timeline and canvas controls.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add a stable, human-readable id such as id=\"hero-title\" or id=\"scene-1-card\" to every timeline-visible element you want agents or Studio to edit."
+      },
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 2 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      },
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 0 has 6 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-01\"> is a timeline element that contains nested <div id=\"scene-01\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-01",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-01\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-02\"> is a timeline element that contains nested <div id=\"scene-02\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-02",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-02\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-03\"> is a timeline element that contains nested <div id=\"scene-03\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-03",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-03\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-04\"> is a timeline element that contains nested <div id=\"scene-04\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-04",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-04\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-05\"> is a timeline element that contains nested <div id=\"scene-05\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-05",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-05\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-06\"> is a timeline element that contains nested <div id=\"scene-06\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-06",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-06\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div> is a timeline element that contains nested <div id=\"shared-photo\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 3,
+    "findings": [
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 11.5,
+        "selector": "div.public-window > img:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 76.59,
+          "top": 256.42,
+          "right": 946.17,
+          "bottom": 1736.92,
+          "width": 869.58,
+          "height": 1480.5
+        },
+        "containerSelector": "div.public-window",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 75.59,
+          "top": 557.81,
+          "right": 947.17,
+          "bottom": 1378.61,
+          "width": 871.58,
+          "height": 820.8
+        },
+        "overflow": {
+          "top": 301.39,
+          "bottom": 358.31
+        },
+        "dataAttributes": {
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 76.59,
+          "y": 256.42,
+          "width": 869.58,
+          "height": 1480.5
+        },
+        "firstSeen": 11.5,
+        "lastSeen": 11.5,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11.5
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 11.5,
+        "selector": "#public-cta > img:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 76.59,
+          "top": 39.42,
+          "right": 946.17,
+          "bottom": 1519.92,
+          "width": 869.58,
+          "height": 1480.5
+        },
+        "containerSelector": "#public-cta",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 75.59,
+          "top": 1378.61,
+          "right": 947.17,
+          "bottom": 1529.8,
+          "width": 871.58,
+          "height": 151.19
+        },
+        "overflow": {
+          "top": 1339.19
+        },
+        "dataAttributes": {
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 76.59,
+          "y": 39.42,
+          "width": 869.58,
+          "height": 1480.5
+        },
+        "firstSeen": 11.5,
+        "lastSeen": 11.5,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11.5
+        ]
+      },
+      {
+        "code": "escaped_container",
+        "severity": "info",
+        "time": 11.5,
+        "selector": "#public-cta > img:nth-of-type(1)",
+        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
+        "rect": {
+          "left": 76.59,
+          "top": 39.42,
+          "right": 946.17,
+          "bottom": 1519.92,
+          "width": 869.58,
+          "height": 1480.5
+        },
+        "containerSelector": "#public-cta",
+        "text": "",
+        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 75.59,
+          "top": 1378.61,
+          "right": 947.17,
+          "bottom": 1529.8,
+          "width": 871.58,
+          "height": 151.19
+        },
+        "dataAttributes": {
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 76.59,
+          "y": 39.42,
+          "width": 869.58,
+          "height": 1480.5
+        },
+        "firstSeen": 11.5,
+        "lastSeen": 11.5,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          11.5
+        ]
+      }
+    ],
+    "duration": 30,
+    "samples": [
+      1.5,
+      6.5,
+      11.5,
+      17.5,
+      23.5,
+      29.5
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 3,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "specPath": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.motion.json",
+    "samples": 300
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "contrast_aa_failure",
+        "severity": "warning",
+        "message": "Contrast is 2.43:1; WCAG AA requires 3:1.",
+        "text": "‹",
+        "fg": "rgb(42,171,238)",
+        "bg": "rgb(251,248,241)",
+        "ratio": 2.43,
+        "requiredRatio": 3,
+        "suggestedColor": "rgb(37,152,212)",
+        "large": true,
+        "selector": "div > section:nth-of-type(4) > div > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) > span",
+        "dataAttributes": {},
+        "sourceFile": "index.html",
+        "bbox": {
+          "x": 152.375,
+          "y": 649.171875,
+          "width": 19.515625,
+          "height": 64.796875
+        },
+        "time": 17.5,
+        "times": [
+          17.5
+        ]
+      }
+    ],
+    "enabled": true,
+    "samples": [
+      1.5,
+      6.5,
+      11.5,
+      17.5,
+      29.5
+    ],
+    "checked": 47,
+    "passed": 46
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": true,
+    "files": [
+      "snapshots/frame-00-at-1.5s.png",
+      "snapshots/frame-01-at-6.5s.png",
+      "snapshots/frame-02-at-11.5s.png",
+      "snapshots/frame-03-at-17.5s.png",
+      "snapshots/frame-04-at-29.5s.png"
+    ],
+    "times": [
+      1.5,
+      6.5,
+      11.5,
+      17.5,
+      29.5
+    ],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.142",
+    "latestVersion": "0.8.157",
+    "updateAvailable": true
+  }
+}

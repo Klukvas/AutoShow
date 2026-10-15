@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="uk">
+  <head></head>
+  <body>
+    <template
+      ><div
+        data-hf-id="hf-d6mp"
+        id="scene-04"
+        class="scene"
+        data-scene-view="04"
+        data-composition-id="scene-04"
+        data-width="1080"
+        data-height="1920"
+        data-duration="5"
+      >
+        <div data-hf-id="hf-9r3x" class="scene-body">
+          <div data-hf-id="hf-3fbd" class="arc" data-layout-ignore=""></div>
+          <div data-hf-id="hf-tt2s" class="arc bottom" data-layout-ignore=""></div>
+          <h2 data-hf-id="hf-t43f" class="headline">
+            <span data-hf-id="hf-bcym">І воно автоматично</span
+            ><span data-hf-id="hf-16j4">з’явиться у вашому</span
+            ><span data-hf-id="hf-0hly" class="red">Telegram-каналі</span>
+          </h2>
+          <div data-hf-id="hf-puuw" class="phone" style="top: 660px; left: 252px">
+            <div data-hf-id="hf-9o7x" class="phone-screen">
+              <div data-hf-id="hf-7sfr" class="island"></div>
+              <div data-hf-id="hf-8kim" class="status">
+                <span data-hf-id="hf-zwmt">9:41</span><span data-hf-id="hf-22t9">▮▮▮ ▰</span>
+              </div>
+              <div data-hf-id="hf-7rtw" class="phone-nav">
+                <div data-hf-id="hf-y97l" class="telegram-mark">
+                  <svg data-hf-id="hf-ulu9" viewBox="0 0 24 24">
+                    <path
+                      data-hf-id="hf-wxll"
+                      d="m2 11 19-8c.9-.4 1.6.2 1.3 1.4L19 21c-.2 1-1 1.3-1.8.7L12 18l-2.5 2.4c-.3.3-.5.5-1 .5l.4-5.6L19.1 6c.4-.4-.1-.6-.6-.3L5.8 13.7l-3.5-1.1C1.3 12.3 1.3 11.5 2 11Z"
+                    />
+                  </svg>
+                </div>
+                <div data-hf-id="hf-qneg" class="nav-title">
+                  Авто в наявності
+                  <div data-hf-id="hf-pdzj" class="nav-meta">Ваш Telegram-канал</div>
+                </div>
+              </div>
+              <div data-hf-id="hf-47vj" class="chat-pattern"></div>
+              <div data-hf-id="hf-j2jy" class="post">
+                <div data-hf-id="hf-or0u" class="post-image">
+                  <img
+                    data-hf-id="hf-znqy"
+                    src="assets/images/mercedes-e2025-w214.png"
+                    alt="Білий Mercedes-Benz E-Class 2025"
+                  />
+                </div>
+                <div data-hf-id="hf-4ei1" class="car-title">Mercedes-Benz E-Class</div>
+                <p data-hf-id="hf-w3v8" class="car-meta">2025</p>
+                <p data-hf-id="hf-bsk6" class="price">Ціна за запитом</p>
+                <div data-hf-id="hf-u04b" class="post-link">
+                  <span data-hf-id="hf-d3iz">Переглянути авто</span
+                  ><span data-hf-id="hf-o03m">↗</span>
+                </div>
+              </div>
+              <div data-hf-id="hf-i260" class="homebar"></div>
+            </div>
+          </div>
+          <div
+            data-hf-id="hf-cmoh"
+            class="handwriting"
+            style="top: 650px; left: 55px; width: 245px; transform: rotate(-9deg)"
+          >
+            Ваші авто там, де є покупці!
+          </div>
+          <svg
+            data-hf-id="hf-zxwv"
+            class="draw-arrow"
+            style="left: 90px; top: 890px; width: 170px; height: 180px; stroke: #141414"
+            viewBox="0 0 170 180"
+          >
+            <path data-hf-id="hf-7lz5" d="M35 5Q-5 110 140 157M115 130l28 29-38 7" />
+          </svg>
+          <div data-hf-id="hf-57kq" class="telegram-mark tg-badge">
+            <svg data-hf-id="hf-1tol" viewBox="0 0 24 24">
+              <path
+                data-hf-id="hf-y419"
+                d="m2 11 19-8c.9-.4 1.6.2 1.3 1.4L19 21c-.2 1-1 1.3-1.8.7L12 18l-2.5 2.4c-.3.3-.5.5-1 .5l.4-5.6L19.1 6c.4-.4-.1-.6-.6-.3L5.8 13.7l-3.5-1.1C1.3 12.3 1.3 11.5 2 11Z"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+        const scope = '[data-scene-view="04"]';
+        tl.fromTo(
+          scope + ' .headline span',
+          { y: 65, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.58, stagger: 0.11 },
+          0.05,
+        );
+        tl.fromTo(scope + ' .arc', { rotation: -6 }, { rotation: 0, duration: 5, ease: 'none' }, 0);
+        const paths = document.querySelectorAll(scope + ' .draw-arrow path');
+        paths.forEach((path) => {
+          const length = path.getTotalLength();
+          path.style.strokeDasharray = length;
+          tl.fromTo(
+            path,
+            { strokeDashoffset: length },
+            { strokeDashoffset: 0, duration: 0.55, ease: 'none' },
+            1.5,
+          );
+        });
+        tl.fromTo(
+          scope + ' .phone',
+          { y: 130, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.65 },
+          0.45,
+        );
+        tl.fromTo(
+          scope + ' .post',
+          { y: 230, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.65 },
+          1.25,
+        );
+        tl.fromTo(scope + ' .handwriting', { opacity: 0 }, { opacity: 1, duration: 0.5 }, 1.6);
+        tl.fromTo(
+          scope + ' .tg-badge',
+          { scale: 0.3, y: 80, opacity: 0 },
+          { scale: 1, y: 0, opacity: 1, duration: 0.65, ease: 'back.out(1.5)' },
+          2.2,
+        );
+        window.__timelines['scene-04'] = tl;
+      </script></template
+    >
+  </body>
+</html>

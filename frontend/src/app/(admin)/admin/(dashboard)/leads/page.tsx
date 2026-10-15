@@ -74,11 +74,11 @@ export default async function AdminLeadsPage({
       )}
     >
       <div className="flex items-center justify-between px-5 pb-3 pt-[18px]">
-        <h1 className="font-heading text-[20px] font-extrabold tracking-tight">
+        <h1 className="font-heading text-[1.25rem] font-medium tracking-tight">
           {t('leads.title')}
         </h1>
         {newCount > 0 && (
-          <span className="rounded-full bg-accent/[0.08] px-[9px] py-[3px] text-[11px] font-bold text-accent-hover">
+          <span className="rounded-full bg-accent/[0.08] px-[9px] py-[3px] text-[0.6875rem] font-medium text-accent-hover">
             {t('leads.newCount', { count: newCount })}
           </span>
         )}
@@ -110,20 +110,22 @@ export default async function AdminLeadsPage({
                   />
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center justify-between gap-2">
-                      <span className="truncate text-[13.5px] font-bold text-ink">{lead.name}</span>
-                      <span className="flex-none text-[11px] font-medium text-ink-3">
+                      <span className="truncate text-[0.84375rem] font-medium text-ink">
+                        {lead.name}
+                      </span>
+                      <span className="flex-none text-[0.6875rem] font-medium text-ink-3">
                         {formatRelativeDay(lead.createdAt, labels, locale)}
                       </span>
                     </span>
                     <span className="mt-[3px] flex items-center gap-[7px]">
                       <LeadTypeBadge type={lead.type} />
                       {lead.listing && (
-                        <span className="truncate text-[12px] font-medium text-ink-2">
+                        <span className="truncate text-[0.75rem] font-medium text-ink-2">
                           {lead.listing.title}
                         </span>
                       )}
                     </span>
-                    <span className="mt-1 block text-[12px] font-medium text-ink-3 tabular">
+                    <span className="mt-1 block text-[0.75rem] font-medium text-ink-3 tabular">
                       {lead.phone}
                     </span>
                   </span>
@@ -137,7 +139,7 @@ export default async function AdminLeadsPage({
         <div className="border-t border-line/60 p-3 text-center">
           <Link
             href={`/admin/leads?cursor=${encodeURIComponent(page.nextCursor)}`}
-            className="focus-ring inline-flex h-[34px] items-center rounded-[8px] border border-line-input bg-surface px-3.5 text-[12.5px] font-semibold text-ink"
+            className="focus-ring inline-flex h-[34px] items-center rounded-none border border-line-input bg-surface px-3.5 text-[0.78125rem] font-medium text-ink"
           >
             {t('common.next')} →
           </Link>
@@ -169,7 +171,7 @@ export default async function AdminLeadsPage({
           action={
             <Link
               href="/admin/leads"
-              className="focus-ring inline-flex h-10 items-center rounded-[9px] border border-line-input bg-surface px-4 text-[13px] font-semibold text-ink"
+              className="focus-ring inline-flex h-10 items-center rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink"
             >
               {t('leads.backToList')}
             </Link>
@@ -196,7 +198,7 @@ export default async function AdminLeadsPage({
   );
 
   return (
-    <div className="overflow-hidden rounded-[12px] border border-line bg-surface md:flex md:min-h-[520px]">
+    <div className="overflow-hidden rounded-none border border-line bg-surface md:flex md:min-h-[520px]">
       {listPane}
       {detailPane}
     </div>
@@ -225,24 +227,24 @@ async function LeadDetail({
     <div>
       <Link
         href={backHref}
-        className="focus-ring mb-3 inline-flex items-center gap-1 rounded-[6px] text-[12.5px] font-semibold text-ink-2 md:hidden"
+        className="focus-ring mb-3 inline-flex items-center gap-1 rounded-none text-[0.78125rem] font-medium text-ink-2 md:hidden"
       >
         ← {t('leads.backToList')}
       </Link>
 
       <div className="flex items-center gap-2.5">
-        <LeadTypeBadge type={lead.type} className="px-[9px] py-[3px] text-[11px]" />
+        <LeadTypeBadge type={lead.type} className="px-[9px] py-[3px] text-[0.6875rem]" />
         {lead.status === 'new' && (
           <>
             <span aria-hidden className="h-2 w-2 rounded-full bg-accent" />
-            <span className="text-[12px] font-semibold text-accent">{t('leadStatus.new')}</span>
+            <span className="text-[0.75rem] font-medium text-accent">{t('leadStatus.new')}</span>
           </>
         )}
       </div>
-      <h2 className="mt-2 font-heading text-[22px] font-extrabold tracking-tight md:text-[24px]">
+      <h2 className="mt-2 font-heading text-[1.375rem] font-medium tracking-tight md:text-[1.5rem]">
         {lead.name}
       </h2>
-      <p className="mb-[22px] mt-0.5 text-[13px] font-medium text-ink-3">
+      <p className="mb-[22px] mt-0.5 text-[0.8125rem] font-medium text-ink-3">
         {formatRelativeDateTime(lead.createdAt, labels, locale)}
         {source && <> · {t('leads.source', { url: source })}</>}
       </p>
@@ -251,7 +253,7 @@ async function LeadDetail({
         <DetailCard label={t('leads.phone')}>
           <a
             href={`tel:${lead.phone.replace(/[^+\d]/g, '')}`}
-            className="focus-ring rounded-[4px] tabular hover:text-accent"
+            className="focus-ring rounded-none tabular hover:text-accent"
           >
             {lead.phone}
           </a>
@@ -260,7 +262,7 @@ async function LeadDetail({
           <DetailCard label={t('leads.email')}>
             <a
               href={`mailto:${encodeURIComponent(lead.email)}`}
-              className="focus-ring break-all rounded-[4px] hover:text-accent"
+              className="focus-ring break-all rounded-none hover:text-accent"
             >
               {lead.email}
             </a>
@@ -270,7 +272,7 @@ async function LeadDetail({
           <DetailCard label={t('leads.car')} wide>
             <Link
               href={`/admin/listings/${lead.listing.id}/edit`}
-              className="focus-ring rounded-[4px] hover:text-accent"
+              className="focus-ring rounded-none hover:text-accent"
             >
               {lead.listing.title}
             </Link>
@@ -278,7 +280,7 @@ async function LeadDetail({
         )}
         {lead.message && (
           <DetailCard label={t('leads.message')} wide>
-            <span className="whitespace-pre-wrap text-[13.5px] font-normal leading-relaxed text-ink">
+            <span className="whitespace-pre-wrap text-[0.84375rem] font-normal leading-relaxed text-ink">
               {lead.message}
             </span>
           </DetailCard>
@@ -289,7 +291,7 @@ async function LeadDetail({
         <LeadStatusSegments id={lead.id} status={lead.status} />
         <a
           href={`tel:${lead.phone.replace(/[^+\d]/g, '')}`}
-          className="focus-ring ml-auto inline-flex h-10 items-center gap-1.5 rounded-[9px] bg-accent px-4 text-[13px] font-bold text-on-accent transition-colors hover:bg-accent-hover"
+          className="focus-ring ml-auto inline-flex h-10 items-center gap-1.5 rounded-none bg-accent px-4 text-[0.8125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover"
         >
           <svg viewBox="0 0 16 16" aria-hidden className="h-3.5 w-3.5" fill="currentColor">
             <path d="M3.2 1.8c.4-.4 1-.4 1.4 0l1.9 1.9c.4.4.4 1 0 1.4l-.9.9a.6.6 0 0 0-.1.7 9.4 9.4 0 0 0 3.8 3.8c.2.1.5.1.7-.1l.9-.9c.4-.4 1-.4 1.4 0l1.9 1.9c.4.4.4 1 0 1.4l-1 1c-.6.6-1.5.9-2.3.6-4.2-1.3-7.6-4.7-8.9-8.9-.3-.8 0-1.7.6-2.3l.6-1.4Z" />
@@ -318,9 +320,9 @@ function DetailCard({
   wide?: boolean;
 }) {
   return (
-    <div className={cn('rounded-[11px] border border-line p-3.5', wide && 'sm:col-span-2')}>
-      <div className="text-[11.5px] font-medium text-ink-3">{label}</div>
-      <div className="mt-[3px] text-[15px] font-bold text-ink">{children}</div>
+    <div className={cn('rounded-none border border-line p-3.5', wide && 'sm:col-span-2')}>
+      <div className="text-[0.71875rem] font-medium text-ink-3">{label}</div>
+      <div className="mt-[3px] text-[0.9375rem] font-medium text-ink">{children}</div>
     </div>
   );
 }

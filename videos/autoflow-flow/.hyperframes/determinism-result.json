@@ -1,0 +1,14 @@
+{
+  "equal": false,
+  "maxChannelDifference": 1,
+  "changedPixels": 4,
+  "totalPixels": 2073600,
+  "meanChannelDifference": 1.286008230452675e-06,
+  "bbox": [
+    307,
+    592,
+    357,
+    642
+  ],
+  "latestCheck": true
+}

@@ -34,7 +34,7 @@ export function ShareButton({ title }: { title: string }) {
     <button
       type="button"
       onClick={share}
-      className="focus-ring inline-flex h-[38px] items-center gap-1.5 rounded-btn border border-line-input bg-surface px-3.5 text-sub font-semibold text-ink-2 transition-colors hover:border-line-hover hover:text-ink"
+      className="focus-ring inline-flex h-[38px] items-center gap-1.5 rounded-btn border border-line-input bg-surface px-3.5 text-sub font-medium text-ink-2 transition-colors hover:border-line-hover hover:text-ink"
     >
       <span aria-hidden>↗</span>
       {copied ? t('shareCopied') : t('share')}

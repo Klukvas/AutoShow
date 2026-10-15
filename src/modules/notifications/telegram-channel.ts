@@ -12,9 +12,9 @@ import type { NotificationChannel, NotificationPayload } from './notification-ch
  * in the worker process) rather than at boot, so an admin can enable alerts
  * without a redeploy.
  *
- * Mirrors EmailChannel's "graceful when unconfigured" contract: if there is no
- * bot token or no lead chat, it logs at debug and returns — it does NOT throw,
- * so the queue does not retry a job that can never succeed.
+ * Graceful when unconfigured: if there is no bot token or no lead chat, it
+ * logs at debug and returns — it does NOT throw, so the queue does not retry a
+ * job that can never succeed.
  */
 @Injectable()
 export class TelegramLeadChannel implements NotificationChannel {

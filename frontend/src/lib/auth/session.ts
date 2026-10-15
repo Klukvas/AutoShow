@@ -98,5 +98,20 @@ export async function writeSession(session: AdminSession): Promise<void> {
 
 export async function clearSession(): Promise<void> {
   const store = await cookies();
-  store.delete(COOKIE_NAME);
+  store.set(COOKIE_NAME, '', {
+    httpOnly: true,
+    secure: SECURE,
+    sameSite: 'lax',
+    domain: DOMAIN,
+    path: '/',
+    maxAge: 0,
+    expires: new Date(0),
+  });
+}
+
+/** Independent server proof: possession of an old bearer alone cannot retry rotation. */
+export function refreshRetryProof(refreshToken: string): string {
+  return createHmac('sha256', KEY)
+    .update(`autoflow:refresh-retry:v1:${refreshToken}`)
+    .digest('hex');
 }

@@ -4,7 +4,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { NOTIFICATION_QUEUE } from '../../workers/queue.tokens';
 import { SiteSettings } from '../branding/entities/site-settings.entity';
 import { TelegramApiClient } from '../telegram/telegram-api.client';
-import { EmailChannel } from './email-channel';
 import type { NotificationChannel } from './notification-channel';
 import { NotificationService } from './notification.service';
 import { TelegramLeadChannel } from './telegram-channel';
@@ -20,19 +19,15 @@ import { TelegramLeadChannel } from './telegram-channel';
   ],
   providers: [
     NotificationService,
-    EmailChannel,
     TelegramApiClient,
     TelegramLeadChannel,
     {
       provide: 'NOTIFICATION_CHANNELS',
-      useFactory: (email: EmailChannel, telegram: TelegramLeadChannel) =>
-        new Map<string, NotificationChannel>([
-          [email.id, email],
-          [telegram.id, telegram],
-        ]),
-      inject: [EmailChannel, TelegramLeadChannel],
+      useFactory: (telegram: TelegramLeadChannel) =>
+        new Map<string, NotificationChannel>([[telegram.id, telegram]]),
+      inject: [TelegramLeadChannel],
     },
   ],
-  exports: [NotificationService, 'NOTIFICATION_CHANNELS', EmailChannel],
+  exports: [NotificationService, 'NOTIFICATION_CHANNELS'],
 })
 export class NotificationModule {}

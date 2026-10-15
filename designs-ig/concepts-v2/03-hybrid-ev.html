@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><title>Hybrid EV</title>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07110d;--card:#0e1d17;--line:#1d3329;--mint:#5cffb0;--txt:#e8f5ee;--mut:#8aa89a}
+*{box-sizing:border-box;margin:0}
+body{width:1448px;height:1086px;overflow:hidden;background:radial-gradient(900px 500px at 78% 8%,#0f3a2a 0%,var(--bg) 62%);font-family:Geologica,sans-serif;color:var(--txt)}
+nav{height:70px;display:flex;align-items:center;padding:0 56px;gap:38px;font-weight:500;font-size:14.5px;color:#cfe5d9}
+.logo{font-weight:800;font-size:22px;color:#fff;letter-spacing:-.5px}.logo i{font-style:normal;color:var(--mint)}
+nav .r{margin-left:auto;display:flex;gap:18px;align-items:center}
+.btn{border:1px solid var(--mint);color:var(--mint);padding:10px 18px;border-radius:999px;font-weight:600;font-size:14px}
+.hero{display:grid;grid-template-columns:560px 1fr;gap:20px;padding:20px 56px 0;position:relative;height:470px}
+.eyebrow{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--mint);font-weight:600}
+h1{font-size:58px;line-height:1.03;letter-spacing:-2px;font-weight:700;margin:14px 0 14px}
+h1 span{color:var(--mint)}
+.lead{color:var(--mut);font-size:17px;line-height:1.55;max-width:470px}
+.cta{display:flex;gap:12px;margin-top:24px}
+.cta .a{background:var(--mint);color:#04140d;padding:15px 24px;border-radius:12px;font-weight:700}
+.cta .b{border:1px solid var(--line);padding:15px 22px;border-radius:12px;font-weight:600}
+.stage{position:relative}
+.stage img{position:absolute;right:-40px;top:-6px;width:760px;height:420px;object-fit:cover;border-radius:28px;filter:saturate(.9) brightness(.9);-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 24%)}
+.glow{position:absolute;right:140px;bottom:20px;width:500px;height:60px;background:radial-gradient(closest-side,rgba(92,255,176,.55),transparent);filter:blur(10px)}
+.hud{position:absolute;right:20px;top:20px;background:rgba(7,17,13,.7);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:16px;padding:14px 16px;width:200px}
+.hud small{font-size:11px;color:var(--mut);letter-spacing:1px;text-transform:uppercase}
+.hud b{font-size:34px;color:var(--mint);display:block;line-height:1.1}
+.bar{height:6px;border-radius:3px;background:#173126;margin-top:8px;overflow:hidden}.bar i{display:block;height:100%;width:82%;background:var(--mint)}
+.cmp{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:16px;padding:0 56px;margin-top:6px}
+.k{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px}
+.k h3{font-size:14px;color:var(--mut);font-weight:500;margin-bottom:12px}
+.vs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.vs b{font-size:30px;letter-spacing:-1px;display:block}.vs span{font-size:12.5px;color:var(--mut)}
+.vs .g b{color:var(--mint)}
+.big b{font-size:44px;letter-spacing:-1.5px;color:var(--mint)}.big span{font-size:13px;color:var(--mut);display:block}
+.cars{padding:24px 56px 0}
+.cars h2{font-size:22px;letter-spacing:-.5px;font-weight:600;margin-bottom:14px;display:flex;justify-content:space-between}
+.cars h2 span{font-size:14px;color:var(--mint);font-weight:500}
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.c{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;display:grid;grid-template-columns:200px 1fr}
+.c img{width:100%;height:100%;object-fit:cover}
+.c>div{padding:14px 16px}
+.c b{font-size:16px;font-weight:600}.c .t{display:flex;gap:6px;margin:8px 0}.c .t span{font-size:11.5px;background:#142a20;color:var(--mint);padding:4px 8px;border-radius:6px;font-weight:600}
+.c p{font-size:12.5px;color:var(--mut)}
+.c strong{display:block;font-size:20px;margin-top:8px;letter-spacing:-.5px}
+</style></head><body>
+<nav><div class="logo">Auto<i>Flow</i></div><span>Гібриди</span><span>Електро</span><span>Заряджання</span><span>Економія</span>
+<div class="r"><span>+38 067 448 20 10</span><span class="btn">Тест-драйв</span></div></nav>
+<section class="hero">
+  <div>
+    <div class="eyebrow">Гібриди та електромобілі</div>
+    <h1>Їздіть далі. <span>Платіть менше.</span></h1>
+    <p class="lead">Plug-in гібриди та електро з перевіреною батареєю. Показуємо реальний запас ходу та стан акумулятора, а не цифри з брошури.</p>
+    <div class="cta"><span class="a">Підібрати авто</span><span class="b">Калькулятор економії</span></div>
+  </div>
+  <div class="stage">
+    <div class="glow"></div>
+    <img src="assets/x5.jpg" style="object-position:55% 50%">
+    <div class="hud"><small>Стан батареї</small><b>96%</b><div class="bar"><i></i></div></div>
+  </div>
+</section>
+<section class="cmp">
+  <div class="k"><h3>Вартість 100 км</h3>
+    <div class="vs"><div><b>$ 1,9</b><span>Гібрид (електро-режим)</span></div><div class="g"><b style="color:#fff">$ 9,3</b><span>Бензин 2.0, місто</span></div></div></div>
+  <div class="k big"><h3>Запас ходу</h3><b>до 520 км</b><span>електро + ДВЗ, змішаний цикл</span></div>
+  <div class="k big"><h3>Заряджання 10–80%</h3><b>35 хв</b><span>DC 50 кВт · вдома 3,5 год</span></div>
+</section>
+<section class="cars">
+  <h2>У наявності <span>Усі гібриди →</span></h2>
+  <div class="cg">
+    <div class="c"><img src="assets/x5.jpg"><div><b>BMW X5 xDrive45e</b><div class="t"><span>Гібрид</span><span>батарея 96%</span></div><p>2020 · 61 тис. км · 77 км на струмі</p><strong>$ 49 900</strong></div></div>
+    <div class="c"><img src="assets/b3.jpg"><div><b>BMW 330e</b><div class="t"><span>Гібрид</span><span>батарея 93%</span></div><p>2019 · 72 тис. км · 58 км на струмі</p><strong>$ 21 900</strong></div></div>
+    <div class="c"><img src="assets/b5g.jpg"><div><b>BMW 530e xDrive</b><div class="t"><span>Гібрид</span><span>батарея 91%</span></div><p>2018 · 94 тис. км · 50 км на струмі</p><strong>$ 28 700</strong></div></div>
+  </div>
+</section>
+</body></html>

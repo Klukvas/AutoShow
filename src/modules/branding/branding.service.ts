@@ -13,6 +13,26 @@ interface PriceUpdate {
   patch: Pick<Listing, 'priceNormalized' | 'fxRate' | 'fxRateAt'>;
 }
 
+const MASKED = '***';
+
+/**
+ * botToken is a live credential and leadChatId addresses a private manager
+ * chat — the audit log keeps only the fact that either changed, never the
+ * value. Clearing a field (null) is not a secret, so nulls pass through.
+ */
+function maskTelegramSecrets(patch: Partial<SiteSettings>): Partial<SiteSettings> {
+  const telegram = patch.telegram;
+  if (!telegram?.botToken && !telegram?.leadChatId) return patch;
+  return {
+    ...patch,
+    telegram: {
+      ...telegram,
+      ...(telegram.botToken ? { botToken: MASKED } : {}),
+      ...(telegram.leadChatId ? { leadChatId: MASKED } : {}),
+    },
+  };
+}
+
 @Injectable()
 export class BrandingService {
   private readonly logger = new Logger(BrandingService.name);
@@ -46,11 +66,7 @@ export class BrandingService {
       ? await this.computeRenormalizedPrices(patch.defaultCurrency as Currency)
       : [];
 
-    // The bot token is a live credential — the audit log keeps only the fact
-    // that it changed, never the value.
-    const auditPatch = patch.telegram?.botToken
-      ? { ...patch, telegram: { ...patch.telegram, botToken: '***' } }
-      : patch;
+    const auditPatch = maskTelegramSecrets(patch);
 
     const saved = await this.repo.manager.transaction(async (em) => {
       // One multi-row UPDATE applies the JS-computed values (exact same numbers,

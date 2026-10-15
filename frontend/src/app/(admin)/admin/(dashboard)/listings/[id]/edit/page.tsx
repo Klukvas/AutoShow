@@ -100,7 +100,7 @@ export default async function EditListingPage({ params }: PageProps) {
         title={`${t('title')} · ${t('count', { count: media.length })}`}
         contentClassName=""
       >
-        <MediaManager listingId={listing.id} initial={media} />
+        <MediaManager listingId={listing.id} initial={media} readOnly={listing.status === 'sold'} />
       </SectionCard>
       <SectionCard title={tTelegram('title')}>
         <TelegramPostPanel

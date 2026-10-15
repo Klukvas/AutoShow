@@ -6,6 +6,8 @@ import { getSiteBranding } from '@/lib/branding/resolve';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { ToastProvider } from '@/components/admin/ui/toast';
 import { AdminSidebar, type AdminNavLink } from '@/components/admin/admin-sidebar';
+import { AdminQueryProvider } from '@/components/admin/query-provider';
+import { LeadLiveNotifier } from '@/components/admin/leads/lead-live-notifier';
 
 /**
  * Admin shell (handoff 1b): dark 236px sidebar + light workspace. Both themes
@@ -48,6 +50,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ...(isAdmin ? ([{ href: '/admin', key: 'dashboard' }] as AdminNavLink[]) : []),
     { href: '/admin/listings', key: 'listings' },
     { href: '/admin/leads', key: 'leads', badge: newLeads },
+    { href: '/admin/catalog', key: 'catalog' },
     ...(isAdmin
       ? ([
           { href: '/admin/reviews', key: 'reviews' },
@@ -62,19 +65,23 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <ThemeProvider>
-      <ToastProvider>
-        <div className="min-h-dvh bg-surface-2 text-ink md:flex">
-          <AdminSidebar
-            links={links}
-            email={session.user.email}
-            role={session.user.role}
-            brandName={brandName}
-          />
-          <main className="min-w-0 flex-1 px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 md:px-[30px] md:py-[26px]">
-            {children}
-          </main>
-        </div>
-      </ToastProvider>
+      <AdminQueryProvider>
+        <ToastProvider>
+          {/* Toasts a lead that arrives while the admin is already in here. */}
+          <LeadLiveNotifier initialNewCount={newLeads} />
+          <div className="cinematic-admin min-h-dvh bg-bg text-ink md:flex">
+            <AdminSidebar
+              links={links}
+              email={session.user.email}
+              role={session.user.role}
+              brandName={brandName}
+            />
+            <main className="min-w-0 flex-1 px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-5 md:px-[30px] md:py-[26px]">
+              {children}
+            </main>
+          </div>
+        </ToastProvider>
+      </AdminQueryProvider>
     </ThemeProvider>
   );
 }

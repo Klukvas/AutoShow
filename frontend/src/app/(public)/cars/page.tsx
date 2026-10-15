@@ -157,11 +157,11 @@ function EmptyState({
       >
         ⌕
       </span>
-      <h2 className="mt-5 font-heading text-section font-bold text-ink">{title}</h2>
+      <h2 className="mt-5 font-heading text-section font-medium text-ink">{title}</h2>
       <p className="mt-1.5 max-w-sm text-body-md text-ink-2">{body}</p>
       <Link
         href="/cars"
-        className="focus-ring mt-6 inline-flex h-11 items-center rounded-input bg-accent px-5 text-sub font-semibold text-on-accent transition-colors hover:bg-accent-hover"
+        className="focus-ring mt-6 inline-flex h-11 items-center rounded-input bg-accent px-5 text-sub font-medium text-on-accent transition-colors hover:bg-accent-hover"
       >
         {resetLabel}
       </Link>

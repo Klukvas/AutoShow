@@ -1,3 +1,5 @@
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CatalogLogoService, MAX_LOGO_BYTES, type LogoUpload } from './catalog-logo.service';
 import {
   Body,
   Controller,
@@ -9,6 +11,9 @@ import {
   Patch,
   Post,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import {
@@ -34,7 +39,41 @@ import {
 @Roles('admin')
 @Controller('admin/catalog')
 export class CatalogAdminController {
-  constructor(private readonly admin: CatalogAdminService) {}
+  constructor(
+    private readonly admin: CatalogAdminService,
+    private readonly logos: CatalogLogoService,
+  ) {}
+
+  @Get('makes')
+  @Roles('admin', 'editor')
+  listMakes() {
+    return this.admin.listMakes();
+  }
+
+  @Get('models')
+  @Roles('admin', 'editor')
+  listModels(@Query('makeId', new ParseUUIDPipe({ optional: true })) makeId?: string) {
+    return this.admin.listModels(makeId);
+  }
+
+  @Post('makes/:id/logo')
+  @Roles('admin', 'editor')
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_LOGO_BYTES, files: 1, fields: 0 } }),
+  )
+  uploadLogo(
+    @Param('id', ParseUUIDPipe) id: string,
+    @UploadedFile() file: LogoUpload | undefined,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.logos.upload(id, file, user);
+  }
+
+  @Delete('makes/:id/logo')
+  @Roles('admin', 'editor')
+  removeLogo(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.logos.remove(id, user);
+  }
 
   // Editors create listings and must not be blocked by an unknown make/model —
   // these two POSTs are opened to them; the rest of the catalog stays admin.
@@ -45,6 +84,7 @@ export class CatalogAdminController {
     return this.admin.createMake(dto, user);
   }
   @Patch('makes/:id')
+  @Roles('admin', 'editor')
   updateMake(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpsertMakeDto,
@@ -64,6 +104,7 @@ export class CatalogAdminController {
     return this.admin.createModel(dto, user);
   }
   @Patch('models/:id')
+  @Roles('admin', 'editor')
   updateModel(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpsertModelDto,

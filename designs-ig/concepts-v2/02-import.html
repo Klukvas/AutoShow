@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><title>Import</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0b1f3a;--amb:#f5a300;--cream:#f7f4ee;--ink:#0b1f3a;--mut:#5d6b7e;--line:#dcd6c8}
+*{box-sizing:border-box;margin:0}
+body{width:1448px;height:1086px;overflow:hidden;background:var(--cream);font-family:Manrope,sans-serif;color:var(--ink)}
+nav{height:68px;display:flex;align-items:center;padding:0 56px;gap:40px;font-weight:600;font-size:15px}
+.logo{font-weight:800;font-size:23px;letter-spacing:-.5px}.logo i{font-style:normal;color:var(--amb)}
+nav .r{margin-left:auto;display:flex;gap:20px;align-items:center}
+.btn{background:var(--navy);color:#fff;padding:12px 20px;border-radius:8px;font-weight:700;font-size:14px}
+.hero{display:grid;grid-template-columns:1fr 520px;gap:56px;padding:34px 56px 0}
+.tag{display:inline-block;font-size:12px;font-weight:800;letter-spacing:1.4px;text-transform:uppercase;background:#fff;border:1px solid var(--line);padding:7px 12px;border-radius:999px}
+h1{font-size:62px;line-height:1.02;letter-spacing:-2px;font-weight:800;margin:18px 0 16px}
+h1 em{font-style:normal;background:linear-gradient(transparent 62%,var(--amb) 62%)}
+.lead{font-size:18px;color:var(--mut);line-height:1.5;max-width:560px}
+.stats{display:flex;gap:36px;margin-top:30px}
+.stats b{font-size:34px;letter-spacing:-1px;display:block}.stats span{font-size:13px;color:var(--mut);font-weight:600}
+.calc{background:var(--navy);color:#fff;border-radius:20px;padding:26px;box-shadow:0 30px 60px -30px rgba(11,31,58,.6)}
+.calc h3{font-size:19px;margin-bottom:18px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fld{background:rgba(255,255,255,.08);border-radius:10px;padding:10px 14px}
+.fld small{display:block;font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:#9fb0c8;font-weight:700}
+.fld b{font-size:16px}
+.seg{display:flex;gap:6px;margin-bottom:10px}.seg span{flex:1;text-align:center;padding:10px;border-radius:10px;background:rgba(255,255,255,.08);font-weight:700;font-size:14px}
+.seg .on{background:var(--amb);color:var(--navy)}
+.res{margin-top:14px;border-top:1px dashed rgba(255,255,255,.25);padding-top:14px}
+.ln{display:flex;justify-content:space-between;font-size:14px;color:#c4d0e2;margin-bottom:6px}
+.tot{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px}
+.tot span{font-weight:700}.tot b{font-size:40px;letter-spacing:-1.5px;color:var(--amb)}
+.cta{margin-top:14px;background:var(--amb);color:var(--navy);text-align:center;padding:15px;border-radius:10px;font-weight:800}
+.tl{margin:34px 56px 0;display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+.tl::before{content:"";position:absolute;left:5%;right:5%;top:19px;height:2px;background:var(--line)}
+.st{position:relative;text-align:center;padding:0 10px}
+.st .n{width:40px;height:40px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;display:grid;place-items:center;margin:0 auto 10px;position:relative}
+.st:nth-child(5) .n{background:var(--amb);color:var(--navy)}
+.st b{font-size:15px;display:block}.st span{font-size:13px;color:var(--mut)}
+.cases{padding:28px 56px 0}
+.cases h2{font-size:26px;letter-spacing:-.8px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline}
+.cases h2 a{font-size:14px;font-weight:700}
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.cs{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;grid-template-columns:150px 1fr}
+.cs img{width:100%;height:100%;object-fit:cover}
+.cs div{padding:14px}
+.cs .d{display:inline-block;background:#e8f3ea;color:#1c6b34;font-weight:800;font-size:12px;padding:4px 8px;border-radius:6px}
+.cs b{display:block;font-size:16px;margin:8px 0 4px}.cs p{font-size:13px;color:var(--mut)}
+.cs .pr{margin-top:6px;font-weight:800;font-size:15px}
+</style></head><body>
+<nav><div class="logo">Auto<i>Flow</i></div><span>Як це працює</span><span>Розрахунок</span><span>Кейси</span><span>Авто в наявності</span>
+<div class="r"><span>+38 067 448 20 10</span><span class="btn">Підібрати авто</span></div></nav>
+<section class="hero">
+  <div>
+    <span class="tag">США · Європа · Корея</span>
+    <h1>Авто з-за кордону <em>під ключ</em> за 21–35 днів</h1>
+    <p class="lead">Підбір на аукціонах, перевірка, доставка, розмитнення та реєстрація. Фіксована ціна в договорі, без прихованих платежів.</p>
+    <div class="stats"><div><b>412</b><span>авто привезено</span></div><div><b>21 день</b><span>найшвидший кейс</span></div><div><b>0 ₴</b><span>прихованих доплат</span></div></div>
+  </div>
+  <div class="calc">
+    <h3>Калькулятор «ціна під ключ»</h3>
+    <div class="seg"><span class="on">США</span><span>Європа</span><span>Корея</span></div>
+    <div class="row"><div class="fld"><small>Ціна на аукціоні</small><b>$ 12 500</b></div><div class="fld"><small>Рік</small><b>2020</b></div></div>
+    <div class="row"><div class="fld"><small>Двигун</small><b>2.0 бензин</b></div><div class="fld"><small>Тип кузова</small><b>Кросовер</b></div></div>
+    <div class="res">
+      <div class="ln"><span>Авто + комісія аукціону</span><span>$ 13 700</span></div>
+      <div class="ln"><span>Доставка (море + авто)</span><span>$ 1 650</span></div>
+      <div class="ln"><span>Розмитнення та акциз</span><span>$ 3 480</span></div>
+      <div class="ln"><span>Послуги, сертифікація, реєстрація</span><span>$ 900</span></div>
+      <div class="tot"><span>Під ключ:</span><b>$ 19 730</b></div>
+    </div>
+    <div class="cta">Отримати точний розрахунок у Telegram</div>
+  </div>
+</section>
+<section class="tl">
+  <div class="st"><div class="n">1</div><b>Підбір</b><span>1–3 дні</span></div>
+  <div class="st"><div class="n">2</div><b>Аукціон</b><span>торги, викуп</span></div>
+  <div class="st"><div class="n">3</div><b>Доставка</b><span>14–25 днів</span></div>
+  <div class="st"><div class="n">4</div><b>Розмитнення</b><span>3–5 днів</span></div>
+  <div class="st"><div class="n">5</div><b>Ключі</b><span>реєстрація в сервісному центрі</span></div>
+</section>
+<section class="cases">
+  <h2>Нещодавно привезли <a>Усі кейси →</a></h2>
+  <div class="cg">
+    <div class="cs"><img src="assets/x5.jpg" style="object-position:30% 50%"><div><span class="d">21 день</span><b>BMW X5 xDrive45e, 2020</b><p>Копарт, Нью-Джерсі → Київ</p><p class="pr">$ 31 400 під ключ</p></div></div>
+    <div class="cs"><img src="assets/a4.jpg"><div><span class="d">28 днів</span><b>Audi A4 Premium, 2020</b><p>IAAI, Техас → Львів</p><p class="pr">$ 17 900 під ключ</p></div></div>
+    <div class="cs"><img src="assets/b5g.jpg"><div><span class="d">34 дні</span><b>BMW 530i xDrive, 2018</b><p>Німеччина → Одеса</p><p class="pr">$ 22 300 під ключ</p></div></div>
+  </div>
+</section>
+</body></html>

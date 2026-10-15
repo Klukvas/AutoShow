@@ -26,6 +26,9 @@ export class AdminUser extends BaseEntity {
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
+  @Column({ name: 'auth_version', type: 'int', default: 1 })
+  authVersion!: number;
+
   @Column({ name: 'last_login_at', type: 'timestamptz', nullable: true })
   lastLoginAt!: Date | null;
 

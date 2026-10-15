@@ -1,3 +1,4 @@
+import { activeMedia } from '../photo-ai/photo-ai.types';
 import { InjectQueue } from '@nestjs/bullmq';
 import {
   ConflictException,
@@ -166,7 +167,15 @@ export class TelegramPostService {
       return;
     }
 
-    const caption = buildListingCaption(listing, this.config.PUBLIC_SITE_URL);
+    const selectedPhotos = this.selectedPhotos(listing);
+    const disclosure = selectedPhotos.some((m) => activeMedia(m).sceneAltered)
+      ? 'scene'
+      : selectedPhotos.some((m) => Boolean(m.activeAiVariant))
+        ? 'ai'
+        : null;
+    const caption =
+      buildListingCaption(listing, this.config.PUBLIC_SITE_URL) +
+      this.disclosureCaption(disclosure);
     const existing = await this.posts.find({ where: { listingId, deletedAt: IsNull() } });
 
     for (const channel of settings.channels) {
@@ -190,6 +199,7 @@ export class TelegramPostService {
           chatId: channel.chatId,
           messageIds: messages.map((m) => m.message_id),
           captionMessageId: messages[0].message_id,
+          photoAiDisclosure: disclosure,
           soldMarkedAt: null,
         }),
       );
@@ -210,7 +220,7 @@ export class TelegramPostService {
     });
     if (!listing) return;
 
-    const caption = buildListingCaption(listing, this.config.PUBLIC_SITE_URL, { sold: true });
+    const soldCaption = buildListingCaption(listing, this.config.PUBLIC_SITE_URL, { sold: true });
     const posts = await this.posts.find({ where: { listingId, deletedAt: IsNull() } });
     for (const post of posts) {
       if (post.soldMarkedAt) continue;
@@ -219,7 +229,7 @@ export class TelegramPostService {
           telegram.botToken,
           post.chatId,
           post.captionMessageId,
-          caption,
+          soldCaption + this.disclosureCaption(post.photoAiDisclosure),
         );
       } catch (err) {
         const message = err instanceof Error ? err.message : '';
@@ -240,18 +250,30 @@ export class TelegramPostService {
    * the jpeg gallery rendition — Telegram treats webp as stickers and the
    * original can exceed the Bot API's 10 MB URL-fetch limit.
    */
-  private photoUrls(listing: Listing): string[] {
+  private disclosureCaption(disclosure: 'ai' | 'scene' | null | undefined): string {
+    return disclosure === 'scene'
+      ? '\nСцену на фото змінено ШІ.'
+      : disclosure === 'ai'
+        ? '\nФото оброблено ШІ.'
+        : '';
+  }
+
+  private selectedPhotos(listing: Listing) {
     return (listing.media ?? [])
       .filter((m) => m.type === 'image' && m.status === 'ready' && !m.deletedAt)
       .sort((a, b) => Number(b.isCover) - Number(a.isCover) || a.position - b.position)
-      .slice(0, MAX_ALBUM_PHOTOS)
-      .map((m) => {
-        const renditions = m.renditions ?? [];
-        const rendition =
-          renditions.find((r) => r.variant === 'gallery' && r.format === 'jpeg') ??
-          renditions.find((r) => r.variant === 'full' && r.format === 'jpeg') ??
-          renditions.find((r) => r.format === 'jpeg');
-        return this.storage.publicUrlFor(rendition?.s3Key ?? m.originalS3Key);
-      });
+      .slice(0, MAX_ALBUM_PHOTOS);
+  }
+
+  private photoUrls(listing: Listing): string[] {
+    return this.selectedPhotos(listing).map((m) => {
+      const active = activeMedia(m);
+      const renditions = active.renditions;
+      const rendition =
+        renditions.find((r) => r.variant === 'gallery' && r.format === 'jpeg') ??
+        renditions.find((r) => r.variant === 'full' && r.format === 'jpeg') ??
+        renditions.find((r) => r.format === 'jpeg');
+      return this.storage.publicUrlFor(rendition?.s3Key ?? active.s3Key);
+    });
   }
 }

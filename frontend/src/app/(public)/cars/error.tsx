@@ -27,7 +27,7 @@ export default function CatalogError({
         <div className="flex items-start gap-3 rounded-card border border-ratelimit-line bg-ratelimit-bg p-5">
           <span aria-hidden>⏱</span>
           <div>
-            <h1 className="font-heading text-section font-bold text-ratelimit">
+            <h1 className="font-heading text-section font-medium text-ratelimit">
               {t('rateLimitTitle')}
             </h1>
             <p className="mt-1 text-body-md text-ratelimit-2">{t('rateLimitBody')}</p>
@@ -41,11 +41,11 @@ export default function CatalogError({
     <div className="mx-auto flex max-w-lg flex-col items-center px-5 py-16 text-center">
       <span
         aria-hidden
-        className="flex h-14 w-14 items-center justify-center rounded-input bg-danger-bg text-xl font-bold text-danger"
+        className="flex h-14 w-14 items-center justify-center rounded-input bg-danger-bg text-xl font-medium text-danger"
       >
         !
       </span>
-      <h1 className="mt-5 font-heading text-section font-bold text-ink">{t('errorTitle')}</h1>
+      <h1 className="mt-5 font-heading text-section font-medium text-ink">{t('errorTitle')}</h1>
       <p className="mt-1.5 text-body-md text-ink-2">{t('errorBody')}</p>
       <Button variant="solid" className="mt-6" onClick={() => reset()}>
         {t('errorRetry')}

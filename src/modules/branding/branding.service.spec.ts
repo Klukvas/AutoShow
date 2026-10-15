@@ -79,3 +79,64 @@ describe('BrandingService.update on base-currency change', () => {
     expect(saved).toMatchObject({ id: 's1', defaultCurrency: 'UAH' });
   });
 });
+
+describe('BrandingService.update audit masking', () => {
+  function makeServiceWithAudit(): Svc {
+    const svc = makeService();
+    const em = {
+      save: jest.fn(async (_entity: unknown, x: Record<string, unknown>) => ({ id: 's1', ...x })),
+    };
+    svc.repo = {
+      findOne: jest.fn().mockResolvedValue({ id: 's1', defaultCurrency: 'USD' }),
+      manager: { transaction: jest.fn(async (cb: (m: typeof em) => Promise<unknown>) => cb(em)) },
+    };
+    svc.audit = { record: jest.fn().mockResolvedValue(undefined) };
+    svc.logger = { log: jest.fn() };
+    return svc;
+  }
+
+  function auditedPatch(svc: Svc): Record<string, unknown> {
+    const [entry] = svc.audit.record.mock.calls[0] as [
+      { diff: { patch: Record<string, unknown> } },
+    ];
+    return entry.diff.patch;
+  }
+
+  it('masks botToken and leadChatId while keeping the rest of the patch', async () => {
+    const svc = makeServiceWithAudit();
+    const telegram = {
+      botToken: '123456:real-secret',
+      leadChatId: '-1001234567890',
+      channels: [{ chatId: '@autoflow' }],
+      autoPublish: true,
+    };
+
+    await svc.update({ displayName: 'AutoFlow', telegram }, actor);
+
+    expect(auditedPatch(svc)).toEqual({
+      displayName: 'AutoFlow',
+      telegram: {
+        botToken: '***',
+        leadChatId: '***',
+        channels: [{ chatId: '@autoflow' }],
+        autoPublish: true,
+      },
+    });
+    // The caller's patch is persisted (and left) untouched.
+    expect(telegram.botToken).toBe('123456:real-secret');
+    expect(telegram.leadChatId).toBe('-1001234567890');
+  });
+
+  it('passes cleared telegram fields through — a null is not a secret', async () => {
+    const svc = makeServiceWithAudit();
+
+    await svc.update(
+      { telegram: { botToken: null, leadChatId: null, channels: [], autoPublish: false } },
+      actor,
+    );
+
+    expect(auditedPatch(svc)).toEqual({
+      telegram: { botToken: null, leadChatId: null, channels: [], autoPublish: false },
+    });
+  });
+});

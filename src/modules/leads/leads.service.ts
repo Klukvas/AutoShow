@@ -29,19 +29,7 @@ export class LeadsService {
     private readonly notifications: NotificationService,
     private readonly audit: AuditLogService,
     @Inject('APP_CONFIG') private readonly config: AppConfig,
-  ) {
-    // Loud boot-time warning: a dealership that silently stops receiving lead
-    // alerts loses deals, so a misconfigured pipeline must be visible in logs.
-    if (!this.config.LEAD_NOTIFY_TO) {
-      this.logger.warn(
-        'LEAD_NOTIFY_TO is not set — new leads are stored but nobody is emailed about them',
-      );
-    } else if (!this.config.SMTP_HOST) {
-      this.logger.warn(
-        'LEAD_NOTIFY_TO is set but SMTP_HOST is not — lead notifications will only be logged, not delivered',
-      );
-    }
-  }
+  ) {}
 
   async create(dto: CreateLeadDto, ip: string | undefined): Promise<Lead> {
     if (dto.website) {
@@ -83,40 +71,53 @@ export class LeadsService {
       listingId: dto.listingId ?? null,
     });
     const saved = await this.leads.save(lead);
+    await this.notifyManagers(saved, dto);
+    return saved;
+  }
 
+  /**
+   * Alert the managers about a freshly created lead. The only channel is the
+   * Telegram manager chat (`site_settings.telegram.leadChatId`); it goes
+   * through the `notifications` queue, so delivery retries live there — this
+   * method only enqueues.
+   *
+   * Enqueue failures are logged, never rethrown: the lead is already persisted,
+   * and a Redis hiccup must not turn a successful submission into a 500 the
+   * visitor would retry (duplicating the lead). A lost alert is still visible
+   * in the admin inbox; a lost lead is not recoverable.
+   */
+  private async notifyManagers(lead: Lead, dto: CreateLeadDto): Promise<void> {
     const subject = `New lead [${dto.type}] from ${dto.name}`;
     const body = [
       `Type: ${dto.type}`,
       `Name: ${dto.name}`,
       `Phone: ${dto.phone}`,
       dto.email ? `Email: ${dto.email}` : null,
-      // saved.message = structured sell/credit details + the visitor's text —
+      // lead.message = structured sell/credit details + the visitor's text —
       // the raw dto.message would drop the car/credit info from the alert.
-      saved.message ? `Message: ${saved.message}` : null,
+      lead.message ? `Message: ${lead.message}` : null,
       dto.sourceUrl ? `Source: ${dto.sourceUrl}` : null,
     ]
       .filter(Boolean)
       .join('\n');
 
-    if (this.config.LEAD_NOTIFY_TO) {
-      await this.notifications.enqueue('email', {
-        to: this.config.LEAD_NOTIFY_TO,
+    try {
+      // The Telegram target lives in the DB, not in the job — the channel reads
+      // it at send time and no-ops when leadChatId is unset, so enqueuing
+      // unconditionally is safe (leads are low-volume, a drained job is cheap)
+      // and an admin can enable alerts without a redeploy.
+      await this.notifications.enqueue('telegram', {
+        to: 'telegram',
         subject,
         body,
-        meta: { leadId: saved.id },
+        meta: { leadId: lead.id },
       });
+    } catch (err) {
+      this.logger.error(
+        { err, channelId: 'telegram', leadId: lead.id },
+        'Failed to enqueue lead notification — the lead is saved, this alert is lost',
+      );
     }
-    // Instant Telegram alert to the manager chat. The channel is a no-op when
-    // site_settings.telegram.leadChatId is unset, so enqueuing unconditionally
-    // is safe — leads are low-volume and the drained job is cheap.
-    await this.notifications.enqueue('telegram', {
-      to: 'telegram',
-      subject,
-      body,
-      meta: { leadId: saved.id },
-    });
-
-    return saved;
   }
 
   async list(opts: {
@@ -277,7 +278,7 @@ export class LeadsService {
 
   /**
    * Human-readable rendering of the same sell/credit fields for the admin
-   * inbox and email notifications. The machine-readable copy lives in
+   * inbox and the Telegram alert. The machine-readable copy lives in
    * `details` (see detailsFrom) — this string is display-only.
    */
   private composeMessage(dto: CreateLeadDto): string | null {

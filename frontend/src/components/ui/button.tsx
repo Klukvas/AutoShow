@@ -26,15 +26,15 @@ const VARIANT: Record<Variant, string> = {
 };
 
 const SIZE = {
-  sm: 'h-[38px] px-4 text-[13.5px] rounded-btn',
-  md: 'h-11 px-5 text-sub rounded-input',
-  lg: 'h-[50px] px-6 text-[15px] rounded',
+  sm: 'min-h-[2.375rem] px-4 text-[0.84375rem] rounded-btn',
+  md: 'min-h-11 px-5 text-sub rounded-input',
+  lg: 'min-h-[3.125rem] px-6 text-[0.9375rem] rounded',
 } as const;
 
 // `af-cta` is a styling-free marker so the storefront (.theme-vitrina-paper)
 // can add letterpress tracking to buttons without touching the admin.
 const BASE =
-  'af-cta inline-flex items-center justify-center gap-2 font-semibold select-none transition-colors focus-ring disabled:cursor-not-allowed disabled:opacity-50';
+  'af-cta inline-flex items-center justify-center gap-2 py-2 leading-snug text-center font-medium select-none transition-colors focus-ring disabled:cursor-not-allowed disabled:opacity-50';
 
 type ButtonProps = BaseProps & React.ButtonHTMLAttributes<HTMLButtonElement> & { as?: 'button' };
 

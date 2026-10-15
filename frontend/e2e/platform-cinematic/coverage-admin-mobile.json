@@ -1,0 +1,90 @@
+[
+  {
+    "route": "/admin",
+    "status": 200,
+    "title": [
+      "Дашборд",
+      "Дашборд"
+    ]
+  },
+  {
+    "route": "/admin/listings",
+    "status": 200,
+    "title": [
+      "Об'яви",
+      "Об'яви"
+    ]
+  },
+  {
+    "route": "/admin/listings/new",
+    "status": 200,
+    "title": [
+      "Об'яви",
+      "Нова об'ява"
+    ]
+  },
+  {
+    "route": "/admin/listings/00000000-0000-4000-8000-000000000010/edit",
+    "status": 200,
+    "title": [
+      "Об'яви",
+      "BMW 5 Series 530i xDrive"
+    ]
+  },
+  {
+    "route": "/admin/leads",
+    "status": 200,
+    "title": [
+      "Заявки",
+      "Заявки"
+    ]
+  },
+  {
+    "route": "/admin/reviews",
+    "status": 200,
+    "title": [
+      "Відгуки",
+      "Відгуки"
+    ]
+  },
+  {
+    "route": "/admin/collections",
+    "status": 200,
+    "title": [
+      "Колекції",
+      "Колекції"
+    ]
+  },
+  {
+    "route": "/admin/tags",
+    "status": 200,
+    "title": [
+      "Ярлики",
+      "Ярлики"
+    ]
+  },
+  {
+    "route": "/admin/team",
+    "status": 200,
+    "title": [
+      "Команда",
+      "Команда"
+    ]
+  },
+  {
+    "route": "/admin/branding",
+    "status": 200,
+    "title": [
+      "Брендинг",
+      "Брендинг"
+    ]
+  },
+  {
+    "route": "/admin/audit",
+    "status": 200,
+    "title": [
+      "Аудит-лог",
+      "Аудит-лог"
+    ]
+  }
+]

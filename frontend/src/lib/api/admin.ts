@@ -90,6 +90,9 @@ export interface AnalyticsSummary {
 }
 
 export interface AdminMedia {
+  aiRevision?: number;
+  activeGenerationId?: string | null;
+  sceneAltered?: boolean;
   id: string;
   status: AdminMediaStatus;
   type?: 'image' | 'video';
@@ -179,16 +182,19 @@ interface AdminCallOpts {
 }
 
 export const adminApi = {
+  currentUser(opts: { accessToken: string }) {
+    return apiFetch<AdminAuthResponse['user']>('/auth/me', { accessToken: opts.accessToken });
+  },
   login(body: { email: string; password: string }) {
     return apiFetch<AdminAuthResponse>('/auth/login', {
       method: 'POST',
       body,
     });
   },
-  refresh(refreshToken: string) {
+  refresh(refreshToken: string, retryProof?: string) {
     return apiFetch<Omit<AdminAuthResponse, 'user'>>('/auth/refresh', {
       method: 'POST',
-      body: { refreshToken },
+      body: { refreshToken, retryProof },
     });
   },
   logout(refreshToken: string) {
@@ -228,6 +234,82 @@ export const adminApi = {
     return apiFetch<VehicleOption>('/admin/catalog/options', {
       method: 'POST',
       body,
+      accessToken: opts.accessToken,
+    });
+  },
+  listCatalogMakes(opts: AdminCallOpts) {
+    return apiFetch<import('./types').AdminCatalogMake[]>('/admin/catalog/makes', {
+      accessToken: opts.accessToken,
+      cache: 'no-store',
+    });
+  },
+  listCatalogModels(makeId: string | undefined, opts: AdminCallOpts) {
+    return apiFetch<import('./types').CatalogModel[]>('/admin/catalog/models', {
+      query: { makeId },
+      accessToken: opts.accessToken,
+      cache: 'no-store',
+    });
+  },
+  updateCatalogMake(id: string, body: { nameUk: string; slug: string }, opts: AdminCallOpts) {
+    return apiFetch<import('./types').AdminCatalogMake>(`/admin/catalog/makes/${id}`, {
+      method: 'PATCH',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  updateCatalogModel(
+    id: string,
+    body: { nameUk: string; slug: string; makeId: string },
+    opts: AdminCallOpts,
+  ) {
+    return apiFetch<import('./types').CatalogModel>(`/admin/catalog/models/${id}`, {
+      method: 'PATCH',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  deleteCatalogMake(id: string, opts: AdminCallOpts) {
+    return apiFetch<void>(`/admin/catalog/makes/${id}`, {
+      method: 'DELETE',
+      accessToken: opts.accessToken,
+    });
+  },
+  deleteCatalogModel(id: string, opts: AdminCallOpts) {
+    return apiFetch<void>(`/admin/catalog/models/${id}`, {
+      method: 'DELETE',
+      accessToken: opts.accessToken,
+    });
+  },
+  async uploadCatalogLogo(
+    id: string,
+    file: File,
+    opts: AdminCallOpts,
+  ): Promise<{ logoUrl: string }> {
+    const body = new FormData();
+    body.append('file', file);
+    const base = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000/api';
+    const response = await fetch(`${base.replace(/\/$/, '')}/admin/catalog/makes/${id}/logo`, {
+      method: 'POST',
+      headers: { authorization: `Bearer ${opts.accessToken}` },
+      body,
+    });
+    if (!response.ok) {
+      const error = (await response
+        .json()
+        .catch(() => ({ message: 'Не вдалося завантажити логотип. Спробуйте ще раз' }))) as {
+        message?: string | string[];
+      };
+      throw new Error(
+        Array.isArray(error.message)
+          ? error.message.join('; ')
+          : (error.message ?? 'Не вдалося завантажити логотип'),
+      );
+    }
+    return response.json() as Promise<{ logoUrl: string }>;
+  },
+  removeCatalogLogo(id: string, opts: AdminCallOpts) {
+    return apiFetch<{ logoUrl: null }>(`/admin/catalog/makes/${id}/logo`, {
+      method: 'DELETE',
       accessToken: opts.accessToken,
     });
   },

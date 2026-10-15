@@ -43,4 +43,14 @@ describe('TelegramLeadChannel', () => {
     expect(text).toContain('New lead');
     expect(text).toContain('Name: Ivan');
   });
+
+  it('propagates send failures so the notification queue retries', async () => {
+    const { channel, api } = makeChannel({
+      telegram: { botToken: '123:abc', channels: [], autoPublish: false, leadChatId: '-100999' },
+    });
+    (api.sendMessage as jest.Mock).mockRejectedValue(
+      new Error('Telegram sendMessage failed: chat not found'),
+    );
+    await expect(channel.send(payload)).rejects.toThrow('chat not found');
+  });
 });

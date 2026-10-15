@@ -128,7 +128,7 @@ export default async function ListingPage({ params }: PageProps) {
           ]}
         />
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h1 className="font-heading text-title-lg font-extrabold text-ink">{listing.title}</h1>
+          <h1 className="font-heading text-title-lg font-medium text-ink">{listing.title}</h1>
           <StatusBadge status={availability}>{availabilityLabel}</StatusBadge>
           <span className="inline-flex items-center gap-1.5 text-sub text-ink-3" aria-live="off">
             <ViewsIcon />
@@ -150,7 +150,7 @@ export default async function ListingPage({ params }: PageProps) {
           {/* Mobile header (handoff 1g): title → badge → sub → price → key specs */}
           <div className="mt-4 space-y-3 md:hidden">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h1 className="font-heading text-title-sm font-extrabold text-ink">
+              <h1 className="font-heading text-title-sm font-medium text-ink">
                 {listing.title}
               </h1>
               <StatusBadge status={availability}>{availabilityLabel}</StatusBadge>
@@ -159,7 +159,7 @@ export default async function ListingPage({ params }: PageProps) {
               {subLine} · {t('viewsCount', { count: listing.viewsCount })}
             </p>
             <div>
-              <div className="tabular font-heading text-price-md font-extrabold text-ink">
+              <div className="tabular font-heading text-price-md font-medium text-ink">
                 {price}
               </div>
               {priceNote && <p className="mt-0.5 text-sub text-ink-2">{priceNote}</p>}
@@ -174,7 +174,7 @@ export default async function ListingPage({ params }: PageProps) {
                 {listing.tags.map((tag) => (
                   <li
                     key={tag.slug}
-                    className="rounded-chip border border-line px-2.5 py-1 font-mono text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-ink-2"
+                    className="rounded-chip border border-line px-2.5 py-1 font-mono text-[0.6875rem] font-medium uppercase tracking-[0.14em] text-ink-2"
                   >
                     {tag.nameUk}
                   </li>

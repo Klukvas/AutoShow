@@ -26,8 +26,8 @@ export function KeySpecs({ listing, t }: { listing: PublicListing; t: Translate 
     <div className="grid grid-cols-3 gap-2.5">
       {specs.map((spec) => (
         <div key={spec.label} className="rounded-input border border-line bg-surface px-3 py-2.5">
-          <div className="truncate text-label font-semibold uppercase text-ink-3">{spec.label}</div>
-          <div className="tabular mt-0.5 truncate font-heading text-[15px] font-bold text-ink">
+          <div className="truncate text-label font-medium uppercase text-ink-3">{spec.label}</div>
+          <div className="tabular mt-0.5 truncate font-heading text-[0.9375rem] font-medium text-ink">
             {spec.value}
           </div>
         </div>

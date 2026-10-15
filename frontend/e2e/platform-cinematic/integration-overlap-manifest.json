@@ -1,0 +1,14 @@
+{
+  "frontend/messages/uk.json": {
+    "designFrozen": "edcdf2d87224592edb9b9f64aaa6dd7803a86a56e8daf7295828720607e10e71",
+    "concurrentCurrent": "7442fa1fae85e0ff87710b6b8c53e332a4883cf0ce94f07328de70632bd17aba"
+  },
+  "frontend/src/components/listing/gallery.tsx": {
+    "designFrozen": "3a0bea8c3aa0f31e29b8bf644441203b66b4e7140c291d03e6c5b11af0425450",
+    "concurrentCurrent": "3e12b3c3f6a3eacdca834000db62d1072b55dfd9db817c5ee9b71fa0f6900636"
+  },
+  "frontend/src/components/listing/listing-card.tsx": {
+    "designFrozen": "f5c227f330c4cb6206836d4bc8a767c5c10018ec939a01d6d11af4b3e77904ca",
+    "concurrentCurrent": "694918cddc262b13cdd67f4d3e4f3343afb750bb065ed3e85b611b04b092cb29"
+  }
+}

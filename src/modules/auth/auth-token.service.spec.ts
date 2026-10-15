@@ -45,7 +45,7 @@ class RedisStub {
     })),
     eval: jest.fn(async (script: string, _keyCount: number, ...args: Array<string | number>) => {
       if (script.includes("local old = redis.call('GET'")) {
-        const [oldKey, familyKey, denyKey, nextKey, oldHash, , nextRecord, nextHash] =
+        const [oldKey, familyKey, denyKey, nextKey, , oldHash, , nextRecord, nextHash] =
           args.map(String);
         if (!this.store.get(oldKey) || this.store.get(familyKey) !== oldHash) return 0;
         this.store.delete(oldKey);
@@ -103,6 +103,7 @@ describe('AuthTokenService — stateful refresh rotation', () => {
       id: 'user-1',
       email: 'a@b.test',
       role: 'admin',
+      authVersion: 1,
     });
     expect(pair.accessToken).toMatch(/^eyJ/);
     expect(pair.refreshToken.split('.').length).toBe(2);
@@ -114,6 +115,7 @@ describe('AuthTokenService — stateful refresh rotation', () => {
       id: 'user-1',
       email: 'a@b.test',
       role: 'admin',
+      authVersion: 1,
     });
     const second = await svc.rotate(first.refreshToken);
     expect(second.refreshToken).not.toEqual(first.refreshToken);
@@ -127,6 +129,7 @@ describe('AuthTokenService — stateful refresh rotation', () => {
       id: 'user-1',
       email: 'a@b.test',
       role: 'admin',
+      authVersion: 1,
     });
     jest.spyOn(Date, 'now').mockReturnValue(1_000_000 + 40_000_000);
     const second = await svc.rotate(first.refreshToken);

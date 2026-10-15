@@ -39,7 +39,7 @@ export function LeadField({
   return (
     <div>
       <label className="block">
-        <span className="mb-1.5 block text-label font-semibold uppercase text-ink-2">
+        <span className="mb-1.5 block text-label font-medium uppercase text-ink-2">
           {label}
           {required && (
             <span aria-hidden className="text-danger">
@@ -52,15 +52,17 @@ export function LeadField({
           <textarea
             name={name}
             rows={3}
+            aria-required={required || undefined}
             aria-invalid={Boolean(error)}
             aria-describedby={errorId}
             defaultValue={defaultValue}
-            className={cn(base, 'resize-none py-2.5')}
+            className={cn(base, 'resize-y min-h-24 py-2.5')}
           />
         ) : (
           <input
             name={name}
             type={type}
+            aria-required={required || undefined}
             aria-invalid={Boolean(error)}
             aria-describedby={errorId}
             autoComplete={autoComplete}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { adminApi, type AdminListing, type FeeType, type SellerType } from '@/lib/api/admin';
@@ -35,6 +35,7 @@ import {
 import { SectionCard } from '@/components/admin/ui/section-card';
 import { Dialog } from '@/components/admin/ui/dialog';
 import { useToast } from '@/components/admin/ui/toast';
+import { MakeEditor, ModelEditor } from '@/components/admin/catalog/catalog-editor';
 import { CatalogCombobox } from './catalog-combobox';
 import { TransitionMenu } from './transition-menu';
 
@@ -94,53 +95,67 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
   const [optSaving, setOptSaving] = useState(false);
   const [optError, setOptError] = useState<string | null>(null);
 
-  const makes = useMemo(() => [...catalog.makes, ...extraMakes], [catalog.makes, extraMakes]);
-  const models = useMemo(
-    () => [...catalog.models, ...extraModels].filter((m) => !makeId || m.makeId === makeId),
-    [catalog.models, extraModels, makeId],
-  );
-
-  /** Inline make creation from the combobox; the logo arrives asynchronously. */
-  const createMake = async (name: string): Promise<CatalogMake | null> => {
-    try {
-      const accessToken = await fetchAccessToken();
-      if (!accessToken) {
-        setError(t('common.sessionExpired'));
-        return null;
+  const [catalogDialog, setCatalogDialog] = useState<{
+    kind: 'make' | 'model';
+    name: string;
+  } | null>(null);
+  const [freshMakes, setFreshMakes] = useState<CatalogMake[] | null>(null);
+  const [freshModels, setFreshModels] = useState<CatalogModel[] | null>(null);
+  const catalogMutationVersion = useRef(0);
+  const catalogRequestVersion = useRef(0);
+  // Pickers use the authenticated uncached view, including updates made in the dictionary.
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      const requestVersion = ++catalogRequestVersion.current;
+      const mutationVersion = catalogMutationVersion.current;
+      try {
+        const accessToken = await fetchAccessToken();
+        if (!accessToken) return;
+        const [nextMakes, nextModels] = await Promise.all([
+          adminApi.listCatalogMakes({ accessToken }),
+          adminApi.listCatalogModels(undefined, { accessToken }),
+        ]);
+        if (
+          active &&
+          requestVersion === catalogRequestVersion.current &&
+          mutationVersion === catalogMutationVersion.current
+        ) {
+          setFreshMakes(nextMakes);
+          setFreshModels(nextModels);
+          // A later server read supersedes the inline creation cache. A read
+          // started before a create completed must not discard that new item.
+          setExtraMakes([]);
+          setExtraModels([]);
+          setMakeId((current) => (nextMakes.some((make) => make.id === current) ? current : ''));
+          setModelId((current) =>
+            nextModels.some((model) => model.id === current) ? current : '',
+          );
+        }
+      } catch (cause) {
+        if (active)
+          setError(cause instanceof Error ? cause.message : t('form.catalogCreateFailed'));
       }
-      const created = await adminApi.createCatalogMake(
-        { nameUk: name, slug: slugify(name) },
-        { accessToken },
-      );
-      setExtraMakes((prev) => [...prev, created]);
-      toast(t('form.makeCreated', { name }));
-      return created;
-    } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : t('form.catalogCreateFailed'));
-      return null;
-    }
-  };
-
-  const createModel = async (name: string): Promise<CatalogModel | null> => {
-    if (!makeId) return null;
-    try {
-      const accessToken = await fetchAccessToken();
-      if (!accessToken) {
-        setError(t('common.sessionExpired'));
-        return null;
-      }
-      const created = await adminApi.createCatalogModel(
-        { nameUk: name, slug: slugify(name), makeId },
-        { accessToken },
-      );
-      setExtraModels((prev) => [...prev, created]);
-      toast(t('form.modelCreated', { name }));
-      return created;
-    } catch (e) {
-      setError(e instanceof ApiClientError ? e.message : t('form.catalogCreateFailed'));
-      return null;
-    }
-  };
+    };
+    void refresh();
+    window.addEventListener('focus', refresh);
+    return () => {
+      active = false;
+      window.removeEventListener('focus', refresh);
+    };
+  }, [t]);
+  const makes = useMemo(() => {
+    const all = new Map((freshMakes ?? catalog.makes).map((make) => [make.id, make]));
+    extraMakes.forEach((make) => all.set(make.id, make));
+    return [...all.values()];
+  }, [freshMakes, catalog.makes, extraMakes]);
+  const models = useMemo(() => {
+    const all = new Map((freshModels ?? catalog.models).map((model) => [model.id, model]));
+    extraModels.forEach((model) => all.set(model.id, model));
+    return [...all.values()].filter((model) => model.makeId === makeId);
+  }, [freshModels, catalog.models, extraModels, makeId]);
+  const createMake = (name: string) => setCatalogDialog({ kind: 'make', name });
+  const createModel = (name: string) => setCatalogDialog({ kind: 'model', name });
   const optionGroups = useMemo(() => {
     const normalized = (c: string) => (CATEGORY_ORDER.includes(c) ? c : 'other');
     const all = [...catalog.options, ...extraOptions];
@@ -308,9 +323,9 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
 
   const gridCls = 'grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3';
   const secondaryBtn =
-    'focus-ring inline-flex h-10 items-center rounded-[9px] border border-line-input bg-surface px-4 text-[13px] font-semibold text-ink transition-none hover:border-line-hover disabled:opacity-50';
+    'focus-ring inline-flex h-10 items-center rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink transition-none hover:border-line-hover disabled:opacity-50';
   const primaryBtn =
-    'focus-ring inline-flex h-10 items-center rounded-[9px] bg-accent px-[18px] text-[13px] font-bold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50';
+    'focus-ring inline-flex h-10 items-center rounded-none bg-accent px-[18px] text-[0.8125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50';
 
   // Publish requires at least one processed photo (backend 422s otherwise) and
   // photos are uploaded on the edit screen — so a brand-new listing is always
@@ -338,7 +353,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
                 setConflict(false);
                 router.refresh();
               }}
-              className="focus-ring h-[34px] rounded-[8px] border border-ratelimit-line bg-surface px-3.5 text-[12px] font-bold text-ratelimit"
+              className="focus-ring h-[34px] rounded-none border border-ratelimit-line bg-surface px-3.5 text-[0.75rem] font-medium text-ratelimit"
             >
               {t('form.conflictReload')}
             </button>
@@ -356,11 +371,11 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
       {/* Header: subtitle + title + actions */}
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-[12px] font-medium text-ink-3">
+          <div className="text-[0.75rem] font-medium text-ink-3">
             {isEdit ? t('form.editSubtitle') : t('form.createSubtitle')}
           </div>
           <div className="flex items-center gap-3">
-            <h1 className="truncate font-heading text-[21px] font-extrabold tracking-tight">
+            <h1 className="truncate font-heading text-[1.3125rem] font-medium tracking-tight">
               {initial?.title ?? t('form.createTitle')}
             </h1>
             {initial && <ListingStatusBadge status={initial.status} />}
@@ -422,6 +437,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
               placeholder={t('form.selectPlaceholder')}
               showLogos
               onCreate={createMake}
+              addLabel={t('catalog.addMake')}
               unknownHint={(name) => t('form.makeUnknown', { name })}
               createLabel={(name) => t('form.makeCreate', { name })}
               creatingLabel={t('common.saving')}
@@ -442,6 +458,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
               error={err('modelId')}
               placeholder={makeId ? t('form.selectPlaceholder') : t('form.modelPickMakeFirst')}
               onCreate={makeId ? createModel : undefined}
+              addLabel={t('catalog.addModel')}
               unknownHint={(name) => t('form.modelUnknown', { name })}
               createLabel={(name) => t('form.modelCreate', { name })}
               creatingLabel={t('common.saving')}
@@ -746,7 +763,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
                 />
               )}
               {initial?.status === 'sold' && initial.salePriceAmount && (
-                <p className="rounded-[9px] bg-ok-bg px-3 py-2 text-[13px] font-semibold text-ok">
+                <p className="rounded-none bg-ok-bg px-3 py-2 text-[0.8125rem] font-medium text-ok">
                   {t('form.saleResult', {
                     price: `${Number(initial.salePriceAmount).toLocaleString('uk-UA')} ${initial.priceCurrency}`,
                     commission: `${Number(initial.commissionAmount ?? 0).toLocaleString('uk-UA')} ${initial.priceCurrency}`,
@@ -763,7 +780,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
             <div className="flex flex-col gap-4">
               {optionGroups.map((g) => (
                 <div key={g.cat}>
-                  <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.06em] text-ink-3">
+                  <div className="mb-2 text-[0.6875rem] font-medium uppercase tracking-[0.06em] text-ink-3">
                     {tc(g.cat as never)}
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -787,7 +804,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
                       setOptError(null);
                       setOptDialog(true);
                     }}
-                    className="focus-ring inline-flex items-center gap-1.5 rounded-[8px] border border-dashed border-line-strong px-3 py-1.5 text-[12.5px] font-semibold text-ink-2 hover:border-accent hover:text-accent"
+                    className="focus-ring inline-flex items-center gap-1.5 rounded-none border border-dashed border-line-strong px-3 py-1.5 text-[0.78125rem] font-medium text-ink-2 hover:border-accent hover:text-accent"
                   >
                     <span aria-hidden>+</span>
                     {t('form.addOption')}
@@ -867,7 +884,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
           </>
         }
       >
-        <p className="text-[13.5px] font-medium leading-relaxed text-ink-2">
+        <p className="text-[0.84375rem] font-medium leading-relaxed text-ink-2">
           {t('form.transitionBody', {
             title: initial?.title ?? t('form.createTitle'),
             action: t('form.tPublish'),
@@ -932,6 +949,34 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
           </SelectField>
         </div>
       </Dialog>
+      {catalogDialog?.kind === 'make' && (
+        <MakeEditor
+          initialName={catalogDialog.name}
+          onClose={() => setCatalogDialog(null)}
+          onSaved={(make) => {
+            catalogMutationVersion.current++;
+            setExtraMakes((current) => [...current.filter((item) => item.id !== make.id), make]);
+            setMakeId(make.id);
+            setModelId('');
+            setCatalogDialog(null);
+            toast(t('form.makeCreated', { name: make.nameUk }));
+          }}
+        />
+      )}
+      {catalogDialog?.kind === 'model' && makes.find((make) => make.id === makeId) && (
+        <ModelEditor
+          make={makes.find((make) => make.id === makeId) as CatalogMake}
+          initialName={catalogDialog.name}
+          onClose={() => setCatalogDialog(null)}
+          onSaved={(model) => {
+            catalogMutationVersion.current++;
+            setExtraModels((current) => [...current.filter((item) => item.id !== model.id), model]);
+            setModelId(model.id);
+            setCatalogDialog(null);
+            toast(t('form.modelCreated', { name: model.nameUk }));
+          }}
+        />
+      )}
     </form>
   );
 }

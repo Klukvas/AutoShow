@@ -61,7 +61,7 @@ export default async function AdminListingsPage({
   const createBtn = (
     <Link
       href="/admin/listings/new"
-      className="focus-ring inline-flex h-[42px] items-center rounded-[10px] bg-accent px-[18px] text-[13.5px] font-bold text-on-accent transition-colors hover:bg-accent-hover"
+      className="focus-ring inline-flex h-[42px] items-center rounded-none bg-accent px-[18px] text-[0.84375rem] font-medium text-on-accent transition-colors hover:bg-accent-hover"
     >
       {t('listings.create')}
     </Link>
@@ -72,7 +72,7 @@ export default async function AdminListingsPage({
       <TopbarAction>
         <Link
           href="/admin/listings/new"
-          className="focus-ring inline-flex h-[34px] items-center rounded-[8px] bg-accent px-[13px] text-[12.5px] font-bold text-on-accent"
+          className="focus-ring inline-flex h-[34px] items-center rounded-none bg-accent px-[13px] text-[0.78125rem] font-medium text-on-accent"
         >
           {t('listings.createShort')}
         </Link>
@@ -80,11 +80,11 @@ export default async function AdminListingsPage({
 
       <header className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <h1 className="font-heading text-[20px] font-extrabold tracking-tight md:text-[24px]">
+          <h1 className="font-heading text-[1.25rem] font-medium tracking-tight md:text-[1.5rem]">
             {t('listings.title')}
           </h1>
           {page.total !== undefined && (
-            <p className="mt-[3px] text-[13px] font-medium text-ink-3">
+            <p className="mt-[3px] text-[0.8125rem] font-medium text-ink-3">
               {t('listings.totals', {
                 total: page.total,
                 drafts: draftsPage?.total ?? 0,
@@ -98,7 +98,7 @@ export default async function AdminListingsPage({
       <ListingsToolbar q={q} status={status} />
 
       {page.items.length === 0 ? (
-        <div className="rounded-[12px] border border-line bg-surface">
+        <div className="rounded-none border border-line bg-surface">
           {hasFilters ? (
             <EmptyState title={t('listings.noResultsTitle')} body={t('listings.noResultsBody')} />
           ) : (
@@ -108,7 +108,7 @@ export default async function AdminListingsPage({
               action={
                 <Link
                   href="/admin/listings/new"
-                  className="focus-ring inline-flex h-[42px] items-center rounded-[10px] bg-accent px-[18px] text-[13.5px] font-bold text-on-accent transition-colors hover:bg-accent-hover"
+                  className="focus-ring inline-flex h-[42px] items-center rounded-none bg-accent px-[18px] text-[0.84375rem] font-medium text-on-accent transition-colors hover:bg-accent-hover"
                 >
                   {t('listings.emptyCta')}
                 </Link>
@@ -117,7 +117,7 @@ export default async function AdminListingsPage({
           )}
         </div>
       ) : (
-        <div className="overflow-visible rounded-[12px] border border-line bg-surface">
+        <div className="overflow-visible rounded-none border border-line bg-surface">
           <ListingsTable items={page.items} canDelete={auth.session.user.role === 'admin'} />
           <div className="border-t border-line">
             <Pager

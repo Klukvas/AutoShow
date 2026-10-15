@@ -9,6 +9,7 @@ import { fetchAccessToken } from '@/lib/auth/use-access-token';
 import { Banner } from '@/components/admin/ui/banner';
 import { Dialog } from '@/components/admin/ui/dialog';
 import { MediaTile } from './media-tile';
+import { PhotoAiWorkspace } from './photo-ai/photo-ai-workspace';
 import {
   ACCEPT_ATTR,
   ACCEPTED_TYPES,
@@ -21,6 +22,7 @@ import {
 interface MediaManagerProps {
   listingId: string;
   initial: AdminMedia[];
+  readOnly?: boolean;
 }
 
 const POLL_MS = 4000;
@@ -51,7 +53,7 @@ function tileFromServer(m: AdminMedia): MediaTileState {
  * Upload pipeline per file: presign → XHR PUT (progress) → confirm →
  * poll listing until renditions are done.
  */
-export function MediaManager({ listingId, initial }: MediaManagerProps) {
+export function MediaManager({ listingId, initial, readOnly = false }: MediaManagerProps) {
   const t = useTranslations('admin.media');
   const tc = useTranslations('admin.common');
   const [tiles, setTiles] = useState<MediaTileState[]>(() => initial.map(tileFromServer));
@@ -59,8 +61,10 @@ export function MediaManager({ listingId, initial }: MediaManagerProps) {
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [drag, setDrag] = useState<{ from: number; over: number } | null>(null);
+  const dragRef = useRef<{ from: number; over: number } | null>(null);
   const [toDelete, setToDelete] = useState<MediaTileState | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [photoAiId, setPhotoAiId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const tilesRef = useRef(tiles);
@@ -296,63 +300,88 @@ export function MediaManager({ listingId, initial }: MediaManagerProps) {
 
   /* ---------------- reorder: pointer drag + keyboard ---------------- */
 
-  const onHandlePointerDown = (index: number) => (e: React.PointerEvent) => {
-    e.preventDefault();
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-    setDrag({ from: index, over: index });
+  const startReorder = (from: number) => {
+    dragRef.current = { from, over: from };
+    setDrag(dragRef.current);
+  };
 
-    const move = (ev: PointerEvent) => {
-      const el = document
-        .elementsFromPoint(ev.clientX, ev.clientY)
-        .find((n) => n instanceof HTMLElement && n.dataset.mediaTile !== undefined);
-      if (el instanceof HTMLElement) {
-        const over = Number(el.dataset.mediaTile);
-        setDrag((d) => (d ? { ...d, over } : d));
-      }
-    };
-    const up = () => {
-      document.removeEventListener('pointermove', move);
-      document.removeEventListener('pointerup', up);
-      setDrag((d) => {
-        if (d && d.from !== d.over) {
-          setTiles((prev) => {
-            const next = moveItem(prev, d.from, d.over);
-            persistOrder(next);
-            return next;
-          });
-        }
-        return null;
-      });
-    };
-    document.addEventListener('pointermove', move);
-    document.addEventListener('pointerup', up);
+  const moveReorder = (point: { x: number; y: number }) => {
+    const current = dragRef.current;
+    if (!current) return;
+    const target = document
+      .elementsFromPoint(point.x - window.scrollX, point.y - window.scrollY)
+      .find(
+        (node) =>
+          node instanceof HTMLElement &&
+          gridRef.current?.contains(node) &&
+          node.dataset.mediaTile !== undefined &&
+          Number(node.dataset.mediaTile) !== current.from,
+      );
+    const over = target instanceof HTMLElement ? Number(target.dataset.mediaTile) : current.from;
+    if (over === current.over) return;
+    dragRef.current = { ...current, over };
+    setDrag(dragRef.current);
+  };
+
+  const endReorder = (cancelled: boolean) => {
+    const current = dragRef.current;
+    dragRef.current = null;
+    setDrag(null);
+    if (cancelled || !current || current.from === current.over) return;
+    const next = moveItem(tilesRef.current, current.from, current.over);
+    setTiles(next);
+    persistOrder(next);
   };
 
   const onHandleKeyDown = (index: number) => (e: React.KeyboardEvent) => {
     const delta = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : 0;
     if (!delta) return;
     e.preventDefault();
-    setTiles((prev) => {
-      const next = moveItem(prev, index, index + delta);
-      persistOrder(next);
-      return next;
-    });
+    const destination = Math.max(0, Math.min(tilesRef.current.length - 1, index + delta));
+    if (destination === index) return;
+    const next = moveItem(tilesRef.current, index, destination);
+    setTiles(next);
+    persistOrder(next);
     // Keep focus on the moved tile's handle after re-render.
     requestAnimationFrame(() => {
       gridRef.current
         ?.querySelector<HTMLElement>(
-          `[data-media-tile="${index + delta}"] button[aria-label="${t('dragHandle')}"]`,
+          `[data-media-tile="${destination}"] button[aria-label="${t('dragHandle')}"]`,
         )
         ?.focus();
     });
   };
 
   /* ---------------- render ---------------- */
+  if (readOnly)
+    return (
+      <div>
+        <Banner tone="info" className="mb-3">
+          Продане оголошення доступне лише для перегляду.
+        </Banner>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {initial.map((item) => (
+            <div key={item.id} className="aspect-[4/3] overflow-hidden bg-surface">
+              {/* eslint-disable-next-line @next/next/no-img-element -- stored thumbnail */}
+              {item.thumbUrl ? (
+                <img
+                  src={item.thumbUrl}
+                  alt="Фото проданого авто"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span>Фото</span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
 
   return (
     <div>
       <div className="mb-4 flex items-center justify-between gap-3">
-        <span className="text-[12px] font-medium text-ink-3">{t('reorderHint')}</span>
+        <span className="text-[0.75rem] font-medium text-ink-3">{t('reorderHint')}</span>
       </div>
 
       {error && (
@@ -379,24 +408,24 @@ export function MediaManager({ listingId, initial }: MediaManagerProps) {
           if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
         }}
         className={cn(
-          'mb-[18px] rounded-[12px] border-2 border-dashed px-5 py-[22px] text-center transition-colors',
+          'mb-[18px] rounded-none border-2 border-dashed px-5 py-[22px] text-center transition-colors',
           dragOver ? 'border-accent bg-accent/[0.08]' : 'border-accent/30 bg-accent/[0.04]',
         )}
       >
-        <div aria-hidden className="mb-1.5 text-[24px] leading-none text-accent">
+        <div aria-hidden className="mb-1.5 text-[1.5rem] leading-none text-accent">
           ⬆
         </div>
-        <p className="text-[13.5px] font-semibold text-accent-hover">
+        <p className="text-[0.84375rem] font-medium text-accent-hover">
           {t('dropText')}{' '}
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="focus-ring rounded-[4px] underline"
+            className="focus-ring rounded-none underline"
           >
             {t('browse')}
           </button>
         </p>
-        <p className="mt-1 text-[11.5px] font-medium text-ink-3">
+        <p className="mt-1 text-[0.71875rem] font-medium text-ink-3">
           {t('dropHint', { size: MAX_FILE_MB })}
         </p>
         <input
@@ -422,10 +451,13 @@ export function MediaManager({ listingId, initial }: MediaManagerProps) {
             index={i}
             isDropTarget={drag !== null && drag.over === i && drag.from !== i}
             isDragging={drag !== null && drag.from === i}
+            onPhotoAi={() => tile.mediaId && setPhotoAiId(tile.mediaId)}
             onMakeCover={() => makeCover(tile)}
             onDelete={() => setToDelete(tile)}
             onRetry={() => retry(tile)}
-            onHandlePointerDown={onHandlePointerDown(i)}
+            onReorderStart={() => startReorder(i)}
+            onReorderMove={moveReorder}
+            onReorderEnd={endReorder}
             onHandleKeyDown={onHandleKeyDown(i)}
           />
         ))}
@@ -434,11 +466,29 @@ export function MediaManager({ listingId, initial }: MediaManagerProps) {
           type="button"
           onClick={() => inputRef.current?.click()}
           aria-label={t('browse')}
-          className="focus-ring flex h-24 items-center justify-center rounded-[10px] border-2 border-dashed border-line-strong text-[22px] text-ph-glyph hover:border-line-hover hover:text-ink-3"
+          className="focus-ring flex h-32 items-center justify-center rounded-none border-2 border-dashed border-line-strong text-[1.375rem] text-ph-glyph hover:border-line-hover hover:text-ink-3"
         >
           +
         </button>
       </div>
+
+      {photoAiId && (
+        <PhotoAiWorkspace
+          mediaId={photoAiId}
+          onClose={() => setPhotoAiId(null)}
+          onApplied={async () => {
+            const token = await fetchAccessToken();
+            if (!token) throw new Error(tc('sessionExpired'));
+            const listing = await adminApi.getListing(listingId, { accessToken: token });
+            setTiles((prev) =>
+              prev.map((tile) => {
+                const media = listing.media?.find((m) => m.id === tile.mediaId);
+                return media ? { ...tile, previewUrl: media.thumbUrl ?? tile.previewUrl } : tile;
+              }),
+            );
+          }}
+        />
+      )}
 
       <Dialog
         open={toDelete !== null}
@@ -450,7 +500,7 @@ export function MediaManager({ listingId, initial }: MediaManagerProps) {
               type="button"
               onClick={() => setToDelete(null)}
               disabled={deleting}
-              className="focus-ring h-10 rounded-[9px] border border-line-input bg-surface px-4 text-[13px] font-semibold text-ink"
+              className="focus-ring h-10 rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink"
             >
               {tc('cancel')}
             </button>
@@ -458,14 +508,16 @@ export function MediaManager({ listingId, initial }: MediaManagerProps) {
               type="button"
               onClick={() => void confirmDelete()}
               disabled={deleting}
-              className="focus-ring h-10 rounded-[9px] bg-danger px-4 text-[13px] font-bold text-white disabled:opacity-60"
+              className="focus-ring h-10 rounded-none platform-destructive px-4 text-[0.8125rem] font-medium disabled:opacity-60"
             >
               {deleting ? tc('saving') : tc('delete')}
             </button>
           </>
         }
       >
-        <p className="text-[13.5px] font-medium leading-relaxed text-ink-2">{t('deleteBody')}</p>
+        <p className="text-[0.84375rem] font-medium leading-relaxed text-ink-2">
+          {t('deleteBody')}
+        </p>
         {error && (
           <Banner tone="error" className="mt-3">
             {error}

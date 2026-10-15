@@ -17,6 +17,23 @@ export enum NodeEnv {
 }
 
 export class EnvSchema {
+  @IsString()
+  @IsOptional()
+  PHOTO_AI_ENCRYPTION_KEY?: string;
+
+  @IsString()
+  PHOTO_AI_MODEL: string = 'gpt-image-2.5-sunburst';
+
+  @IsInt()
+  @Min(10)
+  @Max(600)
+  PHOTO_AI_TIMEOUT_SECONDS: number = 240;
+
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  PHOTO_AI_JOBS_PER_HOUR: number = 10;
+
   @IsEnum(NodeEnv)
   NODE_ENV: NodeEnv = NodeEnv.Development;
 
@@ -173,29 +190,6 @@ export class EnvSchema {
   @Min(60)
   FX_CACHE_TTL: number = 3600;
 
-  @IsString()
-  @IsOptional()
-  SMTP_HOST?: string;
-
-  @IsInt()
-  @IsOptional()
-  SMTP_PORT?: number;
-
-  @IsString()
-  @IsOptional()
-  SMTP_USER?: string;
-
-  @IsString()
-  @IsOptional()
-  SMTP_PASS?: string;
-
-  @IsString()
-  EMAIL_FROM!: string;
-
-  @IsString()
-  @IsOptional()
-  LEAD_NOTIFY_TO?: string;
-
   @IsInt()
   @Min(1)
   LEAD_RATE_PER_HOUR: number = 5;
@@ -241,6 +235,19 @@ export function validateEnv(raw: Record<string, unknown>): EnvSchema {
       .map((e) => `${e.property}: ${Object.values(e.constraints ?? {}).join(', ')}`)
       .join('\n');
     throw new Error(`Invalid environment configuration:\n${formatted}`);
+  }
+
+  if (instance.PHOTO_AI_ENCRYPTION_KEY) {
+    const key = instance.PHOTO_AI_ENCRYPTION_KEY;
+    if (
+      !/^[A-Za-z0-9+/]{43}=$/.test(key) ||
+      Buffer.from(key, 'base64').length !== 32 ||
+      Buffer.from(key, 'base64').toString('base64') !== key
+    ) {
+      throw new Error(
+        'Invalid environment configuration: PHOTO_AI_ENCRYPTION_KEY must be a base64 encoded 32-byte key',
+      );
+    }
   }
 
   // Placeholder secrets from .env.example must never survive into production —

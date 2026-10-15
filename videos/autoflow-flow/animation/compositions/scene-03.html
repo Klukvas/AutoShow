@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="uk">
+  <head></head>
+  <body>
+    <template
+      ><div
+        data-hf-id="hf-513u"
+        id="scene-03"
+        class="scene"
+        data-scene-view="03"
+        data-composition-id="scene-03"
+        data-width="1080"
+        data-height="1920"
+        data-duration="5"
+      >
+        <div data-hf-id="hf-9r3x" class="scene-body">
+          <div data-hf-id="hf-3fbd" class="arc" data-layout-ignore=""></div>
+          <div data-hf-id="hf-tt2s" class="arc bottom" data-layout-ignore=""></div>
+          <h2 data-hf-id="hf-t43f" class="headline">
+            <span data-hf-id="hf-kp78">Опублікуйте авто</span
+            ><span data-hf-id="hf-t235" class="red">на своєму сайті</span>
+          </h2>
+          <div data-hf-id="hf-w50w" class="button publish">Опублікувати</div>
+          <div data-hf-id="hf-u0ad" class="cursor" style="left: 430px; top: 535px">
+            <svg data-hf-id="hf-trex" viewBox="0 0 70 90">
+              <path data-hf-id="hf-8tz5" d="M8 3v69l18-17 15 30 14-7-16-29 25-2Z" />
+            </svg>
+          </div>
+          <svg
+            data-hf-id="hf-4odl"
+            class="click-rays"
+            style="left: 368px; top: 470px"
+            viewBox="0 0 100 100"
+          >
+            <path
+              data-hf-id="hf-g72y"
+              d="M50 5v15M18 18l12 12M5 50h15M82 18 70 30M18 82l12-12"
+            /></svg
+          ><svg
+            data-hf-id="hf-qixm"
+            class="draw-arrow"
+            style="left: 550px; top: 550px; width: 200px; height: 185px"
+            viewBox="0 0 200 185"
+          >
+            <path data-hf-id="hf-a9qo" d="M10 8Q135 20 150 155M123 137l27 24 20-36" />
+          </svg>
+          <div data-hf-id="hf-2m1a" class="browser ui">
+            <div data-hf-id="hf-s60r" class="browser-chrome">
+              <i data-hf-id="hf-wt6k"></i><i data-hf-id="hf-zeb8"></i><i data-hf-id="hf-y7e5"></i>
+            </div>
+            <div data-hf-id="hf-t5p5" class="site-nav">
+              <strong data-hf-id="hf-o60h">ВАШ АВТОСАЛОН</strong
+              ><span data-hf-id="hf-0zhd">Авто　Послуги　Про нас　☰</span>
+            </div>
+            <div data-hf-id="hf-e584" class="site-gallery">
+              <div data-hf-id="hf-wcox" class="site-main">
+                <img
+                  data-hf-id="hf-znqy"
+                  src="assets/images/mercedes-e2025-w214.png"
+                  alt="Білий Mercedes-Benz E-Class 2025"
+                />
+              </div>
+              <div data-hf-id="hf-go5f" class="thumbs">
+                <div data-hf-id="hf-mixc" class="thumb">
+                  <img
+                    data-hf-id="hf-uhsu"
+                    src="assets/images/mercedes-e2025-w214.png"
+                    alt="Білий Mercedes-Benz E-Class 2025"
+                  />
+                </div>
+                <div data-hf-id="hf-gz0r" class="thumb detail">
+                  <img
+                    data-hf-id="hf-uw3v"
+                    src="assets/images/mercedes-e2025-w214.png"
+                    alt="Білий Mercedes-Benz E-Class 2025"
+                  />
+                </div>
+                <div data-hf-id="hf-apwr" class="thumb detail">
+                  <img
+                    data-hf-id="hf-vaew"
+                    src="assets/images/mercedes-e2025-w214.png"
+                    alt="Білий Mercedes-Benz E-Class 2025"
+                  />
+                </div>
+              </div>
+            </div>
+            <div data-hf-id="hf-4ei1" class="car-title">Mercedes-Benz E-Class</div>
+            <p data-hf-id="hf-y6uh" class="car-meta">2025　|　Бензин　|　Автомат</p>
+            <p data-hf-id="hf-bsk6" class="price">Ціна за запитом</p>
+            <div data-hf-id="hf-dta7" class="button">Залишити заявку</div>
+          </div>
+          <div data-hf-id="hf-8sgz" class="site-footer">
+            Ваш сайт.
+            <div data-hf-id="hf-at5j">Більше клієнтів.</div>
+            <div data-hf-id="hf-1h9w">Більше продажів.</div>
+          </div>
+        </div>
+      </div>
+      <script>
+        const tl = gsap.timeline({ paused: true, defaults: { ease: 'power3.out' } });
+        const scope = '[data-scene-view="03"]';
+        tl.fromTo(
+          scope + ' .headline span',
+          { y: 65, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.58, stagger: 0.11 },
+          0.05,
+        );
+        tl.fromTo(scope + ' .arc', { rotation: -6 }, { rotation: 0, duration: 5, ease: 'none' }, 0);
+        const paths = document.querySelectorAll(scope + ' .draw-arrow path');
+        paths.forEach((path) => {
+          const length = path.getTotalLength();
+          path.style.strokeDasharray = length;
+          tl.fromTo(
+            path,
+            { strokeDashoffset: length },
+            { strokeDashoffset: 0, duration: 0.55, ease: 'none' },
+            2.0,
+          );
+        });
+        tl.fromTo(
+          scope + ' .publish',
+          { scale: 0.8, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.2)' },
+          0.35,
+        );
+        tl.fromTo(
+          scope + ' .browser',
+          { y: 170, scale: 0.91, opacity: 0 },
+          { y: 0, scale: 1, opacity: 1, duration: 0.65 },
+          1.3,
+        );
+        tl.fromTo(
+          scope + ' .site-gallery',
+          { y: 35, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.45 },
+          1.6,
+        );
+        tl.fromTo(
+          scope +
+            ' .browser .car-title,' +
+            scope +
+            ' .browser .car-meta,' +
+            scope +
+            ' .browser .price,' +
+            scope +
+            ' .browser .button',
+          { y: 22, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.35, stagger: 0.1 },
+          1.95,
+        );
+        tl.fromTo(
+          scope + ' .site-footer',
+          { y: 35, opacity: 0 },
+          { y: 0, opacity: 1, duration: 0.45 },
+          2.7,
+        );
+        tl.fromTo(
+          scope + ' .cursor',
+          { x: 150, y: 170, opacity: 0 },
+          { x: 0, y: 0, opacity: 1, duration: 0.5 },
+          0.25,
+        );
+        tl.to(
+          [scope + ' .publish', scope + ' .cursor'],
+          { scale: 0.94, duration: 0.1, ease: 'power1.in' },
+          0.8,
+        );
+        tl.to(
+          [scope + ' .publish', scope + ' .cursor'],
+          { scale: 1, duration: 0.3, ease: 'back.out(1.6)' },
+          0.9,
+        );
+        tl.fromTo(
+          scope + ' .click-rays',
+          { scale: 0.55, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.1 },
+          0.8,
+        );
+        tl.to(scope + ' .click-rays', { scale: 1.3, opacity: 0, duration: 0.35 }, 0.9);
+        tl.to(scope + ' .cursor', { opacity: 0, duration: 0.25 }, 1.3);
+        window.__timelines['scene-03'] = tl;
+      </script></template
+    >
+  </body>
+</html>

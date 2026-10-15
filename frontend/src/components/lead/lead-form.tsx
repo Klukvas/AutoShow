@@ -118,7 +118,7 @@ export function LeadForm({ listingId, variant = 'callback' }: LeadFormProps) {
   if (status === 'success') {
     return (
       <div className="rounded-card border border-line bg-surface p-6">
-        <h2 className="font-heading text-section font-bold text-ink">{t('title')}</h2>
+        <h2 className="font-heading text-section font-medium text-ink">{t('title')}</h2>
         <div className="mt-4 flex items-start gap-3 rounded-input bg-ok-bg p-4">
           <span aria-hidden className="text-ok">
             ✓
@@ -138,7 +138,7 @@ export function LeadForm({ listingId, variant = 'callback' }: LeadFormProps) {
       noValidate
       className="rounded-card border border-line bg-surface p-6"
     >
-      <h2 className="font-heading text-section font-bold text-ink">{t('title')}</h2>
+      <h2 className="font-heading text-section font-medium text-ink">{t('title')}</h2>
       <p className="mt-1 text-body-md text-ink-2">{t('subtitle')}</p>
 
       {/* Lead type segment */}
@@ -155,9 +155,9 @@ export function LeadForm({ listingId, variant = 'callback' }: LeadFormProps) {
             aria-checked={leadType === type}
             onClick={() => setLeadType(type)}
             className={cn(
-              'focus-ring h-10 flex-1 whitespace-nowrap rounded-btn px-3 text-sub font-semibold transition-colors',
+              'focus-ring h-10 flex-1 whitespace-nowrap rounded-btn px-3 text-sub font-medium transition-colors',
               leadType === type
-                ? 'bg-surface text-ink shadow-cta-sticky'
+                ? 'bg-surface text-ink shadow-none'
                 : 'text-ink-2 hover:text-ink',
             )}
           >
@@ -262,7 +262,7 @@ function Field({
   return (
     <div>
       <label className="block">
-        <span className="mb-1.5 block text-label font-semibold uppercase text-ink-2">
+        <span className="mb-1.5 block text-label font-medium uppercase text-ink-2">
           {label}
           {required && (
             <span aria-hidden className="text-danger">

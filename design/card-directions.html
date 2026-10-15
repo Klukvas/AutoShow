@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AutoFlow · Listing card — 3 directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Schibsted+Grotesk:wght@600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+/* =====================================================================
+ *  AutoFlow — listing card, 3 design directions (non-destructive mock).
+ *  Tokens mirror frontend/src/styles/globals.css + tailwind.config.ts so
+ *  the winner maps straight back onto listing-card.tsx.
+ *
+ *  A · Handoff      — current apple-fluid identity, polished (baseline)
+ *  B · Showroom Noir— dark, edge-to-edge photo + frosted-glass info sheet
+ *  C · Paper Lot    — warm editorial / auction-catalogue, price as hero
+ * ===================================================================== */
+
+:root{
+  --font-sans:'Onest',system-ui,sans-serif;
+  --font-display:'Schibsted Grotesk',var(--font-sans);
+  /* light handoff palette (globals.css :root) */
+  --bg:245 245 242; --canvas:237 237 232; --surface:255 255 255;
+  --ink:20 22 27; --ink-2:86 91 103; --ink-3:140 146 158;
+  --line:236 236 230; --line-hover:214 214 207;
+  --accent:46 83 230; --accent-hover:35 64 192; --on-accent:255 255 255;
+  --ok:31 157 87; --warn-strong:182 123 0;
+  --shadow:20 22 27;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{
+  font-family:var(--font-sans);
+  background:#141519;
+  color:#e9eaee;
+  padding:56px 24px 96px;
+  background-image:
+    radial-gradient(1100px 600px at 15% -8%,rgba(46,83,230,.10),transparent 60%),
+    radial-gradient(900px 520px at 100% 0%,rgba(240,163,60,.06),transparent 55%);
+}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* ---- page header ---- */
+.masthead{margin-bottom:44px}
+.masthead .kick{
+  font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+  color:#8b93a6;font-weight:700;margin-bottom:14px;
+}
+.masthead h1{
+  font-family:var(--font-display);font-weight:900;
+  font-size:clamp(30px,5vw,52px);line-height:1.04;letter-spacing:-.02em;
+  color:#f6f7fa;max-width:20ch;
+}
+.masthead p{margin-top:16px;max-width:64ch;color:#a7adba;font-size:15px;line-height:1.65}
+.masthead .note{
+  margin-top:18px;display:inline-flex;gap:9px;align-items:center;
+  font-size:12.5px;color:#9aa0ad;border:1px solid rgba(255,255,255,.09);
+  background:rgba(255,255,255,.03);padding:8px 13px;border-radius:11px;
+}
+.masthead .note b{color:#d7dae1;font-weight:700}
+
+/* ---- direction section shell ---- */
+.dir{border-radius:24px;padding:34px 32px 40px;margin-bottom:30px;position:relative;overflow:hidden}
+.dir-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:18px 28px;margin-bottom:30px}
+.dir-tag{
+  font-size:11px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;
+  padding:5px 11px;border-radius:999px;white-space:nowrap;
+}
+.dir-title{font-family:var(--font-display);font-weight:800;font-size:24px;letter-spacing:-.01em;line-height:1}
+.dir-sub{font-size:13.5px;line-height:1.5;max-width:52ch;margin-top:7px}
+.swatches{display:flex;gap:7px;margin-left:auto;align-items:center}
+.sw{width:26px;height:26px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.sw span{display:none}
+.grid{
+  display:grid;gap:22px;
+  grid-template-columns:repeat(auto-fill,minmax(268px,1fr));
+}
+@media(max-width:900px){.dir{padding:26px 18px 32px}}
+
+/* base card typographic helpers */
+.tabular{font-variant-numeric:tabular-nums}
+
+/* =====================================================================
+ *  A · HANDOFF  (baseline — current identity)
+ * ===================================================================== */
+.dir--a{background:rgb(var(--canvas));color:rgb(var(--ink))}
+.dir--a .dir-tag{background:rgb(var(--ink));color:#fff}
+.dir--a .dir-title{color:rgb(var(--ink))}
+.dir--a .dir-sub{color:rgb(var(--ink-2))}
+
+.card-a{
+  display:block;background:rgb(var(--surface));border:1px solid rgb(var(--line));
+  border-radius:14px;overflow:hidden;text-decoration:none;color:inherit;
+  transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s,border-color .2s;
+}
+.card-a:hover{transform:translateY(-3px);border-color:rgb(var(--line-hover));
+  box-shadow:0 16px 32px -18px rgb(var(--shadow)/.32)}
+.card-a .photo{position:relative;height:172px;overflow:hidden;background:linear-gradient(135deg,#eef0f2,#e0e2e6)}
+.card-a .photo img{width:100%;height:100%;object-fit:cover;display:block}
+.card-a .tl{position:absolute;left:12px;top:12px;display:flex;gap:6px}
+.chip{font-size:11px;font-weight:700;letter-spacing:.02em;padding:3px 8px;border-radius:999px;backdrop-filter:blur(6px)}
+.card-a .cond{background:rgba(255,255,255,.86);color:rgb(var(--ink-2));box-shadow:inset 0 0 0 1px rgba(20,22,27,.06)}
+.card-a .new{background:rgb(var(--accent));color:#fff}
+.card-a .fav{position:absolute;right:10px;top:10px;width:32px;height:32px;border-radius:999px;
+  background:rgba(255,255,255,.86);display:grid;place-items:center;backdrop-filter:blur(6px);
+  box-shadow:inset 0 0 0 1px rgba(20,22,27,.06);font-size:14px}
+.card-a .count{position:absolute;right:12px;bottom:12px;font-size:11px;font-weight:700;color:#fff;
+  background:rgba(0,0,0,.55);border-radius:8px;padding:2px 7px;backdrop-filter:blur(4px)}
+.card-a .body{padding:16px}
+.card-a h3{font-size:15.5px;font-weight:700;line-height:1.35;transition:color .15s}
+.card-a:hover h3{color:rgb(var(--accent-hover))}
+.card-a .meta{margin-top:2px;font-size:12.5px;color:rgb(var(--ink-3))}
+.card-a .row{margin-top:11px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.card-a .price{font-family:var(--font-display);font-size:18px;font-weight:800;color:rgb(var(--ink))}
+.card-a .drop{font-size:11px;font-weight:700;color:rgb(var(--ok));background:rgb(var(--ok)/.1);border-radius:999px;padding:2px 6px;margin-left:6px}
+.card-a .city{font-size:12.5px;color:rgb(var(--ink-2))}
+
+/* =====================================================================
+ *  B · SHOWROOM NOIR  (bold — dark glass, full-bleed photo)
+ * ===================================================================== */
+.dir--b{
+  background:#0b0d10;color:#e7e9ee;
+  background-image:radial-gradient(120% 90% at 50% -10%,#151a22,#0a0c0f 62%);
+}
+.dir--b::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E")}
+.dir--b .dir-head,.dir--b .grid{position:relative;z-index:1}
+.dir--b .dir-tag{background:#f0a33c;color:#1a1205}
+.dir--b .dir-title{color:#f4f6fb}
+.dir--b .dir-sub{color:#9aa2b2}
+
+.card-b{
+  position:relative;display:block;height:322px;border-radius:20px;overflow:hidden;
+  text-decoration:none;color:#fff;isolation:isolate;
+  box-shadow:0 22px 48px -26px rgba(0,0,0,.9),inset 0 0 0 1px rgba(255,255,255,.06);
+  transition:transform .35s cubic-bezier(.2,.7,.2,1),box-shadow .35s;
+}
+.card-b:hover{transform:translateY(-4px);box-shadow:0 34px 66px -28px rgba(0,0,0,.95),inset 0 0 0 1px rgba(255,255,255,.12)}
+.card-b .photo{position:absolute;inset:0;background:linear-gradient(135deg,#23303f,#0e1620)}
+.card-b .photo img{width:100%;height:100%;object-fit:cover;display:block;
+  transform:scale(1.02);transition:transform .6s cubic-bezier(.2,.7,.2,1);filter:saturate(1.05)}
+.card-b:hover .photo img{transform:scale(1.09)}
+.card-b .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,11,.32) 0%,transparent 34%,transparent 46%,rgba(6,8,11,.72) 100%)}
+.card-b .tl{position:absolute;left:14px;top:14px;display:flex;gap:8px;z-index:2}
+.card-b .cond{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  padding:5px 10px;border-radius:999px;color:#eef1f6;background:rgba(12,15,20,.42);
+  backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.card-b .new{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  padding:5px 10px;border-radius:999px;color:#1a1205;background:#f0a33c;
+  box-shadow:0 6px 18px -6px rgba(240,163,60,.8)}
+.card-b .fav{position:absolute;right:12px;top:12px;z-index:2;width:36px;height:36px;border-radius:999px;
+  display:grid;place-items:center;color:#fff;background:rgba(12,15,20,.42);
+  backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14);font-size:15px}
+.card-b .status{position:absolute;left:14px;top:52px;z-index:2;font-size:10.5px;font-weight:800;
+  letter-spacing:.14em;text-transform:uppercase;padding:5px 10px;border-radius:999px;
+  color:#f0a33c;background:rgba(12,15,20,.42);backdrop-filter:blur(14px);box-shadow:inset 0 0 0 1px rgba(240,163,60,.35)}
+/* frosted glass info sheet */
+.card-b .sheet{position:absolute;left:10px;right:10px;bottom:10px;z-index:2;padding:14px 15px 15px;
+  border-radius:14px;background:rgba(16,19,26,.52);backdrop-filter:blur(22px) saturate(1.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 10px 30px -14px rgba(0,0,0,.7);
+  transition:transform .35s cubic-bezier(.2,.7,.2,1)}
+.card-b:hover .sheet{transform:translateY(-2px)}
+.card-b h3{font-size:16px;font-weight:700;letter-spacing:-.01em}
+.card-b h3 .u{color:#8fa6ff}
+.card-b .meta{margin-top:2px;font-size:12px;color:#b6bccb}
+.card-b .row{margin-top:9px;display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.card-b .price{font-family:var(--font-display);font-size:27px;font-weight:800;line-height:1;letter-spacing:-.01em;color:#fff}
+.card-b .price small{font-size:14px;font-weight:700;color:#aeb6c6;margin-left:2px}
+.card-b .drop{display:inline-block;margin-top:5px;font-size:11px;font-weight:800;color:#8ff0be;
+  background:rgba(61,190,118,.16);border-radius:999px;padding:2px 8px}
+.card-b .city{font-size:12px;color:#c3c9d6;display:inline-flex;gap:5px;align-items:center}
+.card-b .count{align-self:flex-end;font-size:11px;font-weight:700;color:#cdd3df}
+
+/* =====================================================================
+ *  C · PAPER LOT  (bold — warm editorial / auction catalogue)
+ * ===================================================================== */
+.dir--c{
+  --paper:#f3efe4;--card:#fbf8f1;--frame:#e2dccb;--ink-c:#211d16;--ink-c2:#6d6857;
+  --lot:#a68a4f;--stamp:#b4453c;
+  background:var(--paper);color:var(--ink-c);
+  background-image:
+    linear-gradient(rgba(120,105,70,.05) 1px,transparent 1px),
+    radial-gradient(90% 70% at 50% 0%,rgba(255,255,255,.5),transparent 60%);
+  background-size:100% 34px,100% 100%;
+}
+.dir--c .dir-tag{background:var(--stamp);color:#fbf5ec}
+.dir--c .dir-title{color:var(--ink-c);font-family:var(--font-display)}
+.dir--c .dir-sub{color:var(--ink-c2)}
+.dir--c .grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+
+.card-c{
+  display:block;background:var(--card);border:1px solid var(--frame);
+  border-radius:6px;overflow:hidden;text-decoration:none;color:var(--ink-c);
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset,0 10px 24px -20px rgba(50,40,20,.6);
+  transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.card-c:hover{transform:translateY(-1px);border-color:var(--lot);box-shadow:0 14px 30px -20px rgba(50,40,20,.7)}
+.card-c .top{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px 9px;border-bottom:1px solid var(--frame)}
+.card-c .cond{font-size:10px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-c2)}
+.card-c .lot{font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;color:var(--lot)}
+.card-c .photo{position:relative;margin:12px 12px 0;height:158px;overflow:hidden;border-radius:3px;
+  background:linear-gradient(135deg,#e7e2d4,#d8d1bd);box-shadow:inset 0 0 0 1px rgba(80,66,36,.12)}
+.card-c .photo img{width:100%;height:100%;object-fit:cover;display:block;filter:contrast(1.02) saturate(.96)}
+.card-c .new{position:absolute;left:9px;top:9px;font-size:9.5px;font-weight:800;letter-spacing:.16em;
+  text-transform:uppercase;color:#fbf5ec;background:var(--stamp);padding:4px 8px;border-radius:2px;
+  transform:rotate(-2deg);box-shadow:0 4px 10px -5px rgba(180,69,60,.7)}
+.card-c .count{position:absolute;right:9px;bottom:9px;font:700 10px/1 ui-monospace,monospace;
+  color:#efe9db;background:rgba(33,29,22,.62);padding:4px 7px;border-radius:2px;letter-spacing:.06em}
+.card-c .body{padding:13px 14px 15px}
+.card-c h3{font-family:var(--font-display);font-size:18px;font-weight:800;line-height:1.12;letter-spacing:-.01em}
+.card-c .spec{margin-top:9px;padding:8px 0;border-top:1px solid var(--frame);border-bottom:1px solid var(--frame);
+  display:flex;gap:9px;font:600 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.02em;color:var(--ink-c2);text-transform:uppercase}
+.card-c .spec i{color:var(--frame);font-style:normal}
+.card-c .foot{margin-top:12px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.card-c .plabel{font-size:9.5px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-c2)}
+.card-c .price{font-family:var(--font-display);font-size:34px;font-weight:900;line-height:.92;letter-spacing:-.02em;color:var(--ink-c)}
+.card-c .price small{font-size:16px;font-weight:800;color:var(--ink-c2)}
+.card-c .drop{font-size:10.5px;font-weight:800;color:var(--stamp);letter-spacing:.04em}
+.card-c .city{font:600 11px/1 ui-monospace,monospace;letter-spacing:.04em;color:var(--ink-c2);text-align:right}
+
+.legend{margin-top:60px;padding-top:24px;border-top:1px solid rgba(255,255,255,.08);
+  color:#8b93a6;font-size:12.5px;line-height:1.7;max-width:78ch}
+.legend b{color:#cfd4dd}
+.legend code{background:rgba(255,255,255,.06);padding:1px 6px;border-radius:5px;font-size:11.5px;color:#c8b58f}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kick">AutoFlow · vitrina · card studio</div>
+    <h1>Одна карточка, три настроения.</h1>
+    <p>Та же тройка авто в трёх направлениях — чтобы «поиграться» с цветом, трактовкой карточки и подачей цены/бейджей. Токены и шрифты — из&nbsp;<b>globals.css</b> / <b>tailwind.config.ts</b>, так что победитель ложится обратно в <code style="color:#c8b58f">listing-card.tsx</code> почти без перевода.</p>
+    <span class="note">🧪&nbsp; <b>Мок, прод не тронут.</b>&nbsp;Файл: <b>design/card-directions.html</b> — открой в браузере, наведи на карточки.</span>
+  </header>
+
+  <!-- ============================ A ============================ -->
+  <section class="dir dir--a">
+    <div class="dir-head">
+      <div>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+          <span class="dir-tag">A · baseline</span>
+          <span class="dir-title">Handoff</span>
+        </div>
+        <p class="dir-sub">Твоя текущая apple-fluid айдентика, начищенная: белая поверхность, радиус 14, мягкая тень, hover-lift 3px, синий акцент. Спокойно и знакомо.</p>
+      </div>
+      <div class="swatches" title="palette">
+        <div class="sw" style="background:#ffffff"></div>
+        <div class="sw" style="background:#edede8"></div>
+        <div class="sw" style="background:#2e53e6"></div>
+        <div class="sw" style="background:#14161b"></div>
+        <div class="sw" style="background:#1f9d57"></div>
+      </div>
+    </div>
+    <div class="grid">
+      <!-- card 1 -->
+      <a class="card-a" href="#">
+        <div class="photo">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=70" alt="BMW X5" onerror="this.style.display='none'"/>
+          <div class="tl"><span class="chip cond">Вживаний</span><span class="chip new">Щойно</span></div>
+          <div class="fav">♡</div>
+          <span class="count">📷 24</span>
+        </div>
+        <div class="body">
+          <h3>BMW X5 xDrive30d</h3>
+          <p class="meta">2021 · 54 000 км</p>
+          <div class="row">
+            <span><span class="price tabular">1 450 000&nbsp;₴</span><span class="drop">↓8%</span></span>
+            <span class="city">📍 Київ</span>
+          </div>
+        </div>
+      </a>
+      <!-- card 2 -->
+      <a class="card-a" href="#">
+        <div class="photo">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=70" alt="Porsche 911" onerror="this.style.display='none'"/>
+          <div class="tl"><span class="chip cond">Вживаний</span></div>
+          <div class="fav">♡</div>
+          <span class="count">🎬 📷 41</span>
+        </div>
+        <div class="body">
+          <h3>Porsche 911 Carrera</h3>
+          <p class="meta">2019 · 32 100 км</p>
+          <div class="row">
+            <span><span class="price tabular">3 200 000&nbsp;₴</span></span>
+            <span class="city">📍 Львів</span>
+          </div>
+        </div>
+      </a>
+      <!-- card 3 -->
+      <a class="card-a" href="#">
+        <div class="photo">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=800&q=70" alt="Audi Q7" onerror="this.style.display='none'"/>
+          <div class="tl"><span class="chip cond">Новий</span></div>
+          <div class="fav">♡</div>
+          <span class="count">📷 16</span>
+        </div>
+        <div class="body">
+          <h3>Audi Q7 55 TFSI</h3>
+          <p class="meta">2022 · 18 500 км</p>
+          <div class="row">
+            <span><span class="price tabular">2 100 000&nbsp;₴</span></span>
+            <span class="city">📍 Одеса</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============================ B ============================ -->
+  <section class="dir dir--b">
+    <div class="dir-head">
+      <div>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+          <span class="dir-tag">B · bold</span>
+          <span class="dir-title">Showroom Noir</span>
+        </div>
+        <p class="dir-sub">Фото на всю карточку, поверх — матовая стеклянная плашка (backdrop-blur, apple-material). Цена крупным numeral, амбровый «Щойно» как тёплая подсветка шоурума. Hover — зум фото + подъём стекла.</p>
+      </div>
+      <div class="swatches" title="palette">
+        <div class="sw" style="background:#0b0d10"></div>
+        <div class="sw" style="background:#191c22"></div>
+        <div class="sw" style="background:#8fa6ff"></div>
+        <div class="sw" style="background:#f0a33c"></div>
+        <div class="sw" style="background:#3dbe76"></div>
+      </div>
+    </div>
+    <div class="grid">
+      <!-- card 1 -->
+      <a class="card-b" href="#">
+        <div class="photo"><img loading="lazy" src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=70" alt="BMW X5" onerror="this.style.display='none'"/></div>
+        <div class="scrim"></div>
+        <span class="cond">Вживаний</span>
+        <span class="new" style="left:auto;right:56px;top:14px;position:absolute">Щойно</span>
+        <div class="fav">♡</div>
+        <div class="sheet">
+          <div class="count">📷 24</div>
+          <h3>BMW X5 <span class="u">xDrive30d</span></h3>
+          <p class="meta">2021 · 54 000 км</p>
+          <div class="row">
+            <span><span class="price tabular">1 450 000<small>₴</small></span><br><span class="drop">↓ 8% ціна знижена</span></span>
+            <span class="city">📍 Київ</span>
+          </div>
+        </div>
+      </a>
+      <!-- card 2 -->
+      <a class="card-b" href="#">
+        <div class="photo"><img loading="lazy" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=70" alt="Porsche 911" onerror="this.style.display='none'"/></div>
+        <div class="scrim"></div>
+        <span class="cond">Вживаний</span>
+        <span class="status">Резерв</span>
+        <div class="fav">♡</div>
+        <div class="sheet">
+          <div class="count">🎬 📷 41</div>
+          <h3>Porsche 911 <span class="u">Carrera</span></h3>
+          <p class="meta">2019 · 32 100 км</p>
+          <div class="row">
+            <span class="price tabular">3 200 000<small>₴</small></span>
+            <span class="city">📍 Львів</span>
+          </div>
+        </div>
+      </a>
+      <!-- card 3 -->
+      <a class="card-b" href="#">
+        <div class="photo"><img loading="lazy" src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=800&q=70" alt="Audi Q7" onerror="this.style.display='none'"/></div>
+        <div class="scrim"></div>
+        <span class="cond">Новий</span>
+        <div class="fav">♡</div>
+        <div class="sheet">
+          <div class="count">📷 16</div>
+          <h3>Audi Q7 <span class="u">55 TFSI</span></h3>
+          <p class="meta">2022 · 18 500 км</p>
+          <div class="row">
+            <span class="price tabular">2 100 000<small>₴</small></span>
+            <span class="city">📍 Одеса</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============================ C ============================ -->
+  <section class="dir dir--c">
+    <div class="dir-head">
+      <div>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+          <span class="dir-tag">C · bold</span>
+          <span class="dir-title">Paper Lot</span>
+        </div>
+        <p class="dir-sub">Тёплая бумага вместо холодного холста, hairline-рамка как у аукционного лота, номер лота и моно-спецстрока. Цена — герой: огромный numeral. Красная «печать» вместо синего акцента. Спокойный «press» на hover.</p>
+      </div>
+      <div class="swatches" title="palette">
+        <div class="sw" style="background:#f3efe4"></div>
+        <div class="sw" style="background:#fbf8f1"></div>
+        <div class="sw" style="background:#211d16"></div>
+        <div class="sw" style="background:#a68a4f"></div>
+        <div class="sw" style="background:#b4453c"></div>
+      </div>
+    </div>
+    <div class="grid">
+      <!-- card 1 -->
+      <a class="card-c" href="#">
+        <div class="top"><span class="cond">Вживаний</span><span class="lot">LOT 042</span></div>
+        <div class="photo">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=800&q=70" alt="BMW X5" onerror="this.style.display='none'"/>
+          <span class="new">Щойно</span><span class="count">24 фото</span>
+        </div>
+        <div class="body">
+          <h3>BMW X5 xDrive30d</h3>
+          <div class="spec">2021 <i>/</i> 54 000 км <i>/</i> Київ</div>
+          <div class="foot">
+            <div>
+              <div class="plabel">Ціна</div>
+              <div class="price tabular">1 450 000<small>&nbsp;₴</small></div>
+              <div class="drop">↓ знижено на 8%</div>
+            </div>
+          </div>
+        </div>
+      </a>
+      <!-- card 2 -->
+      <a class="card-c" href="#">
+        <div class="top"><span class="cond">Вживаний</span><span class="lot">LOT 043</span></div>
+        <div class="photo">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=70" alt="Porsche 911" onerror="this.style.display='none'"/>
+          <span class="count">🎬 41 медіа</span>
+        </div>
+        <div class="body">
+          <h3>Porsche 911 Carrera</h3>
+          <div class="spec">2019 <i>/</i> 32 100 км <i>/</i> Львів</div>
+          <div class="foot">
+            <div>
+              <div class="plabel">Ціна</div>
+              <div class="price tabular">3 200 000<small>&nbsp;₴</small></div>
+            </div>
+          </div>
+        </div>
+      </a>
+      <!-- card 3 -->
+      <a class="card-c" href="#">
+        <div class="top"><span class="cond">Новий</span><span class="lot">LOT 044</span></div>
+        <div class="photo">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?auto=format&fit=crop&w=800&q=70" alt="Audi Q7" onerror="this.style.display='none'"/>
+          <span class="count">16 фото</span>
+        </div>
+        <div class="body">
+          <h3>Audi Q7 55 TFSI</h3>
+          <div class="spec">2022 <i>/</i> 18 500 км <i>/</i> Одеса</div>
+          <div class="foot">
+            <div>
+              <div class="plabel">Ціна</div>
+              <div class="price tabular">2 100 000<small>&nbsp;₴</small></div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <div class="legend">
+    <b>Как читать:</b> <b>A · Handoff</b> — что уже есть, для сравнения. <b>B · Showroom Noir</b> играет с глубиной и материалом (стекло поверх фото, тёплый акцент) — премиально, «дорого», но темнее бренда. <b>C · Paper Lot</b> играет с температурой и печатной подачей (бумага, рамка, цена-герой, красная печать) — характерно и небанально, но дальше всего от текущего.<br><br>
+    Фото — Unsplash (нужен интернет); при офлайне остаётся градиентная подложка. Скажи, какое направление копаем дальше — и я перенесу его в <code>listing-card.tsx</code> + токены (новый <code>[data-theme]</code> или ветку акцента), уже на реальных данных и с reduced-motion.
+  </div>
+
+</div>
+</body>
+</html>

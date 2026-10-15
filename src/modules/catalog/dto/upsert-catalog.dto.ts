@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
@@ -8,13 +9,24 @@ import {
   IsString,
   IsUUID,
   MaxLength,
+  Matches,
+  MinLength,
   Min,
 } from 'class-validator';
 
 export class UpsertMakeDto {
-  @ApiProperty() @IsString() @MaxLength(128) nameUk!: string;
+  @ApiProperty()
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MinLength(1)
+  @MaxLength(128)
+  nameUk!: string;
   @ApiPropertyOptional() @IsOptional() @IsString() @MaxLength(128) nameEn?: string;
-  @ApiProperty() @IsString() @MaxLength(64) slug!: string;
+  @ApiProperty()
+  @IsString()
+  @MaxLength(64)
+  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+  slug!: string;
 }
 
 export class UpsertModelDto extends UpsertMakeDto {

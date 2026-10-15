@@ -30,12 +30,12 @@ export function MediaPlaceholder({ label, ariaLabel, wordmark, className }: Medi
     >
       <CarGlyph className="w-[46%] max-w-[200px] text-ph-glyph" />
       {wordmark && (
-        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-semibold uppercase tracking-[0.3em] text-ph-glyph">
+        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[0.625rem] font-medium uppercase tracking-[0.3em] text-ph-glyph">
           {wordmark}
         </span>
       )}
       {label && (
-        <span className="absolute bottom-4 left-4 text-label font-semibold uppercase text-ink-3">
+        <span className="absolute bottom-4 left-4 text-label font-medium uppercase text-ink-3">
           {label}
         </span>
       )}

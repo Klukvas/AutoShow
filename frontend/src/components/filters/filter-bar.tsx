@@ -296,7 +296,7 @@ export function FilterBar({
         onChange={(v) => update({ condition: v })}
       />
       <div>
-        <span className="mb-1.5 block text-label font-semibold uppercase text-ink-2">
+        <span className="mb-1.5 block text-label font-medium uppercase text-ink-2">
           {t('filter.city')}
         </span>
         <SearchField
@@ -334,7 +334,7 @@ export function FilterBar({
       />
       {options.length > 0 && (
         <div>
-          <span className="mb-2 block text-label font-semibold uppercase text-ink-2">
+          <span className="mb-2 block text-label font-medium uppercase text-ink-2">
             {t('filter.options')}
           </span>
           <div className="flex flex-wrap gap-2">
@@ -352,7 +352,7 @@ export function FilterBar({
       )}
       {tags.length > 0 && (
         <div>
-          <span className="mb-2 block text-label font-semibold uppercase text-ink-2">
+          <span className="mb-2 block text-label font-medium uppercase text-ink-2">
             {t('filter.tags')}
           </span>
           <div className="flex flex-wrap gap-2">
@@ -372,12 +372,12 @@ export function FilterBar({
   );
 
   const sortSelect = (
-    <label className="flex items-center gap-2">
+    <label className="flex min-w-0 max-w-full items-center gap-2">
       <span className="sr-only">{t('sortLabel')}</span>
       <select
         value={currentSort}
         onChange={(e) => update({ sort: e.target.value })}
-        className="focus-ring h-10 appearance-none rounded-btn border border-line-input bg-surface px-3 pr-7 text-sub font-medium text-ink bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27 xmlns=%27http://www.w3.org/2000/svg%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%23948C79%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E')] bg-[position:right_10px_center] bg-no-repeat"
+        className="focus-ring h-10 min-w-0 max-w-full appearance-none rounded-btn border border-line-input bg-surface px-3 pr-7 text-sub font-medium text-ink bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27 xmlns=%27http://www.w3.org/2000/svg%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%23948C79%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E')] bg-[position:right_10px_center] bg-no-repeat"
       >
         {SORT_VALUES.map((s) => (
           <option key={s} value={s}>
@@ -426,14 +426,14 @@ export function FilterBar({
               aria-label={
                 active.length > 0 ? `${t('filtersOpen')} · ${active.length}` : t('filtersOpen')
               }
-              className="focus-ring flex h-11 flex-1 items-center justify-center gap-2 rounded-input bg-ink text-sub font-semibold text-bg"
+              className="focus-ring flex h-11 flex-1 items-center justify-center gap-2 rounded-input bg-ink text-sub font-medium text-bg"
             >
               <span aria-hidden>⚙</span>
               {t('filtersOpen')}
               {active.length > 0 && (
                 <span
                   aria-hidden
-                  className="flex h-5 min-w-5 items-center justify-center rounded-chip bg-accent px-1.5 text-[11px] font-bold text-on-accent"
+                  className="flex h-5 min-w-5 items-center justify-center rounded-chip bg-accent px-1.5 text-[0.6875rem] font-medium text-on-accent"
                 >
                   {active.length}
                 </span>
@@ -453,10 +453,10 @@ export function FilterBar({
         {/* Results header */}
         <div className="mt-5 flex flex-wrap items-end justify-between gap-4 md:mt-0">
           <div>
-            <h1 className="font-heading text-title-lg font-extrabold text-ink">{title}</h1>
+            <h1 className="font-heading text-title-lg font-medium text-ink">{title}</h1>
             {resultCount != null && (
               <p className="mt-1 text-body-md text-ink-2">
-                <strong className="tabular font-bold text-ink">
+                <strong className="tabular font-medium text-ink">
                   {t('resultCount', { count: resultCount })}
                 </strong>{' '}
                 {t('countSuffix')}

@@ -1,0 +1,11 @@
+{
+  "changed_baseline_files": [
+    "index.html"
+  ],
+  "only_index_music_src_changed": true,
+  "sfx_all_attributes_equal": true,
+  "original_video_stream_hash": "SHA256=e472a65df4c22d8c7aba29c90136ffa545b4d6ff48f410099ddbda856d44556a",
+  "preview_video_stream_hash": "SHA256=e472a65df4c22d8c7aba29c90136ffa545b4d6ff48f410099ddbda856d44556a",
+  "video_packets_identical": true,
+  "decode_log_bytes": 0
+}

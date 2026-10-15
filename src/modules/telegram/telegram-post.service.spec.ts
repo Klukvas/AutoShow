@@ -205,3 +205,92 @@ describe('TelegramPostService', () => {
     expect(postsRepo.save).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('Telegram AI photo provenance snapshot', () => {
+  it('publishes active rendition and persists disclosure from the actual album', async () => {
+    const listing = publishedListing({
+      media: MEDIA.map((m) => ({
+        ...m,
+        activeAiVariant:
+          m.id === 'm1'
+            ? {
+                generationId: 'g',
+                s3Key: 'ai/output.png',
+                sceneAltered: true,
+                renditions: [{ variant: 'gallery', format: 'jpeg', s3Key: 'ai/gallery.jpeg' }],
+              }
+            : null,
+      })) as never,
+    });
+    const { svc, api, postsRepo } = buildService({
+      telegram: { ...SETTINGS, channels: [SETTINGS.channels[0]] },
+      listing,
+    });
+    await svc.postListing('l1');
+    expect(api.sendMediaGroup).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.anything(),
+      expect.arrayContaining([
+        expect.objectContaining({
+          media: 'https://media.test/ai/gallery.jpeg',
+          caption: expect.stringContaining('Сцену на фото змінено ШІ.'),
+        }),
+      ]),
+    );
+    expect(postsRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({ photoAiDisclosure: 'scene' }),
+    );
+  });
+  it('does not disclose AI photos beyond the ten selected album images', async () => {
+    const media = Array.from({ length: 11 }, (_, i) => ({
+      ...MEDIA[1],
+      id: `m${i}`,
+      position: i,
+      isCover: false,
+      activeAiVariant: i === 10 ? { sceneAltered: true, renditions: [] } : null,
+    }));
+    const { svc, postsRepo } = buildService({
+      telegram: SETTINGS,
+      listing: publishedListing({ media: media as never }),
+    });
+    await svc.postListing('l1');
+    expect(postsRepo.save).toHaveBeenCalledWith(
+      expect.objectContaining({ photoAiDisclosure: null }),
+    );
+  });
+  it('preserves the posted scene disclosure after original was restored before sale', async () => {
+    const { svc, api } = buildService({
+      telegram: SETTINGS,
+      listing: publishedListing({ status: 'sold' }),
+      posts: [{ chatId: '@one', captionMessageId: 11, photoAiDisclosure: 'scene' }],
+    });
+    await svc.markSoldPosts('l1');
+    expect(api.editMessageCaption).toHaveBeenCalledWith(
+      expect.anything(),
+      '@one',
+      11,
+      expect.stringContaining('Сцену на фото змінено ШІ.'),
+    );
+  });
+  it('does not invent disclosure on an original album when current image is AI', async () => {
+    const listing = publishedListing({
+      status: 'sold',
+      media: MEDIA.map((m) => ({
+        ...m,
+        activeAiVariant: { sceneAltered: true, renditions: [] },
+      })) as never,
+    });
+    const { svc, api } = buildService({
+      telegram: SETTINGS,
+      listing,
+      posts: [{ chatId: '@one', captionMessageId: 11, photoAiDisclosure: null }],
+    });
+    await svc.markSoldPosts('l1');
+    expect(api.editMessageCaption).toHaveBeenCalledWith(
+      expect.anything(),
+      '@one',
+      11,
+      expect.not.stringContaining('змінено ШІ'),
+    );
+  });
+});

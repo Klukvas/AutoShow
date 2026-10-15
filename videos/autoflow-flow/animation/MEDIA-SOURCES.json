@@ -1,0 +1,54 @@
+{
+  "car": {
+    "path": "assets/images/mercedes-e2025-w214.png",
+    "type": "AI generated product illustration, not a listing photograph",
+    "tool": "built-in image_gen",
+    "reference": "Official Mercedes-Benz W214 front/rear image",
+    "reference_url": "https://www.mbusa.com/content/dam/mb-nafta/us/myco/my27/e-class/e-sedan/byo-options/2027-E350-SEDAN-SFB-DR.png",
+    "reference_path": "assets/references/official-w214-2.png",
+    "note": "2025 E-Class illustration informed by W214 reference. No specific real vehicle price or mileage claimed.",
+    "prompt": "Isolated white W214 E-Class front three quarter facing right, official reference design, flush door handles, black headlamp grille bridge, true alpha, complete car and soft contact shadow."
+  },
+  "fonts": [
+    {
+      "family": "Onest",
+      "source": "existing local assets/fonts/gf-onest-*.woff2"
+    },
+    {
+      "family": "Caveat",
+      "path": "assets/fonts/caveat-bold.ttf",
+      "url": "https://fonts.gstatic.com/s/caveat/v23/WnznHAc5bAfYB2QRah7pcpNvOx-pjRV6SII.ttf"
+    }
+  ],
+  "audio": {
+    "source": "existing local music.m4a,whoosh.m4a,tap.m4a,notification.m4a,chime.m4a",
+    "new_paid_generation": false,
+    "narration": false,
+    "bgm_candidate": {
+      "status": "preview-awaiting-track-approval",
+      "music_title": "Funkorama",
+      "artist": "Kevin MacLeod",
+      "bpm": 101,
+      "source_offset_seconds": 9.50495,
+      "duration_seconds": 30,
+      "gain": 0.68,
+      "fade_in_seconds": 0.5,
+      "fade_out_start": 28.4,
+      "fade_out_seconds": 1.6,
+      "source_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funkorama.mp3",
+      "track_page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100474",
+      "license": "CC BY 4.0",
+      "license_url": "https://creativecommons.org/licenses/by/4.0/",
+      "attribution": "Funkorama — Kevin MacLeod (incompetech.com). Licensed under CC BY 4.0: https://creativecommons.org/licenses/by/4.0/ . Excerpt, trim, gain and fades applied.",
+      "live_music_path": "assets/audio/funk/funkorama-30s.wav"
+    },
+    "original_final_preserved": "renders/autoflow-promo-final.mp4",
+    "preview_variant": "renders/autoflow-promo-funk-preview.mp4"
+  },
+  "logo": {
+    "type": "DOM wordmark and red slanted motif reconstructed from approved static reference; no standalone logo file available"
+  },
+  "ui": {
+    "type": "illustrative white label reconstruction from approved storyboard; no personal account or external writes"
+  }
+}

@@ -26,7 +26,7 @@ export function ListingStatusBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-[6px] px-2.5 py-1 text-[11px] font-bold leading-none',
+        'inline-flex items-center rounded-none px-2.5 py-1 text-[0.6875rem] font-medium leading-none',
         STATUS_CLS[status],
         className,
       )}
@@ -56,7 +56,7 @@ export function LeadTypeBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-[5px] px-2 py-[3px] text-[10.5px] font-bold leading-none',
+        'inline-flex items-center rounded-none px-2 py-[3px] text-[0.65625rem] font-medium leading-none',
         LEAD_TYPE_CLS[type],
         className,
       )}
@@ -71,7 +71,7 @@ export function UserStatusBadge({ isActive }: { isActive: boolean }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-[5px] px-2 py-[3px] text-[10.5px] font-bold leading-none',
+        'inline-flex items-center rounded-none px-2 py-[3px] text-[0.65625rem] font-medium leading-none',
         isActive
           ? 'bg-st-published-bg text-st-published-fg'
           : 'bg-st-archived-bg text-st-archived-fg',

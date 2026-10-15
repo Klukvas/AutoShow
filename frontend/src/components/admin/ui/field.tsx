@@ -9,8 +9,8 @@ import { cn } from '@/lib/cn';
 
 export const inputCls = (invalid?: boolean) =>
   cn(
-    'h-[42px] w-full rounded-[9px] border bg-surface px-3 text-[13.5px] font-semibold text-ink',
-    'placeholder:font-medium placeholder:text-ink-3 outline-none focus-ring transition-none',
+    'min-h-[2.75rem] py-2 w-full rounded-none border bg-surface px-3 text-[0.84375rem] font-medium text-ink',
+    'placeholder:font-medium placeholder:text-ink-3 outline-none focus-ring transition-colors duration-100',
     invalid ? 'border-[1.5px] border-danger bg-danger-bg' : 'border-line-input',
   );
 
@@ -29,11 +29,11 @@ export function FieldShell({ label, required, error, hint, className, children }
   const errorId = `${id}-error`;
   const hintId = `${id}-hint`;
   const describedBy =
-    [error ? errorId : null, hint ? hintId : null].filter(Boolean).join(' ') || undefined;
+    [error ? errorId : null, hint && !error ? hintId : null].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className={className}>
-      <label htmlFor={id} className="mb-[5px] block text-[12px] font-semibold text-ink-2">
+      <label htmlFor={id} className="mb-[5px] block text-[0.75rem] font-medium text-ink-2">
         {label}
         {required && (
           <span aria-hidden className="text-ink-2">
@@ -44,12 +44,12 @@ export function FieldShell({ label, required, error, hint, className, children }
       </label>
       {children({ id, describedBy })}
       {hint && !error && (
-        <p id={hintId} className="mt-[5px] text-[11.5px] font-medium text-ink-3">
+        <p id={hintId} className="mt-[5px] text-[0.71875rem] font-medium text-ink-3">
           {hint}
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="mt-[5px] text-[11.5px] font-medium text-danger">
+        <p id={errorId} role="alert" className="mt-[5px] text-[0.71875rem] font-medium text-danger">
           ⚠ {error}
         </p>
       )}
@@ -152,7 +152,7 @@ export function TextareaField({
           aria-required={required || undefined}
           className={cn(
             inputCls(Boolean(error)),
-            'h-auto min-h-[96px] py-[10px] text-[13.5px] font-normal leading-relaxed',
+            'h-auto min-h-[96px] py-[10px] text-[0.84375rem] font-normal leading-relaxed',
           )}
           {...rest}
         />
@@ -170,7 +170,7 @@ export function CheckboxField({
   return (
     <label
       className={cn(
-        'inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-2 text-[13px] font-medium text-ink',
+        'inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-2 text-[0.8125rem] font-medium text-ink',
         className,
       )}
     >
@@ -179,8 +179,8 @@ export function CheckboxField({
         <span
           aria-hidden
           className={cn(
-            'flex h-[18px] w-[18px] items-center justify-center rounded-[5px] border-[1.5px] border-line-input bg-surface',
-            'peer-checked:border-accent peer-checked:bg-accent',
+            'flex h-[18px] w-[18px] items-center justify-center rounded-none border-[1.5px] border-line-input bg-surface',
+            'peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-checked:border-accent peer-checked:bg-accent',
             'peer-focus-visible:shadow-[0_0_0_2px_rgb(var(--bg)),0_0_0_4px_rgb(var(--focus))]',
           )}
         >
@@ -213,7 +213,7 @@ export function ToggleField({
   return (
     <label
       className={cn(
-        'inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-2 text-[13px] font-medium text-ink',
+        'inline-flex min-h-[44px] cursor-pointer items-center gap-2 py-2 text-[0.8125rem] font-medium text-ink',
         className,
       )}
     >
@@ -223,10 +223,10 @@ export function ToggleField({
           aria-hidden
           className={cn(
             'block h-5 w-[34px] rounded-full bg-line-input transition-colors',
-            'peer-checked:bg-accent',
+            'peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-checked:bg-accent',
             'peer-focus-visible:shadow-[0_0_0_2px_rgb(var(--bg)),0_0_0_4px_rgb(var(--focus))]',
             'after:absolute after:left-[2px] after:top-[2px] after:h-4 after:w-4 after:rounded-full after:bg-surface after:transition-transform',
-            'peer-checked:after:translate-x-[14px]',
+            'peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-checked:after:translate-x-[14px]',
           )}
         />
       </span>
@@ -246,8 +246,8 @@ export function ChipCheckbox({
       <input type="checkbox" className="peer sr-only" {...rest} />
       <span
         className={cn(
-          'inline-flex min-h-[38px] items-center gap-1 rounded-[8px] border border-line-input bg-surface px-[13px] py-2 text-[13px] font-semibold text-ink-2 transition-colors',
-          'peer-checked:border-accent peer-checked:bg-accent/[0.08] peer-checked:text-accent-hover',
+          'inline-flex min-h-[38px] items-center gap-1 rounded-none border border-line-input bg-surface px-[13px] py-2 text-[0.8125rem] font-medium text-ink-2 transition-colors',
+          'peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-checked:border-accent peer-checked:bg-accent/[0.08] peer-checked:text-accent-hover',
           'peer-focus-visible:shadow-[0_0_0_2px_rgb(var(--bg)),0_0_0_4px_rgb(var(--focus))]',
         )}
       >

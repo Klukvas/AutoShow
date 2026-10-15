@@ -26,12 +26,12 @@ export function Banner({
     <div
       role={tone === 'error' || tone === 'warning' ? 'alert' : 'status'}
       className={cn(
-        'flex flex-wrap items-center gap-3 rounded-[10px] border px-4 py-3 text-[13px] font-medium',
+        'flex flex-wrap items-center gap-3 rounded-none border px-4 py-3 text-[0.8125rem] font-medium',
         TONE_CLS[tone],
         className,
       )}
     >
-      <span aria-hidden className="text-[15px] leading-none">
+      <span aria-hidden className="text-[0.9375rem] leading-none">
         {tone === 'success' ? '✓' : tone === 'info' ? 'ℹ' : '⚠'}
       </span>
       <span className="flex-1 leading-snug">{children}</span>

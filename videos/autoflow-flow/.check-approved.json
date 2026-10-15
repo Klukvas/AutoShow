@@ -1,0 +1,550 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 3,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "studio_missing_editable_id",
+        "severity": "warning",
+        "message": "<div class=\"continuity-clip\" data-start=\"0\" data-track-index=\"1\"> has no id, so Studio cannot use a stable edit target for its timeline and canvas controls.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/animation/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Add a stable, human-readable id such as id=\"hero-title\" or id=\"scene-1-card\" to every timeline-visible element you want agents or Studio to edit."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div> is a timeline element that contains nested <img>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/animation/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 4 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/animation/compositions/scene-03.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      }
+    ],
+    "filesScanned": 7
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 1,
+    "infoCount": 9,
+    "findings": [
+      {
+        "code": "connector_orphan",
+        "severity": "warning",
+        "time": 29.4,
+        "selector": "svg.draw-arrow.note-arrow > path:nth-of-type(1)",
+        "message": "Connector shaft is visible while its endpoint div.site-footer is not on stage.",
+        "rect": {
+          "left": 440,
+          "top": 1807,
+          "right": 587,
+          "bottom": 1875,
+          "width": 147,
+          "height": 68
+        },
+        "containerSelector": "svg.draw-arrow.note-arrow",
+        "fixHint": "Show the shaft only after both ends are on, and hide it with the earlier exit. Do not give the line its own clock.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene-06.html",
+        "bbox": {
+          "x": 440,
+          "y": 1807,
+          "width": 147,
+          "height": 68
+        },
+        "firstSeen": 29.4,
+        "lastSeen": 30,
+        "occurrences": 2,
+        "heldMs": 600.0000000000014,
+        "times": [
+          29.4,
+          30
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 12.2,
+        "selector": "div.thumbs > div:nth-of-type(2) > img:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 747.25,
+          "top": 943.41,
+          "right": 1026.25,
+          "bottom": 1166.59,
+          "width": 279,
+          "height": 223.19
+        },
+        "containerSelector": "div.thumbs > div:nth-of-type(2)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 817,
+          "top": 993,
+          "right": 972,
+          "bottom": 1117,
+          "width": 155,
+          "height": 124
+        },
+        "overflow": {
+          "left": 69.75,
+          "right": 54.25,
+          "top": 49.59,
+          "bottom": 49.59
+        },
+        "dataAttributes": {
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/scene-03.html",
+        "bbox": {
+          "x": 747.25,
+          "y": 943.41,
+          "width": 279,
+          "height": 223.19
+        },
+        "firstSeen": 12.2,
+        "lastSeen": 12.2,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          12.2
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 12.2,
+        "selector": "div.thumbs > div:nth-of-type(3) > img:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 747.25,
+          "top": 1081.41,
+          "right": 1026.25,
+          "bottom": 1304.59,
+          "width": 279,
+          "height": 223.19
+        },
+        "containerSelector": "div.thumbs > div:nth-of-type(3)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 817,
+          "top": 1131,
+          "right": 972,
+          "bottom": 1255,
+          "width": 155,
+          "height": 124
+        },
+        "overflow": {
+          "left": 69.75,
+          "right": 54.25,
+          "top": 49.59,
+          "bottom": 49.59
+        },
+        "dataAttributes": {
+          "data-hf-authored-opacity": ""
+        },
+        "sourceFile": "compositions/scene-03.html",
+        "bbox": {
+          "x": 747.25,
+          "y": 1081.41,
+          "width": 279,
+          "height": 223.19
+        },
+        "firstSeen": 12.2,
+        "lastSeen": 12.2,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          12.2
+        ]
+      },
+      {
+        "code": "connector_orphan",
+        "severity": "info",
+        "time": 12.2,
+        "selector": "#mount-03 > div:nth-of-type(1) > div:nth-of-type(1) > svg:nth-of-type(2) > path:nth-of-type(1)",
+        "message": "Connector shaft is visible while its endpoint div.lead-form.ui > div:nth-of-type(1) is not on stage.",
+        "rect": {
+          "left": 560,
+          "top": 558,
+          "right": 720,
+          "bottom": 675,
+          "width": 160,
+          "height": 117
+        },
+        "containerSelector": "#mount-03 > div:nth-of-type(1) > div:nth-of-type(1) > svg:nth-of-type(2)",
+        "fixHint": "Show the shaft only after both ends are on, and hide it with the earlier exit. Do not give the line its own clock.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene-03.html",
+        "bbox": {
+          "x": 560,
+          "y": 558,
+          "width": 160,
+          "height": 117
+        },
+        "firstSeen": 12.2,
+        "lastSeen": 12.2,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          12.2
+        ]
+      },
+      {
+        "code": "connector_orphan",
+        "severity": "info",
+        "time": 17.5,
+        "selector": "#mount-04 > div:nth-of-type(1) > div:nth-of-type(1) > svg:nth-of-type(1) > path:nth-of-type(1)",
+        "message": "Connector shaft is visible while both endpoints are not on stage.",
+        "rect": {
+          "left": 125,
+          "top": 895,
+          "right": 195,
+          "bottom": 1056,
+          "width": 70,
+          "height": 161
+        },
+        "containerSelector": "#mount-04 > div:nth-of-type(1) > div:nth-of-type(1) > svg:nth-of-type(1)",
+        "fixHint": "Show the shaft only after both ends are on, and hide it with the earlier exit. Do not give the line its own clock.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene-04.html",
+        "bbox": {
+          "x": 125,
+          "y": 895,
+          "width": 70,
+          "height": 161
+        },
+        "firstSeen": 17.5,
+        "lastSeen": 17.5,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          17.5
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 19.1,
+        "selector": "div.phone.manager-phone",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 190,
+          "top": 1695,
+          "right": 890,
+          "bottom": 3135,
+          "width": 700,
+          "height": 1440
+        },
+        "containerSelector": "#mount-05 > div:nth-of-type(1) > div:nth-of-type(1)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "overflow": {
+          "bottom": 1215
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene-05.html",
+        "bbox": {
+          "x": 190,
+          "y": 1695,
+          "width": 700,
+          "height": 1440
+        },
+        "firstSeen": 19.1,
+        "lastSeen": 23.2,
+        "occurrences": 2,
+        "heldMs": 0,
+        "times": [
+          19.1,
+          23.2
+        ]
+      },
+      {
+        "code": "escaped_container",
+        "severity": "info",
+        "time": 19.1,
+        "selector": "div.phone.manager-phone",
+        "message": "Positioned element renders far outside its offset parent — its coordinates were likely computed in a different frame (canvas/viewport pixels).",
+        "rect": {
+          "left": 190,
+          "top": 1695,
+          "right": 890,
+          "bottom": 3135,
+          "width": 700,
+          "height": 1440
+        },
+        "containerSelector": "#mount-05 > div:nth-of-type(1) > div:nth-of-type(1)",
+        "text": "9:41 ▮▮▮ ▰ Telegram зараз Нова заявка Хочу дізнатися більше про це авто Олександр Коваленко ☎ +380 67 123 XX XX ▱ Mercedes-Benz E-Class, 2025 Відкрити в AutoFlow",
+        "fixHint": "Compute left/top in the offset parent's frame (subtract its rect), or mark intentional placement with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene-05.html",
+        "bbox": {
+          "x": 190,
+          "y": 1695,
+          "width": 700,
+          "height": 1440
+        },
+        "firstSeen": 19.1,
+        "lastSeen": 19.1,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          19.1
+        ]
+      },
+      {
+        "code": "panel_out_of_canvas",
+        "severity": "info",
+        "time": 19.1,
+        "selector": "div.phone.manager-phone > div:nth-of-type(1)",
+        "message": "Painted panel extends outside the composition canvas.",
+        "rect": {
+          "left": 217,
+          "top": 1722,
+          "right": 863,
+          "bottom": 3108,
+          "width": 646,
+          "height": 1386
+        },
+        "containerSelector": "#root",
+        "text": "9:41 ▮▮▮ ▰ Telegram зараз Нова заявка Хочу дізна",
+        "fixHint": "Move the panel inward, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "overflow": {
+          "bottom": 1188
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene-05.html",
+        "bbox": {
+          "x": 217,
+          "y": 1722,
+          "width": 646,
+          "height": 1386
+        },
+        "firstSeen": 19.1,
+        "lastSeen": 19.1,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          19.1
+        ]
+      },
+      {
+        "code": "panel_out_of_canvas",
+        "severity": "info",
+        "time": 23.2,
+        "selector": "div.phone.manager-phone",
+        "message": "Painted panel extends outside the composition canvas.",
+        "rect": {
+          "left": 190,
+          "top": 1145,
+          "right": 890,
+          "bottom": 2585,
+          "width": 700,
+          "height": 1440
+        },
+        "containerSelector": "#root",
+        "text": "9:41 ▮▮▮ ▰ Telegram зараз Нова заявка Хочу дізна",
+        "fixHint": "Move the panel inward, or mark intentional off-canvas animation with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1080,
+          "bottom": 1920,
+          "width": 1080,
+          "height": 1920
+        },
+        "overflow": {
+          "bottom": 665
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene-05.html",
+        "bbox": {
+          "x": 190,
+          "y": 1145,
+          "width": 700,
+          "height": 1440
+        },
+        "firstSeen": 23.2,
+        "lastSeen": 23.2,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          23.2
+        ]
+      },
+      {
+        "code": "connector_orphan",
+        "severity": "info",
+        "time": 23.2,
+        "selector": "#mount-05 > div:nth-of-type(1) > div:nth-of-type(1) > svg:nth-of-type(2) > path:nth-of-type(1)",
+        "message": "Connector shaft is visible while both endpoints are not on stage.",
+        "rect": {
+          "left": 173,
+          "top": 1138,
+          "right": 182,
+          "bottom": 1244,
+          "width": 9,
+          "height": 106
+        },
+        "containerSelector": "#mount-05 > div:nth-of-type(1) > div:nth-of-type(1) > svg:nth-of-type(2)",
+        "fixHint": "Show the shaft only after both ends are on, and hide it with the earlier exit. Do not give the line its own clock.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/scene-05.html",
+        "bbox": {
+          "x": 173,
+          "y": 1138,
+          "width": 9,
+          "height": 106
+        },
+        "firstSeen": 23.2,
+        "lastSeen": 23.2,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          23.2
+        ]
+      }
+    ],
+    "duration": 30,
+    "samples": [
+      0,
+      2.2,
+      4.1,
+      4.4,
+      7,
+      9.1,
+      12.2,
+      14.1,
+      17.5,
+      19.1,
+      23.2,
+      29.4,
+      30
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 10,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "specPath": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/animation/index.motion.json",
+    "samples": 300
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0,
+      4.4,
+      12.2,
+      19.1,
+      30
+    ],
+    "checked": 28,
+    "passed": 28
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": true,
+    "files": [
+      "snapshots/frame-00-at-0.0s.png",
+      "snapshots/frame-01-at-4.4s.png",
+      "snapshots/frame-02-at-12.2s.png",
+      "snapshots/frame-03-at-19.1s.png",
+      "snapshots/frame-04-at-30.0s.png"
+    ],
+    "times": [
+      0,
+      4.4,
+      12.2,
+      19.1,
+      30
+    ],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.142",
+    "latestVersion": "0.8.158",
+    "updateAvailable": true
+  }
+}

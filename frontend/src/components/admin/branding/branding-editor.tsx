@@ -16,6 +16,7 @@ import { SectionCard } from '@/components/admin/ui/section-card';
 import { TextField, inputCls } from '@/components/admin/ui/field';
 import { useToast } from '@/components/admin/ui/toast';
 import { BrandPreview } from './brand-preview';
+import { PhotoAiSettings } from './photo-ai-settings';
 
 /** Handoff swatch set; «+» opens the custom picker. */
 const SWATCHES = ['#2E53E6', '#E86A2C', '#1F9D57', '#C23B57'];
@@ -114,13 +115,13 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
   return (
     <form onSubmit={submit}>
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h1 className="font-heading text-[20px] font-extrabold tracking-tight">
+        <h1 className="font-heading text-[1.25rem] font-medium tracking-tight">
           {t('branding.title')}
         </h1>
         <button
           type="submit"
           disabled={pending || !accentValid || !hoverValid}
-          className="focus-ring inline-flex h-10 items-center rounded-[9px] bg-accent px-[18px] text-[13px] font-bold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
+          className="focus-ring inline-flex h-10 items-center rounded-none bg-accent px-[18px] text-[0.8125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50"
         >
           {pending ? t('common.saving') : t('branding.save')}
         </button>
@@ -142,12 +143,12 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                 <img
                   src={logoPreviewUrl}
                   alt={t('branding.logo')}
-                  className="h-[52px] w-[52px] rounded-[11px] border border-line object-cover"
+                  className="h-[52px] w-[52px] rounded-none border border-line object-cover"
                 />
               ) : (
                 <span
                   aria-hidden
-                  className="flex h-[52px] w-[52px] items-center justify-center rounded-[11px] bg-[#14161B] font-heading text-[22px] font-extrabold text-white"
+                  className="flex h-[52px] w-[52px] items-center justify-center rounded-none bg-[#14161B] font-heading text-[1.375rem] font-medium text-white"
                 >
                   {form.displayName[0]?.toUpperCase() ?? 'A'}
                 </span>
@@ -183,7 +184,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
 
             {/* Accent swatches + custom */}
             <div className="mt-4">
-              <div className="mb-2 block text-[12px] font-semibold text-ink-2">
+              <div className="mb-2 block text-[0.75rem] font-medium text-ink-2">
                 {t('branding.accent')}
               </div>
               <div className="flex flex-wrap items-center gap-[9px]">
@@ -198,14 +199,14 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                       onClick={() => pickAccent(hex)}
                       style={{ background: hex }}
                       className={cn(
-                        'focus-ring h-[38px] w-[38px] rounded-[10px]',
+                        'focus-ring h-[38px] w-[38px] rounded-none',
                         active && 'shadow-[0_0_0_2px_rgb(var(--surface)),0_0_0_4px_currentColor]',
                       )}
                     />
                   );
                 })}
                 <label
-                  className="focus-ring relative flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-[10px] border border-dashed border-ph-glyph text-[16px] text-ink-3"
+                  className="focus-ring relative flex h-[38px] w-[38px] cursor-pointer items-center justify-center rounded-none border border-dashed border-ph-glyph text-[1rem] text-ink-3"
                   title={t('branding.accentCustom')}
                 >
                   +
@@ -246,7 +247,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
               <div>
                 <label
                   htmlFor="branding-currency"
-                  className="mb-[5px] block text-[12px] font-semibold text-ink-2"
+                  className="mb-[5px] block text-[0.75rem] font-medium text-ink-2"
                 >
                   {t('branding.currency')}
                 </label>
@@ -278,13 +279,15 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
 
             {/* Working hours */}
             <div className="mt-4">
-              <div className="mb-2 text-[12px] font-semibold text-ink-2">{t('branding.hours')}</div>
+              <div className="mb-2 text-[0.75rem] font-medium text-ink-2">
+                {t('branding.hours')}
+              </div>
               <div className="flex flex-col gap-1.5">
                 {DAYS.map((day) => {
                   const slot = hours[day];
                   return (
                     <div key={day} className="flex items-center gap-2.5">
-                      <span className="w-8 flex-none text-[12.5px] font-semibold text-ink-2">
+                      <span className="w-8 flex-none text-[0.78125rem] font-medium text-ink-2">
                         {dayLabel(day)}
                       </span>
                       <input
@@ -295,7 +298,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                         onChange={(e) =>
                           setDay(day, { open: e.target.value, close: slot?.close ?? '20:00' })
                         }
-                        className={cn(inputCls(false), 'h-9 w-[104px] px-2 text-[12.5px]')}
+                        className={cn(inputCls(false), 'h-9 w-[104px] px-2 text-[0.78125rem]')}
                       />
                       <span aria-hidden className="text-ink-3">
                         –
@@ -308,9 +311,9 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                         onChange={(e) =>
                           setDay(day, { open: slot?.open ?? '09:00', close: e.target.value })
                         }
-                        className={cn(inputCls(false), 'h-9 w-[104px] px-2 text-[12.5px]')}
+                        className={cn(inputCls(false), 'h-9 w-[104px] px-2 text-[0.78125rem]')}
                       />
-                      <label className="ml-1 inline-flex cursor-pointer items-center gap-1.5 text-[12px] font-medium text-ink-3">
+                      <label className="ml-1 inline-flex cursor-pointer items-center gap-1.5 text-[0.75rem] font-medium text-ink-3">
                         <input
                           type="checkbox"
                           checked={slot === null}
@@ -375,6 +378,8 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
             </div>
           </SectionCard>
 
+          <PhotoAiSettings />
+
           <SectionCard title={t('branding.telegramTitle')}>
             <div className="flex flex-col gap-3.5">
               <TextField
@@ -388,7 +393,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
               />
 
               <div>
-                <div className="mb-2 text-[12px] font-semibold text-ink-2">
+                <div className="mb-2 text-[0.75rem] font-medium text-ink-2">
                   {t('branding.telegramChannels')}
                 </div>
                 <div className="flex flex-col gap-2">
@@ -406,7 +411,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                             ),
                           }))
                         }
-                        className={cn(inputCls(false), 'h-9 flex-1 text-[13px]')}
+                        className={cn(inputCls(false), 'h-9 flex-1 text-[0.8125rem]')}
                       />
                       <input
                         aria-label={t('branding.telegramChatLabel')}
@@ -420,7 +425,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                             ),
                           }))
                         }
-                        className={cn(inputCls(false), 'h-9 flex-1 text-[13px]')}
+                        className={cn(inputCls(false), 'h-9 flex-1 text-[0.8125rem]')}
                       />
                       <button
                         type="button"
@@ -431,7 +436,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                             channels: prev.channels.filter((_, i) => i !== idx),
                           }))
                         }
-                        className="focus-ring h-9 flex-none rounded-[9px] border border-line-input px-3 text-[13px] font-semibold text-ink-3 hover:border-line-hover"
+                        className="focus-ring h-9 flex-none rounded-none border border-line-input px-3 text-[0.8125rem] font-medium text-ink-3 hover:border-line-hover"
                       >
                         ×
                       </button>
@@ -446,7 +451,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                           channels: [...prev.channels, { chatId: '' }],
                         }))
                       }
-                      className="focus-ring inline-flex h-9 items-center rounded-[9px] border border-line-input bg-surface px-3.5 text-[12.5px] font-semibold text-ink hover:border-line-hover"
+                      className="focus-ring inline-flex h-9 items-center rounded-none border border-line-input bg-surface px-3.5 text-[0.78125rem] font-medium text-ink hover:border-line-hover"
                     >
                       {t('branding.telegramAddChannel')}
                     </button>
@@ -454,7 +459,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
                 </div>
               </div>
 
-              <label className="inline-flex cursor-pointer items-center gap-2 text-[13px] font-medium text-ink-2">
+              <label className="inline-flex cursor-pointer items-center gap-2 text-[0.8125rem] font-medium text-ink-2">
                 <input
                   type="checkbox"
                   checked={telegram.autoPublish}
@@ -480,7 +485,7 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
         </div>
 
         {/* -------- live preview column -------- */}
-        <div className="rounded-[12px] bg-surface-2 p-5 lg:sticky lg:top-6">
+        <div className="rounded-none bg-surface-2 p-5 lg:sticky lg:top-6">
           <BrandPreview
             name={form.displayName}
             accent={accentValid ? form.primaryColor : initial.primaryColor}

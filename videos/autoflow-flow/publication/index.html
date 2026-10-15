@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <title>AutoFlow — обкладинка Reels</title>
+    <style>
+      @font-face {
+        font-family: Onest;
+        src: url('assets/fonts/gf-onest-cyrillic.woff2');
+        font-weight: 100 900;
+        unicode-range: U+0400-052F, U+2116;
+      }
+      @font-face {
+        font-family: Onest;
+        src: url('assets/fonts/gf-onest-latin.woff2');
+        font-weight: 100 900;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: #fffaf3;
+        color: #141414;
+        font-family: Onest, Arial, sans-serif;
+      }
+      #cover {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        background: #fffaf3;
+      }
+      .arc {
+        position: absolute;
+        right: -465px;
+        top: 670px;
+        width: 850px;
+        height: 850px;
+        border: 155px solid #fbe6da;
+        border-radius: 50%;
+      }
+      .arc.bottom {
+        right: auto;
+        left: -520px;
+        top: 1395px;
+        width: 850px;
+        height: 850px;
+        border-width: 165px;
+      }
+      .brand {
+        position: absolute;
+        top: 300px;
+        left: 78px;
+        height: 98px;
+        display: flex;
+        align-items: center;
+        gap: 22px;
+      }
+      .slants {
+        width: 78px;
+        height: 68px;
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+        transform: skewX(-27deg);
+      }
+      .slants i {
+        width: 28px;
+        height: 52px;
+        background: #e83435;
+      }
+      .slants i:last-child {
+        height: 68px;
+      }
+      .wordmark {
+        font-size: 68px;
+        line-height: 1;
+        font-weight: 850;
+        font-style: italic;
+        letter-spacing: -4px;
+      }
+      h1 {
+        position: absolute;
+        top: 468px;
+        left: 72px;
+        right: 60px;
+        margin: 0;
+        font-size: 100px;
+        line-height: 1.11;
+        font-weight: 800;
+        letter-spacing: -4.8px;
+      }
+      h1 span {
+        display: block;
+      }
+      h1 .accent {
+        color: #e83435;
+        font-size: 109px;
+        letter-spacing: -5px;
+        margin-top: 7px;
+      }
+      .phone {
+        position: absolute;
+        top: 797px;
+        left: 744px;
+        width: 254px;
+        height: 532px;
+        padding: 9px;
+        border: 4px solid #aaa7a2;
+        border-radius: 43px;
+        background: #141414;
+        box-shadow: 0 20px 36px #322d2218;
+      }
+      .screen {
+        height: 100%;
+        border-radius: 31px;
+        background: #dceffb;
+        overflow: hidden;
+        position: relative;
+      }
+      .notch {
+        position: absolute;
+        top: 0;
+        left: 67px;
+        width: 101px;
+        height: 25px;
+        background: #141414;
+        border-radius: 0 0 16px 16px;
+      }
+      .time {
+        font-size: 12px;
+        font-weight: 650;
+        margin: 15px 14px 14px;
+      }
+      .nav {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 8px 11px 11px;
+        background: #e7f4fc;
+      }
+      .plane {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #25abe9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .plane svg {
+        width: 23px;
+        height: 23px;
+        fill: white;
+      }
+      .channel {
+        font-size: 15px;
+        font-weight: 650;
+      }
+      .channel small {
+        display: block;
+        font-size: 10px;
+        font-weight: 400;
+        color: #526675;
+        margin-top: 3px;
+      }
+      .post {
+        background: white;
+        border-radius: 12px;
+        margin: 12px 10px;
+        padding: 8px;
+      }
+      .post-photo {
+        height: 144px;
+        background: #f1f1f1;
+        border-radius: 8px;
+      }
+      .post-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+      .post-title {
+        font-size: 14px;
+        font-weight: 700;
+        margin: 10px 0 5px;
+      }
+      .post-year {
+        font-size: 12px;
+        color: #59616a;
+      }
+      .post-price {
+        color: #e83435;
+        font-size: 16px;
+        font-weight: 700;
+        margin: 8px 0;
+      }
+      .post-link {
+        font-size: 12px;
+        color: #087fc2;
+        padding: 9px 4px;
+        background: #f1f9ff;
+        border-radius: 6px;
+      }
+      .homebar {
+        position: absolute;
+        bottom: 7px;
+        left: 73px;
+        width: 90px;
+        height: 4px;
+        border-radius: 3px;
+        background: #141414;
+      }
+      .car {
+        position: absolute;
+        top: 867px;
+        left: 8px;
+        width: 1040px;
+        height: 694px;
+        object-fit: contain;
+        z-index: 2;
+      }
+      .signature {
+        position: absolute;
+        top: 1570px;
+        left: 78px;
+        right: 78px;
+        font-size: 36px;
+        font-weight: 450;
+        line-height: 1.3;
+        letter-spacing: -1px;
+      }
+      .signature strong {
+        font-weight: 650;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="cover"
+      data-composition-id="autoflow-cover"
+      data-width="1080"
+      data-height="1920"
+      data-duration="1"
+      data-no-timeline
+    >
+      <div class="arc" data-layout-ignore></div>
+      <div class="arc bottom" data-layout-ignore></div>
+      <div class="brand">
+        <div class="slants"><i></i><i></i></div>
+        <div class="wordmark">AutoFlow</div>
+      </div>
+      <h1><span>Одне оголошення.</span><span class="accent">Сайт і Telegram.</span></h1>
+      <div class="phone" aria-label="Оголошення у Telegram">
+        <div class="screen">
+          <div class="notch"></div>
+          <div class="time">9:41</div>
+          <div class="nav">
+            <div class="plane">
+              <svg viewBox="0 0 24 24">
+                <path
+                  d="m2 11 19-8c.9-.4 1.6.2 1.3 1.4L19 21c-.2 1-1 1.3-1.8.7L12 18l-2.5 2.4c-.3.3-.5.5-1 .5l.4-5.6L19.1 6c.4-.4-.1-.6-.6-.3L5.8 13.7l-3.5-1.1C1.3 12.3 1.3 11.5 2 11Z"
+                />
+              </svg>
+            </div>
+            <div class="channel">Ваш автосалон<small>Telegram-канал</small></div>
+          </div>
+          <div class="post">
+            <div class="post-photo">
+              <img
+                src="assets/images/mercedes-e2025-w214.png"
+                alt="Mercedes-Benz E-Class"
+              />
+            </div>
+            <div class="post-title">Mercedes-Benz E-Class</div>
+            <div class="post-year">2025</div>
+            <div class="post-price">Ціна за запитом</div>
+            <div class="post-link">Переглянути авто　↗</div>
+          </div>
+          <div class="homebar"></div>
+        </div>
+      </div>
+      <img
+        class="car"
+        src="assets/images/mercedes-e2025-w214.png"
+        alt="Білий Mercedes-Benz E-Class W214"
+      />
+      <div class="signature">
+        Менше рутини.
+        <div><strong>Більше уваги клієнтам.</strong></div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -22,12 +22,12 @@ export function StatusBadge({ status, children, className }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-chip px-3 py-1 text-sub font-semibold',
+        'inline-flex items-center gap-1.5 rounded-chip px-3 py-1 text-sub font-medium',
         AVAILABILITY[status],
         className,
       )}
     >
-      <span aria-hidden className="text-[8px] leading-none">
+      <span aria-hidden className="text-[0.5rem] leading-none">
         ●
       </span>
       {children}
@@ -49,7 +49,7 @@ export function ConditionBadge({ condition, children, className }: ConditionBadg
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-btn px-2.5 py-1 text-label font-semibold',
+        'inline-flex items-center rounded-btn px-2.5 py-1 text-label font-medium',
         condition === 'new'
           ? 'bg-accent text-on-accent'
           : 'bg-surface/85 text-ink-2 backdrop-blur-sm',

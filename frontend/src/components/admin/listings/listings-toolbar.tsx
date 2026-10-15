@@ -58,7 +58,7 @@ export function ListingsToolbar({ q, status }: { q?: string; status?: ListingSta
         aria-pressed={active}
         onClick={() => apply(value.trim(), s)}
         className={cn(
-          'focus-ring h-9 flex-none rounded-[8px] px-3 text-[12px] font-semibold transition-none',
+          'focus-ring h-9 flex-none rounded-none px-3 text-[0.75rem] font-medium transition-none',
           active
             ? 'bg-ink text-bg'
             : 'border border-line-input bg-surface text-ink-2 hover:border-line-hover',
@@ -90,7 +90,7 @@ export function ListingsToolbar({ q, status }: { q?: string; status?: ListingSta
             onChange={(e) => setValue(e.target.value)}
             aria-label={t('listings.searchLabel')}
             placeholder={t('listings.searchPlaceholder')}
-            className="focus-ring h-10 w-full rounded-[9px] border border-line-input bg-surface pl-[34px] pr-3 text-[13px] font-medium text-ink outline-none placeholder:text-ink-3 md:h-10"
+            className="focus-ring h-10 w-full rounded-none border border-line-input bg-surface pl-[34px] pr-3 text-[0.8125rem] font-medium text-ink outline-none placeholder:text-ink-3 md:h-10"
           />
         </div>
         {/* Desktop status select */}
@@ -98,7 +98,7 @@ export function ListingsToolbar({ q, status }: { q?: string; status?: ListingSta
           value={status ?? ''}
           onChange={(e) => apply(value.trim(), e.target.value || undefined)}
           aria-label={t('listings.filterAll')}
-          className="focus-ring hidden h-10 rounded-[9px] border border-line-input bg-surface px-3 text-[12.5px] font-semibold text-ink outline-none md:block"
+          className="focus-ring hidden h-10 rounded-none border border-line-input bg-surface px-3 text-[0.78125rem] font-medium text-ink outline-none md:block"
         >
           <option value="">{t('listings.filterAll')}</option>
           {STATUSES.map((s) => (

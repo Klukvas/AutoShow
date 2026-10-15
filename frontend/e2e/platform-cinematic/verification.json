@@ -1,0 +1,145 @@
+{
+  "preview": "http://localhost:3152",
+  "fixtureApi": "http://localhost:3153/api",
+  "bindings": "Both fixture API and dev preview bind localhost only.",
+  "data": "Isolated test data, captured real car JPGs, standard app login server action and session/auth code unchanged. No real backend mutations or seeding.",
+  "routeCoverage": "10 public +11 admin actual UI routes at1448x1086 and390x844 =42route checks. Login is additionally exercised through unchanged standard server action. /admin/listings/[id] is a redirect to the tested edit UI.",
+  "coverageFiles": [
+    "coverage-public-desktop.json",
+    "coverage-public-mobile.json",
+    "coverage-admin-desktop.json",
+    "coverage-admin-mobile.json"
+  ],
+  "behaviorCoverage": [
+    "Storedlight/dark/defaultdark and blockedstorage; no OS flip",
+    "Homepage/login white CTA under storedlight",
+    "Publicfilters nativebackground and SVG in both themes",
+    "390/320public nav/filter viewport/focus/scrolllock/Escape",
+    "Adminmodal, previewlightcontrast and mobile drawer",
+    "Keyboard primary/secondary/card/input focus",
+    "Populated favorites and compare pages",
+    "Detail gallery lightbox scrolllock/Escape",
+    "Credit lead validation and intercepted submit contract",
+    "Real adminloading/adminerror/publicerror components in isolated renderer with retry callback",
+    "Existing nested dialogs/rowmenus, combobox keyboard, toast pause, media cancel/reorder and focus"
+  ],
+  "fixedFindings": [
+    "InitialQA primaryfocusshadow conflict: explicit late2pxoutline and keyboard test",
+    "InitialQA BrandPreview dark miniature inheritslightink: explicitlocaltext-ink",
+    "InitialQA newarrival/video metadata: restored offhome only",
+    "Root nativefilter dataURL classmerge dropssurface/arrow:semanticbackground and wrapperSVG",
+    "Mobile dashboard overflow: min-w-0 sectioncards and mobile topviewsgrid",
+    "Root previewhint describesnewneutralCTA/focus and secondaryaccenttruthfully"
+  ],
+  "baseline": "frontend/.platform-review-baseline;117originalfiles, full initialbinarydiff/status; final incrementalmanifest88paths.",
+  "mirror": "Refreshedafterfinalfix167byte-identicalsource/messagesfiles,0mismatches",
+  "scope": "No unexpected trackedchanges outsideownership. Originalconfig/tsconfig/package/backend/lib/auth/API untouched; priorchanges preserved. No nexttask, commit, push, deploy, secret edit or externalwrite.",
+  "sources": [
+    "Projects/AGENTS.md",
+    "Projects/CLAUDE.md",
+    "~/.claude/rules/common/*.md",
+    "~/.claude/rules/typescript/*.md",
+    "frontend/README.md",
+    "frontend-design/SKILL.md",
+    "tailwind-aesthetic/SKILL.md"
+  ],
+  "conflicts": "Approved reference overrides generic skill lime/grid/bold defaults; existing Onest/Schibsted fonts retained. No applicable local AGENTS/CLAUDE; video instructions outside scope.",
+  "limitations": [
+    "No working real AutoFlow backend was available; preview uses isolated fixtures.",
+    "Initial Next customserver ignoredconf and brieflyrefreshedignoredroot.next; this was disclosed and replaced with ownedappmirror/cache. Finalproductionbuild also produces normalignoredroot.next artifacts; oldprocesses were not stopped.",
+    "Loading/errors are real component renderer evidence, not induced realbackend failures.",
+    "Independent QA network access may be blocked by sandbox; do not claim it ran runtime checks. Parent CUA supplied independent actual runtime observations."
+  ],
+  "representativeScreens": [
+    "public-desktop-cars.png",
+    "public-mobile-cars.png",
+    "public-desktop-cars-bmw-5-series-fixture.png",
+    "admin-desktop-admin.png",
+    "admin-mobile-admin.png",
+    "admin-desktop-admin-listings-new.png",
+    "admin-mobile-admin-listings-new.png",
+    "branding-light-preview.png",
+    "loading.png",
+    "admin-error.png",
+    "public-error.png"
+  ],
+  "priorComprehensiveChecks": [
+    {
+      "command": "npm run typecheck (frontend, mirror present)",
+      "result": "PASS"
+    },
+    {
+      "command": "npm run lint (frontend)",
+      "result": "PASS; existing next lint deprecation / Next ESLint plugin warning"
+    },
+    {
+      "command": "npm test (frontend)",
+      "result": "PASS 14 files / 77 tests"
+    },
+    {
+      "command": "E2E_BASE_URL=http://localhost:3152 npm run test:e2e -- e2e/platform-cinematic.spec.ts e2e/apple-design.spec.ts",
+      "result": "PASS 21/21 in47.1seconds; 12platform scenarios +9existing apple scenarios"
+    },
+    {
+      "command": "BACKEND_INTERNAL_URL=http://localhost:3153/api NEXT_PUBLIC_BACKEND_URL=http://localhost:3153/api NEXT_PUBLIC_MEDIA_HOSTS=http://localhost:3153 npm run build",
+      "result": "PASS compiled5.9seconds;17staticpages; mirror present"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "finalFocusedChecks": [
+    {
+      "command": "E2E_BASE_URL=http://localhost:3152 npm run test:e2e -- e2e/platform-cinematic.spec.ts --grep 'photo action contrast|compact headings|theme preference|keyboard focus|native filters|saved inventory|admin dialogs'",
+      "result": "PASS7/7in16.1seconds after final fixes; prior21E2E/77unit evidence remains in priorComprehensiveChecks."
+    },
+    {
+      "command": "npm run typecheck (frontend, mirror present)",
+      "result": "PASS after final fixes"
+    },
+    {
+      "command": "BACKEND_INTERNAL_URL=http://localhost:3153/api NEXT_PUBLIC_BACKEND_URL=http://localhost:3153/api NEXT_PUBLIC_MEDIA_HOSTS=http://localhost:3153 npm run build",
+      "result": "PASS final source; compiled4.2seconds;17staticpages; buildlint/types passed with existing plugin warning"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "finalScopedDelta": ".platform-review-baseline/final-fix.patch and final-fix-manifest.json:5paths vs preserved pre-final-fix snapshot; original whole-task incrementalmanifest88paths refreshed.",
+  "finalScopedFixes": [
+    "Overlay Favorite/Compare light icons and selected semantic colors independent of theme; inline variants unchanged; contrast>=3 checked dark/light+displaypreferences",
+    "Compact interior h2weight500; only explicit large text-title-lg h2weight300",
+    "BrandPreview usesexisting deriveDarkAccent RGBchannels directly; #111827113138193 matchesSSR; editor inputs/lib unchanged"
+  ],
+  "finalScopedScreens": [
+    "photo-controls-dark-normal.png",
+    "photo-controls-light-normal.png",
+    "photo-controls-dark-enhanced.png",
+    "photo-controls-light-enhanced.png",
+    "branding-derived-dark-accent.png"
+  ],
+  "integrationChecks": {
+    "scope": "Read-only coexistence checks after externally authored parallel changes; no foreign source modifications.",
+    "typecheck": {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    "build": {
+      "command": "BACKEND_INTERNAL_URL=http://localhost:3153/api NEXT_PUBLIC_BACKEND_URL=http://localhost:3153/api NEXT_PUBLIC_MEDIA_HOSTS=http://localhost:3153 npm run build",
+      "exitCode": 0,
+      "result": "PASS",
+      "compileSeconds": 5.4,
+      "staticPages": 17
+    },
+    "mirrorProof": "integration-checked-mirror-proof.json",
+    "filesCompared": 169,
+    "mirrorMismatches": 0,
+    "initialSnapshot": "integration-source-manifest.json",
+    "checkedSnapshot": "integration-checked-source-manifest.json",
+    "designAttributionManifestPreserved": true,
+    "limitation": "Externally added AI scene-alteration badge shares the reserved/sold photo badge coordinates; potential overlap remains outside the design task and was explicitly accepted by the orchestrator."
+  }
+}

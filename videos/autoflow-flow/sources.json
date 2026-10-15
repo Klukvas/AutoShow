@@ -1,0 +1,135 @@
+{
+  "selectedCar": {
+    "page": "https://autos-sale.com/cars/toyota-camry-2022-demo-22",
+    "url": "https://media.autos-sale.com/autoflow/listings/d98a5e25-b40b-40ef-a364-58b552c15d24/r/XHsO94e86b8AY6Tv/full.jpeg",
+    "file": "animation/assets/images/camry-original-01.jpeg",
+    "sha256": "8e89db4eda7bdf2695da5144fdd59dbb58eec3fdd46cfe184365332d6508a172",
+    "inspection": "White Camry, same visual identity as screenshot; whole nose and tail visible. Other 02/03 candidates depict a blue car and are excluded."
+  },
+  "publicUI": {
+    "file": "animation/assets/images/public-camry.png",
+    "reusedFrom": "../autoflow-reels/assets/mobile-camry.png",
+    "type": "actual screenshot; intentional CSS crops"
+  },
+  "telegram": {
+    "referencePage": "https://telegram.org/tour/screenshots",
+    "referenceImageURL": "https://telegram.org/file/464001449/10f77/snt0AkfPSTI.176862/0bee684e316b312be6",
+    "referenceFile": "animation/assets/references/telegram-official.png",
+    "referenceLicense": "CC0 as stated on official screenshot page",
+    "reconstruction": "Illustrative iPhone channel/manager chat, matched navigation, avatars, bubble and composer structure; adapted paper palette. Not an account capture. New Liquid Glass source was consulted by orchestrator but not reproduced."
+  },
+  "sourceCode": [
+    "../../src/modules/telegram/telegram-caption.ts",
+    "../../src/modules/notifications/telegram-channel.ts",
+    "../../frontend/src/components/admin/listings/listing-form.tsx",
+    "../../frontend/messages/uk.json"
+  ],
+  "gsap": {
+    "url": "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js",
+    "local": "animation/assets/js/gsap.min.js",
+    "version": "3.14.2",
+    "additionalRuntimeDependency": {
+      "name": "MotionPathPlugin",
+      "url": "https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/MotionPathPlugin.min.js",
+      "local": "animation/assets/js/MotionPathPlugin.min.js",
+      "purpose": "Studio runtime auto-loader expects the plugin; local registration prevents CDN loading despite no authored motion-path use."
+    }
+  },
+  "audio": {
+    "provenance": "Existing ../autoflow-reels/audio_probe_meta.json reports HeyGen retrieve mode. No new license grant inferred; no external audio generation/catalog call. Existing sources contain PCM despite .mp3 name, so encoded locally to AAC m4a for browser playback.",
+    "voiceover": false,
+    "files": [
+      {
+        "file": "animation/assets/audio/music.m4a",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "aac",
+              "sample_rate": "44100",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "30.000000"
+          }
+        }
+      },
+      {
+        "file": "animation/assets/audio/notification.m4a",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "aac",
+              "sample_rate": "48000",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "0.720000"
+          }
+        }
+      },
+      {
+        "file": "animation/assets/audio/tap.m4a",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "aac",
+              "sample_rate": "48000",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "0.240000"
+          }
+        }
+      },
+      {
+        "file": "animation/assets/audio/whoosh.m4a",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "aac",
+              "sample_rate": "48000",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "1.848000"
+          }
+        }
+      },
+      {
+        "file": "animation/assets/audio/chime.m4a",
+        "probe": {
+          "programs": [],
+          "stream_groups": [],
+          "streams": [
+            {
+              "codec_name": "aac",
+              "sample_rate": "48000",
+              "channels": 2
+            }
+          ],
+          "format": {
+            "duration": "5.064000"
+          }
+        }
+      }
+    ]
+  },
+  "limitations": [
+    "First full check compiler fetched implicit Inter into ~/.cache/hyperframes/fonts/inter despite local authored faces. No cache cleanup attempted. Further font/cache paths confined to owned .hyperframes/font-cache via supported HYPERFRAMES_FONT_CACHE_DIR.",
+    "Final MP4 rendering awaits explicit preview approval."
+  ],
+  "productionProject": "animation",
+  "structure": "Six local registered sub-compositions; shared parent image track. Static storyboard stays outside animated project."
+}

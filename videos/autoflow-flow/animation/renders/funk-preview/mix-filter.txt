@@ -1,0 +1,9 @@
+[0:a]atrim=0:30.0,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.68,afade=t=in:st=0:d=0.5,afade=t=out:st=28.4:d=1.6[a0];
+[1:a]atrim=0:0.7,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.2,adelay=3600|3600[a1];
+[2:a]atrim=0:0.24,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.6,adelay=7400|7400[a2];
+[3:a]atrim=0:0.7,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.22,adelay=10300|10300[a3];
+[4:a]atrim=0:0.24,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.4,adelay=9800|9800[a4];
+[5:a]atrim=0:0.72,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.65,adelay=15250|15250[a5];
+[6:a]atrim=0:0.72,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.65,adelay=21700|21700[a6];
+[7:a]atrim=0:2.5,asetpts=PTS-STARTPTS,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo,volume=0.17,adelay=27100|27100[a7];
+[a0][a1][a2][a3][a4][a5][a6][a7]amix=inputs=8:normalize=0:duration=longest[mix]

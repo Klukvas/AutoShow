@@ -1,0 +1,229 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 9,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "duplicate_media_discovery_risk",
+        "severity": "warning",
+        "message": "Detected 2 matching img entries with the same source/start/duration.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Avoid duplicated media nodes that can be discovered twice during compilation."
+      },
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 0 has 6 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-01\"> is a timeline element that contains nested <div id=\"scene-01\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-01",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-01\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-02\"> is a timeline element that contains nested <div id=\"scene-02\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-02",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-02\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-03\"> is a timeline element that contains nested <div id=\"scene-03\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-03",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-03\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-04\"> is a timeline element that contains nested <div id=\"scene-04\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-04",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-04\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-05\"> is a timeline element that contains nested <div id=\"scene-05\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-05",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-05\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<section id=\"shot-06\"> is a timeline element that contains nested <div id=\"scene-06\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#shot-06",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <section id=\"shot-06\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      },
+      {
+        "code": "nested_structure_needs_subcomposition",
+        "severity": "warning",
+        "message": "<div id=\"hero-photo-track\"> is a timeline element that contains nested <div id=\"shared-photo\">. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+        "selector": "#hero-photo-track",
+        "dataAttributes": {},
+        "sourceFile": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move <div id=\"hero-photo-track\"> and its contents into a sub-composition file and mount it with data-composition-src."
+      }
+    ],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 30,
+    "samples": [
+      8.8,
+      9,
+      9.2,
+      9.6,
+      17.5,
+      23.5,
+      29.5
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "specPath": "/Users/andreypavlenko/Desktop/Projects/AutoFlow/videos/autoflow-flow/index.motion.json",
+    "samples": 300
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      8.8,
+      9,
+      9.6,
+      17.5,
+      29.5
+    ],
+    "checked": 46,
+    "passed": 46
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": false,
+    "files": [],
+    "times": [],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.142",
+    "latestVersion": "0.8.157",
+    "updateAvailable": true
+  }
+}

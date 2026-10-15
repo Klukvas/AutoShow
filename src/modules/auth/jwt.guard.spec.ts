@@ -16,7 +16,19 @@ describe('JwtAuthGuard', () => {
   it('lets public routes through without a token', async () => {
     const reflector = { getAllAndOverride: jest.fn(() => true) };
     const tokens = { verifyAccess: jest.fn(), isAccessTokenRevoked: jest.fn() };
-    const guard = new JwtAuthGuard(tokens as never, reflector as never);
+    const guard = new JwtAuthGuard(
+      tokens as never,
+      reflector as never,
+      {
+        findOne: jest.fn().mockResolvedValue({
+          id: 'user-a',
+          email: 'a@example.test',
+          role: 'admin',
+          isActive: true,
+          authVersion: 1,
+        }),
+      } as never,
+    );
     await expect(guard.canActivate(contextFor({ headers: {} }))).resolves.toBe(true);
     expect(tokens.verifyAccess).not.toHaveBeenCalled();
   });
@@ -24,7 +36,19 @@ describe('JwtAuthGuard', () => {
   it('rejects a request without a bearer token', async () => {
     const reflector = { getAllAndOverride: jest.fn(() => false) };
     const tokens = { verifyAccess: jest.fn(), isAccessTokenRevoked: jest.fn() };
-    const guard = new JwtAuthGuard(tokens as never, reflector as never);
+    const guard = new JwtAuthGuard(
+      tokens as never,
+      reflector as never,
+      {
+        findOne: jest.fn().mockResolvedValue({
+          id: 'user-a',
+          email: 'a@example.test',
+          role: 'admin',
+          isActive: true,
+          authVersion: 1,
+        }),
+      } as never,
+    );
     await expect(guard.canActivate(contextFor({ headers: {} }))).rejects.toBeInstanceOf(
       UnauthorizedException,
     );
@@ -36,7 +60,19 @@ describe('JwtAuthGuard', () => {
       verifyAccess: jest.fn(() => ({ sub: 'u', email: 'e', role: 'admin', iat: 1 })),
       isAccessTokenRevoked: jest.fn().mockResolvedValue(true),
     };
-    const guard = new JwtAuthGuard(tokens as never, reflector as never);
+    const guard = new JwtAuthGuard(
+      tokens as never,
+      reflector as never,
+      {
+        findOne: jest.fn().mockResolvedValue({
+          id: 'user-a',
+          email: 'a@example.test',
+          role: 'admin',
+          isActive: true,
+          authVersion: 1,
+        }),
+      } as never,
+    );
     await expect(
       guard.canActivate(contextFor({ headers: { authorization: 'Bearer token' } })),
     ).rejects.toBeInstanceOf(UnauthorizedException);
@@ -50,10 +86,23 @@ describe('JwtAuthGuard', () => {
         email: 'a@example.test',
         role: 'admin',
         iat: 123,
+        authVersion: 1,
       })),
       isAccessTokenRevoked: jest.fn().mockResolvedValue(false),
     };
-    const guard = new JwtAuthGuard(tokens as never, reflector as never);
+    const guard = new JwtAuthGuard(
+      tokens as never,
+      reflector as never,
+      {
+        findOne: jest.fn().mockResolvedValue({
+          id: 'user-a',
+          email: 'a@example.test',
+          role: 'admin',
+          isActive: true,
+          authVersion: 1,
+        }),
+      } as never,
+    );
     const request: Record<string, unknown> = {
       headers: { authorization: 'Bearer token' },
     };

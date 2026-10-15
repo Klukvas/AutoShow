@@ -1,0 +1,151 @@
+ M .env.example
+ M .github/workflows/deploy.yml
+ M README.md
+ M deploy/.env.production.example
+ M deploy/README.md
+ M docs/agent-context.md
+ M frontend/messages/uk.json
+ M frontend/src/app/(admin)/admin/(dashboard)/audit/page.tsx
+ M frontend/src/app/(admin)/admin/(dashboard)/error.tsx
+ M frontend/src/app/(admin)/admin/(dashboard)/layout.tsx
+ M frontend/src/app/(admin)/admin/(dashboard)/leads/loading.tsx
+ M frontend/src/app/(admin)/admin/(dashboard)/leads/page.tsx
+ M frontend/src/app/(admin)/admin/(dashboard)/listings/loading.tsx
+ M frontend/src/app/(admin)/admin/(dashboard)/listings/page.tsx
+ M frontend/src/app/(admin)/admin/(dashboard)/page.tsx
+ M frontend/src/app/(admin)/admin/login/page.tsx
+ M frontend/src/app/(public)/about/page.tsx
+ M frontend/src/app/(public)/cars/[slug]/page.tsx
+ M frontend/src/app/(public)/cars/error.tsx
+ M frontend/src/app/(public)/cars/page.tsx
+ M frontend/src/app/(public)/collections/[key]/page.tsx
+ M frontend/src/app/(public)/compare/page.tsx
+ M frontend/src/app/(public)/contacts/page.tsx
+ M frontend/src/app/(public)/favorites/page.tsx
+ M frontend/src/app/(public)/layout.tsx
+ M frontend/src/app/(public)/page.tsx
+ M frontend/src/app/layout.tsx
+ M frontend/src/app/not-found.tsx
+ M frontend/src/components/admin/admin-sidebar.tsx
+ M frontend/src/components/admin/audit/audit-filters.tsx
+ M frontend/src/components/admin/branding/brand-preview.tsx
+ M frontend/src/components/admin/branding/branding-editor.tsx
+ M frontend/src/components/admin/collections/collections-manager.tsx
+ M frontend/src/components/admin/leads/lead-crm-panel.tsx
+ M frontend/src/components/admin/leads/lead-status-segments.tsx
+ M frontend/src/components/admin/listings/catalog-combobox.tsx
+ M frontend/src/components/admin/listings/listing-form.tsx
+ M frontend/src/components/admin/listings/listings-table.tsx
+ M frontend/src/components/admin/listings/listings-toolbar.tsx
+ M frontend/src/components/admin/listings/telegram-post-panel.tsx
+ M frontend/src/components/admin/listings/transition-menu.tsx
+ M frontend/src/components/admin/media/media-manager.tsx
+ M frontend/src/components/admin/media/media-tile.tsx
+ M frontend/src/components/admin/reviews/reviews-manager.tsx
+ M frontend/src/components/admin/tags/tags-manager.tsx
+ M frontend/src/components/admin/team/create-editor-dialog.tsx
+ M frontend/src/components/admin/team/team-table.tsx
+ M frontend/src/components/admin/ui/badges.tsx
+ M frontend/src/components/admin/ui/banner.tsx
+ M frontend/src/components/admin/ui/dialog.tsx
+ M frontend/src/components/admin/ui/empty-state.tsx
+ M frontend/src/components/admin/ui/field.tsx
+ M frontend/src/components/admin/ui/pager.tsx
+ M frontend/src/components/admin/ui/row-menu.tsx
+ M frontend/src/components/admin/ui/section-card.tsx
+ M frontend/src/components/admin/ui/skeletons.tsx
+ M frontend/src/components/admin/ui/toast.tsx
+ M frontend/src/components/filters/active-chips.tsx
+ M frontend/src/components/filters/filter-bar.tsx
+ M frontend/src/components/filters/filter-fields.tsx
+ M frontend/src/components/filters/filter-sheet.tsx
+ M frontend/src/components/hero/home-hero.tsx
+ M frontend/src/components/home/collections-section.tsx
+ M frontend/src/components/home/reviews-section.tsx
+ M frontend/src/components/home/sell-car-section.tsx
+ M frontend/src/components/home/services-section.tsx
+ M frontend/src/components/home/stats-band.tsx
+ M frontend/src/components/lead/field.tsx
+ M frontend/src/components/lead/lead-cta.tsx
+ M frontend/src/components/lead/lead-form.tsx
+ M frontend/src/components/listing/compare-bar.tsx
+ M frontend/src/components/listing/compare-button.tsx
+ M frontend/src/components/listing/contact-panel.tsx
+ M frontend/src/components/listing/credit-calculator.tsx
+ M frontend/src/components/listing/favorite-button.tsx
+ M frontend/src/components/listing/gallery.tsx
+ M frontend/src/components/listing/key-specs.tsx
+ M frontend/src/components/listing/listing-card.tsx
+ M frontend/src/components/listing/make-logo-strip.tsx
+ M frontend/src/components/listing/mobile-cta-bar.tsx
+ M frontend/src/components/listing/options-by-category.tsx
+ M frontend/src/components/listing/share-button.tsx
+ M frontend/src/components/listing/spec-table.tsx
+ M frontend/src/components/motion/lenis-provider.tsx
+ M frontend/src/components/motion/scroll-reveal.tsx
+ M frontend/src/components/nav/public-footer.tsx
+ M frontend/src/components/nav/public-nav.tsx
+ M frontend/src/components/theme/theme-provider.tsx
+ M frontend/src/components/theme/theme-script.tsx
+ M frontend/src/components/ui/button.tsx
+ M frontend/src/components/ui/eyebrow.tsx
+ M frontend/src/components/ui/media-placeholder.tsx
+ M frontend/src/components/ui/section-heading.tsx
+ M frontend/src/components/ui/status-badge.tsx
+ M frontend/src/lib/api/admin.ts
+ M frontend/src/lib/api/types.ts
+ M frontend/src/lib/scroll-lock.ts
+ M frontend/src/lib/use-focus-trap.ts
+ M frontend/src/styles/globals.css
+ M package-lock.json
+ M package.json
+ M src/config/config.module.ts
+ M src/config/env.validation.ts
+ M src/database/entities.ts
+ M src/modules/branding/branding.service.spec.ts
+ M src/modules/branding/branding.service.ts
+ M src/modules/branding/entities/site-settings.entity.ts
+ M src/modules/leads/leads.service.ts
+ M src/modules/listings/entities/listing-media.entity.ts
+ M src/modules/listings/listings.mapper.ts
+ M src/modules/media/media.module.ts
+ M src/modules/media/media.service.ts
+ D src/modules/notifications/email-channel.ts
+ M src/modules/notifications/notification-channel.ts
+ M src/modules/notifications/notification.module.ts
+ M src/modules/notifications/telegram-channel.spec.ts
+ M src/modules/notifications/telegram-channel.ts
+ M src/modules/telegram/telegram-post.service.ts
+ M src/workers/maintenance.worker.ts
+ M src/workers/queue.tokens.ts
+ M src/workers/workers.module.ts
+?? .photo-ai-review-baseline/
+?? design/card-directions.html
+?? designs-ig/
+?? docs/features.md
+?? docs/outreach.md
+?? frontend/.homepage-review-baseline/
+?? frontend/.platform-review-baseline/
+?? frontend/e2e/apple-design.spec.ts
+?? frontend/e2e/fixtures/
+?? frontend/e2e/homepage-cinematic.spec.ts
+?? frontend/e2e/homepage-cinematic/
+?? frontend/e2e/platform-cinematic.spec.ts
+?? frontend/e2e/platform-cinematic/
+?? frontend/src/components/admin/leads/lead-live-notifier.tsx
+?? frontend/src/components/admin/media/photo-ai/
+?? frontend/src/components/home/home-section-heading.tsx
+?? frontend/src/components/home/homepage-shell.tsx
+?? frontend/src/components/motion/motion-provider.tsx
+?? frontend/src/lib/admin/lead-watch.test.ts
+?? frontend/src/lib/admin/lead-watch.ts
+?? frontend/src/lib/admin/photo-ai.ts
+?? frontend/src/lib/scroll-lock.test.ts
+?? frontend/src/lib/use-overlay-presence.ts
+?? frontend/src/styles/cinematic.css
+?? src/database/entities.spec.ts
+?? src/database/migrations/1792000000000-PhotoAi.ts
+?? src/modules/branding/branding-public.controller.spec.ts
+?? src/modules/leads/lead-notifications.spec.ts
+?? src/modules/photo-ai/
+?? src/workers/photo-ai.worker.ts

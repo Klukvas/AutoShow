@@ -1,3 +1,4 @@
+import { PhotoAiService } from '../modules/photo-ai/photo-ai.service';
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +24,7 @@ export class MaintenanceWorker extends WorkerHost implements OnModuleInit {
     @InjectRepository(MediaRendition)
     private readonly renditions: Repository<MediaRendition>,
     private readonly storage: StorageService,
+    private readonly photos: PhotoAiService,
     private readonly makeLogos: MakeLogoService,
     @InjectQueue(MAINTENANCE_QUEUE) private readonly queue: Queue,
     @Inject('APP_CONFIG') private readonly config: AppConfig,
@@ -97,7 +99,9 @@ export class MaintenanceWorker extends WorkerHost implements OnModuleInit {
 
     let removed = 0;
     for (const media of stale) {
+      if (!(await this.photos.safeToReclaim(media.id))) continue;
       const keys = [
+        ...(await this.photos.cleanupKeys(media)),
         media.originalS3Key,
         ...renditions.filter((r) => r.mediaId === media.id).map((r) => r.s3Key),
       ];
@@ -135,7 +139,9 @@ export class MaintenanceWorker extends WorkerHost implements OnModuleInit {
 
     let removed = 0;
     for (const media of stale) {
+      if (!(await this.photos.safeToReclaim(media.id))) continue;
       const keys = [
+        ...(await this.photos.cleanupKeys(media)),
         media.originalS3Key,
         ...renditions.filter((r) => r.mediaId === media.id).map((r) => r.s3Key),
       ];

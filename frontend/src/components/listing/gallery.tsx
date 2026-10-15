@@ -36,6 +36,7 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
   // through to the clean placeholder instead of a broken image.
   const ready = media.filter((m) => m.type === 'image' && (m.renditions?.length ?? 0) > 0);
   const trackRef = useRef<HTMLDivElement | null>(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const goTo = useCallback(
     (next: number) => {
@@ -56,13 +57,16 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
       // lead form on the same page) or interacting with another control.
       const el = e.target as HTMLElement | null;
       if (el?.closest('input, textarea, select, [contenteditable="true"]')) return;
-      if (e.key === 'ArrowRight') goTo(index + 1);
-      if (e.key === 'ArrowLeft') goTo(index - 1);
+      if (!fullscreen && !carouselRef.current?.contains(document.activeElement)) return;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goTo(index + (e.key === 'ArrowRight' ? 1 : -1));
+      }
       if (e.key === 'Escape') setFullscreen(false);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [goTo, index]);
+  }, [goTo, index, fullscreen]);
 
   // Keep the counter / thumbnail highlight in sync when the user swipes or
   // scrolls the track manually (not just via the arrow buttons).
@@ -110,12 +114,12 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
   const lightboxMedia = ready[index] ?? ready[0];
 
   return (
-    <div aria-roledescription="carousel" aria-label={title}>
+    <div ref={carouselRef} role="region" aria-roledescription="carousel" aria-label={title}>
       {/* Main frame */}
       <div className="relative -mx-5 md:mx-0">
         <div
           ref={trackRef}
-          className="flex h-[250px] w-full snap-x snap-mandatory overflow-x-auto bg-ph-b [scrollbar-width:none] md:h-[430px] md:rounded-window"
+          className="flex h-[250px] w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain bg-ph-b [scrollbar-width:none] md:h-[430px] md:rounded-window"
         >
           {ready.map((m, i) => {
             const full =
@@ -143,8 +147,10 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
 
         {backHref && <BackOverlay href={backHref} label={t('backToCatalog')} />}
 
+        {lightboxMedia?.aiEdited && <span className="pointer-events-none absolute bottom-14 left-3 bg-black/75 px-3 py-1.5 text-xs text-white">{t(lightboxMedia.sceneAltered ? 'sceneAltered' : 'aiEdited')}</span>}
+
         {/* Counter — top-right overlay */}
-        <div className="pointer-events-none absolute right-3 top-3 rounded-btn bg-ink/60 px-2.5 py-1 text-sub font-medium text-white backdrop-blur-sm">
+        <div className="pointer-events-none absolute right-3 top-3 rounded-btn bg-black/65 px-2.5 py-1 text-sub font-medium text-white backdrop-blur-sm">
           {index + 1} / {ready.length}
         </div>
 
@@ -183,7 +189,7 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
               <span
                 key={m.id}
                 className={cn(
-                  'rounded-pill bg-white/90 transition-all',
+                  'rounded-none bg-white/90 transition-[width,opacity] duration-150',
                   i === index ? 'h-1.5 w-5' : 'h-1.5 w-1.5 opacity-60',
                 )}
               />
@@ -225,7 +231,7 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
             <button
               type="button"
               onClick={() => setFullscreen(true)}
-              className="focus-ring flex h-16 w-[92px] flex-shrink-0 items-center justify-center rounded-btn bg-ph-a text-sub font-semibold text-ink-2 transition-colors hover:bg-ph-b"
+              className="focus-ring flex h-16 w-[92px] flex-shrink-0 items-center justify-center rounded-btn bg-ph-a text-sub font-medium text-ink-2 transition-colors hover:bg-ph-b"
             >
               +{ready.length - (VISIBLE_THUMBS - 1)}
             </button>
@@ -237,6 +243,7 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
       {fullscreen && lightboxMedia && (
         <div
           ref={trapRef}
+          data-lenis-prevent
           role="dialog"
           aria-modal="true"
           aria-label={title}
@@ -256,6 +263,7 @@ export function Gallery({ media, title, backHref }: GalleryProps) {
               ✕
             </button>
           </div>
+          {lightboxMedia.aiEdited && <p className="px-4 pb-2 text-sm text-white">{t(lightboxMedia.sceneAltered ? 'sceneAltered' : 'aiEdited')}</p>}
           <div className="relative flex-1">
             <Image
               src={
@@ -315,11 +323,11 @@ function ArrowButton({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'focus-ring absolute top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-pill text-lg transition-colors disabled:opacity-35',
+        'focus-ring absolute top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-none text-lg transition-colors disabled:opacity-35',
         dir === 'prev' ? 'left-3' : 'right-3',
         lightbox
           ? 'flex bg-white/10 text-white hover:bg-white/20'
-          : 'hidden bg-surface/90 text-ink shadow-card backdrop-blur-sm hover:bg-surface md:flex',
+          : 'hidden bg-surface/90 text-ink shadow-none backdrop-blur-sm hover:bg-surface md:flex',
       )}
     >
       {dir === 'prev' ? '‹' : '›'}

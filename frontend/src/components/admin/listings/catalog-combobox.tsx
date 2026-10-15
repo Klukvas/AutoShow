@@ -24,7 +24,8 @@ interface CatalogComboboxProps {
   /** Render logo thumbnails (makes) or plain text rows (models). */
   showLogos?: boolean;
   /** Absent → creation not offered (e.g. model before a make is chosen). */
-  onCreate?: (name: string) => Promise<ComboItem | null>;
+  onCreate?: (name: string) => void;
+  addLabel?: string;
   /** «Unknown value» notice above the create row. */
   unknownHint?: (name: string) => string;
   createLabel?: (name: string) => string;
@@ -62,7 +63,7 @@ function LogoThumb({ item }: { item: ComboItem }) {
   return (
     <span
       aria-hidden
-      className="flex h-[22px] w-[22px] flex-none items-center justify-center rounded-[5px] bg-surface-2 text-[11px] font-extrabold text-ink-3"
+      className="flex h-[22px] w-[22px] flex-none items-center justify-center rounded-none bg-surface-2 text-[0.6875rem] font-medium text-ink-3"
     >
       {item.nameUk[0]?.toUpperCase() ?? '?'}
     </span>
@@ -87,12 +88,12 @@ export function CatalogCombobox({
   onCreate,
   unknownHint,
   createLabel,
-  creatingLabel,
+  addLabel,
   emptyLabel,
 }: CatalogComboboxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [creating, setCreating] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selected = items.find((item) => item.id === value) ?? null;
@@ -106,6 +107,7 @@ export function CatalogCombobox({
   const close = () => {
     setOpen(false);
     setQuery('');
+    setActiveIndex(-1);
   };
 
   const pick = (id: string) => {
@@ -113,15 +115,10 @@ export function CatalogCombobox({
     close();
   };
 
-  const create = async () => {
-    if (!onCreate || creating || !trimmed) return;
-    setCreating(true);
-    try {
-      const created = await onCreate(trimmed);
-      if (created) pick(created.id);
-    } finally {
-      setCreating(false);
-    }
+  const create = () => {
+    if (!onCreate) return;
+    onCreate(trimmed);
+    close();
   };
 
   return (
@@ -151,22 +148,46 @@ export function CatalogCombobox({
               aria-describedby={describedBy}
               aria-required={required || undefined}
               aria-autocomplete="list"
+              aria-controls={open ? `${id}-listbox` : undefined}
+              aria-activedescendant={
+                open && filtered[activeIndex] ? `${id}-option-${activeIndex}` : undefined
+              }
               autoComplete="off"
               value={open ? query : (selected?.nameUk ?? '')}
               placeholder={placeholder}
               onFocus={() => {
                 setOpen(true);
                 setQuery('');
+                setActiveIndex(-1);
               }}
               onChange={(e) => {
                 if (!open) setOpen(true);
                 setQuery(e.target.value);
+                setActiveIndex(-1);
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Escape') close();
+                if (e.key === 'Escape' && open) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  close();
+                }
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                  e.preventDefault();
+                  setOpen(true);
+                  const next =
+                    e.key === 'ArrowDown'
+                      ? (activeIndex + 1) % Math.max(1, filtered.length)
+                      : activeIndex <= 0
+                        ? filtered.length - 1
+                        : activeIndex - 1;
+                  setActiveIndex(next);
+                  document
+                    .getElementById(`${id}-option-${next}`)
+                    ?.scrollIntoView({ block: 'nearest' });
+                }
                 if (e.key === 'Enter' && open) {
                   e.preventDefault();
-                  if (filtered.length > 0) pick(filtered[0].id);
+                  if (filtered.length > 0) pick((filtered[activeIndex] ?? filtered[0]).id);
                   else if (unknown && onCreate) void create();
                 }
               }}
@@ -175,22 +196,25 @@ export function CatalogCombobox({
           </div>
 
           {open && (
-            <div className="absolute z-30 mt-1 max-h-[290px] w-full overflow-y-auto rounded-[10px] border border-line bg-surface py-1 shadow-lg">
-              <ul role="listbox">
-                {filtered.map((item) => (
+            <div className="material-panel absolute z-30 mt-1 max-h-[290px] w-full overflow-y-auto overscroll-contain rounded-none border border-line py-1 shadow-none">
+              <ul
+                id={`${id}-listbox`}
+                role="listbox"
+                aria-label={typeof label === 'string' ? label : name}
+              >
+                {filtered.map((item, index) => (
                   <li key={item.id}>
                     <button
                       type="button"
                       role="option"
+                      id={`${id}-option-${index}`}
+                      tabIndex={-1}
                       aria-selected={item.id === value}
-                      // onMouseDown so the pick lands before the input's blur.
-                      onMouseDown={(e) => {
-                        e.preventDefault();
-                        pick(item.id);
-                      }}
+                      onMouseDown={(e) => e.preventDefault()}
+                      onClick={() => pick(item.id)}
                       className={cn(
-                        'flex w-full items-center gap-2.5 px-3 py-2 text-left text-[13.5px] font-semibold text-ink hover:bg-ink/[0.04]',
-                        item.id === value && 'bg-ink/[0.04]',
+                        'flex w-full items-center gap-2.5 px-3 py-2 text-left text-[0.84375rem] font-medium text-ink hover:bg-ink/[0.04]',
+                        (item.id === value || index === activeIndex) && 'bg-ink/[0.06]',
                       )}
                     >
                       {showLogos && <LogoThumb item={item} />}
@@ -202,29 +226,37 @@ export function CatalogCombobox({
                   </li>
                 ))}
                 {filtered.length === 0 && !unknown && (
-                  <li className="px-3 py-2 text-[13px] font-medium text-ink-3">{emptyLabel}</li>
+                  <li className="px-3 py-2 text-[0.8125rem] font-medium text-ink-3">
+                    {emptyLabel}
+                  </li>
                 )}
               </ul>
 
               {unknown && onCreate && unknownHint && createLabel && (
                 <div className="border-t border-line px-3 py-2.5">
-                  <p className="mb-2 text-[12.5px] font-medium text-ink-3">
+                  <p className="mb-2 text-[0.78125rem] font-medium text-ink-3">
                     {unknownHint(trimmed)}
                   </p>
                   <button
                     type="button"
-                    disabled={creating}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      void create();
-                    }}
-                    className="focus-ring inline-flex h-8 items-center rounded-[8px] bg-accent px-3 text-[12.5px] font-bold text-on-accent hover:bg-accent-hover disabled:opacity-50"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => void create()}
+                    className="focus-ring inline-flex h-8 items-center rounded-none bg-accent px-3 text-[0.78125rem] font-medium text-on-accent hover:bg-accent-hover disabled:opacity-50"
                   >
-                    {creating ? (creatingLabel ?? '…') : createLabel(trimmed)}
+                    {createLabel(trimmed)}
                   </button>
                 </div>
               )}
             </div>
+          )}
+          {onCreate && addLabel && (
+            <button
+              type="button"
+              className="focus-ring mt-2 inline-flex min-h-11 items-center text-sm font-medium text-accent hover:text-accent-hover"
+              onClick={create}
+            >
+              + {addLabel}
+            </button>
           )}
         </div>
       )}

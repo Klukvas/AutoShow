@@ -1,0 +1,53 @@
+{
+  "errors": [],
+  "external": [],
+  "sourceUnchanged": true,
+  "state": {
+    "duration": "30",
+    "timelineKeys": [
+      "__proxied",
+      "autoflow-flow",
+      "scene-01",
+      "scene-02",
+      "scene-03",
+      "scene-04",
+      "scene-05",
+      "scene-06"
+    ],
+    "animationEnd": 30,
+    "audioNodes": 8,
+    "files": [
+      {
+        "file": "assets/audio/music.m4a",
+        "duration": 30,
+        "channels": 2
+      },
+      {
+        "file": "assets/audio/whoosh.m4a",
+        "duration": 1.8479791666666667,
+        "channels": 2
+      },
+      {
+        "file": "assets/audio/tap.m4a",
+        "duration": 0.23997916666666666,
+        "channels": 2
+      },
+      {
+        "file": "assets/audio/notification.m4a",
+        "duration": 0.72,
+        "channels": 2
+      },
+      {
+        "file": "assets/audio/chime.m4a",
+        "duration": 5.064,
+        "channels": 2
+      }
+    ]
+  },
+  "studioLint": [
+    {
+      "code": "duplicate_media_discovery_risk",
+      "severity": "warning"
+    }
+  ]
+}

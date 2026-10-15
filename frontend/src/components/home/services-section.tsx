@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
-import { SectionHeading } from '@/components/ui/section-heading';
+import { HomeSectionHeading } from './home-section-heading';
 import { ScrollReveal } from '@/components/motion/scroll-reveal';
 
 /**
@@ -18,23 +18,20 @@ const SERVICES = [
   { key: 'promo', href: '#sell' },
 ] as const;
 
-export async function ServicesSection({ index }: { index: string }) {
+export async function ServicesSection() {
   const t = await getTranslations('home');
 
   return (
-    <section className="mx-auto max-w-[1200px] px-5 py-12 md:px-8 md:py-16">
-      <SectionHeading index={index} title={t('servicesTitle')} />
-      <div className="mt-6 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-4">
+    <section className="home-container home-section">
+      <HomeSectionHeading title={t('servicesTitle')} />
+      <div className="home-services-grid">
         {SERVICES.map((service, idx) => (
           <ScrollReveal key={service.key} delay={idx * 0.06}>
             <Link
               href={service.href}
-              className="focus-ring group flex h-full flex-col rounded-card border border-line bg-bg p-5 transition-colors hover:border-lot-gold"
+              className="home-service focus-ring"
             >
-              <div className="font-mono text-[0.625rem] font-bold tracking-[0.18em] text-lot-gold">
-                0{idx + 1}
-              </div>
-              <h3 className="mt-3 font-heading text-section font-bold text-ink">
+              <h3 className="home-item-title">
                 {t(`services.${service.key}.title`)}
               </h3>
               <p className="mt-2 flex-1 text-body-md leading-[1.6] text-ink-2">

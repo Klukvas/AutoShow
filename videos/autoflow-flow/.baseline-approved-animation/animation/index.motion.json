@@ -1,0 +1,25 @@
+{
+  "duration": 30,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "[data-composition-id=\"scene-01\"] .headline",
+      "bySec": 0.6
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-composition-id=\"scene-02\"] .button",
+      "bySec": 7.15
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-composition-id=\"scene-05\"] .buyer-message",
+      "bySec": 22.8
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "[data-composition-id=\"scene-06\"] .button",
+      "bySec": 27.6
+    }
+  ]
+}

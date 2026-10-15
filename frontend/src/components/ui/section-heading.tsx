@@ -20,7 +20,6 @@ interface SectionHeadingProps {
  * in one voice.
  */
 export function SectionHeading({
-  index,
   title,
   action,
   size = 'lg',
@@ -35,18 +34,9 @@ export function SectionHeading({
       )}
     >
       <div className="flex items-baseline gap-3">
-        <span
-          aria-hidden
-          className={cn(
-            'font-mono font-bold tracking-[0.18em] text-lot-gold',
-            size === 'lg' ? 'text-[0.6875rem]' : 'text-[0.625rem]',
-          )}
-        >
-          {index ? `№${index}` : '§'}
-        </span>
         <h2
           className={cn(
-            'font-heading font-extrabold tracking-editorial text-ink',
+            'font-heading font-medium tracking-editorial text-ink',
             size === 'lg' ? 'text-title-lg' : 'text-section',
           )}
         >

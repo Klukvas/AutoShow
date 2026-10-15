@@ -1,6 +1,10 @@
-import { Body, Controller, HttpCode, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
+import {
+  CurrentUser,
+  type AuthenticatedUser,
+} from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -10,6 +14,11 @@ import { RefreshDto } from './dto/refresh.dto';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
+
+  @Get('me')
+  current(@CurrentUser() user: AuthenticatedUser) {
+    return user;
+  }
 
   @Public()
   @Post('login')
@@ -40,7 +49,7 @@ export class AuthController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Rotate refresh token, issue new access+refresh pair' })
   async refresh(@Body() dto: RefreshDto) {
-    return this.auth.refresh(dto.refreshToken);
+    return this.auth.refresh(dto.refreshToken, dto.retryProof);
   }
 
   @Public()

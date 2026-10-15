@@ -41,7 +41,7 @@ export function SpecTable({ listing, t }: SpecTableProps) {
           className="flex items-baseline justify-between gap-4 border-b border-line py-2.5"
         >
           <dt className="text-body-md text-ink-2">{row.term}</dt>
-          <dd className="tabular text-right text-body-md font-semibold text-ink">{row.value}</dd>
+          <dd className="tabular text-right text-body-md font-medium text-ink">{row.value}</dd>
         </div>
       ))}
     </dl>

@@ -1,3 +1,6 @@
+import { PhotoAiSettings } from '../modules/photo-ai/entities/photo-ai-settings.entity';
+import { PhotoAiGeneration } from '../modules/photo-ai/entities/photo-ai-generation.entity';
+import { PhotoAiPreset } from '../modules/photo-ai/entities/photo-ai-preset.entity';
 import { AdminUser } from '../modules/admin-users/entities/admin-user.entity';
 import { AuditLog } from '../modules/audit/entities/audit-log.entity';
 import { SiteSettings } from '../modules/branding/entities/site-settings.entity';
@@ -21,8 +24,12 @@ import { Listing } from '../modules/listings/entities/listing.entity';
 import { MediaRendition } from '../modules/listings/entities/media-rendition.entity';
 import { Reservation } from '../modules/reservations/entities/reservation.entity';
 import { Review } from '../modules/reviews/entities/review.entity';
+import { ListingTelegramPost } from '../modules/telegram/entities/listing-telegram-post.entity';
 
 export const ALL_ENTITIES = [
+  PhotoAiSettings,
+  PhotoAiGeneration,
+  PhotoAiPreset,
   SiteSettings,
   AdminUser,
   Make,
@@ -40,6 +47,7 @@ export const ALL_ENTITIES = [
   ListingOption,
   ListingTag,
   ListingPriceHistory,
+  ListingTelegramPost,
   Lead,
   LeadNote,
   Reservation,

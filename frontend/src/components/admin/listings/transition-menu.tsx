@@ -122,7 +122,8 @@ export function TransitionMenu({
     } catch (err) {
       setConfirming(null);
       if (err instanceof ApiClientError && err.status === 409) onConflict();
-      else if (err instanceof ApiClientError && err.status === 429) onError(t('common.rateLimited'));
+      else if (err instanceof ApiClientError && err.status === 429)
+        onError(t('common.rateLimited'));
       else if (err instanceof ApiClientError) onError(err.message);
       else onError(t('common.errorTitle'));
     } finally {
@@ -148,7 +149,7 @@ export function TransitionMenu({
               type="button"
               onClick={() => setConfirming(null)}
               disabled={busy}
-              className="focus-ring h-10 rounded-[9px] border border-line-input bg-surface px-4 text-[13px] font-semibold text-ink"
+              className="focus-ring h-10 rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink"
             >
               {t('common.cancel')}
             </button>
@@ -156,7 +157,7 @@ export function TransitionMenu({
               type="button"
               onClick={() => confirming && run(confirming)}
               disabled={busy || (isSale && !salePriceValid)}
-              className="focus-ring h-10 rounded-[9px] bg-accent px-4 text-[13px] font-bold text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60"
+              className="focus-ring h-10 rounded-none bg-accent px-4 text-[0.8125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-60"
             >
               {busy ? t('common.saving') : t('common.confirm')}
             </button>
@@ -165,7 +166,7 @@ export function TransitionMenu({
       >
         {isSale ? (
           <div className="flex flex-col gap-3.5">
-            <p className="text-[13.5px] font-medium leading-relaxed text-ink-2">
+            <p className="text-[0.84375rem] font-medium leading-relaxed text-ink-2">
               {t('form.saleBody', { title })}
             </p>
             <TextField
@@ -179,7 +180,7 @@ export function TransitionMenu({
               onChange={(e) => setSalePrice(e.target.value)}
             />
             {feeType && feeType !== 'none' && (
-              <p className="text-[13px] font-semibold text-ink">
+              <p className="text-[0.8125rem] font-medium text-ink">
                 {t('form.saleCommission')}{' '}
                 <span className="tabular">
                   {formatMoney(commission.toFixed(2), (priceCurrency ?? 'USD') as never)}
@@ -193,7 +194,7 @@ export function TransitionMenu({
             )}
           </div>
         ) : (
-          <p className="text-[13.5px] font-medium leading-relaxed text-ink-2">
+          <p className="text-[0.84375rem] font-medium leading-relaxed text-ink-2">
             {confirming &&
               t('form.transitionBody', { title, action: t(`form.${ACTION_KEY[confirming]}`) })}
           </p>

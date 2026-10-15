@@ -34,9 +34,10 @@ export function ScrollReveal({
       opacity: 1,
       y: 0,
       transition: {
-        duration: reduceMotion ? 0 : 0.55,
-        ease: [0.22, 1, 0.36, 1],
-        delay,
+        type: 'spring',
+        bounce: 0,
+        duration: reduceMotion ? 0.12 : 0.35,
+        delay: reduceMotion ? 0 : Math.min(delay, 0.15),
       },
     },
   };
@@ -44,7 +45,8 @@ export function ScrollReveal({
   return (
     <MotionTag
       className={className}
-      initial="hidden"
+      initial={reduceMotion ? false : 'hidden'}
+      animate={reduceMotion ? 'shown' : undefined}
       whileInView="shown"
       viewport={{ once: true, margin: '0px 0px -10% 0px' }}
       variants={variants}

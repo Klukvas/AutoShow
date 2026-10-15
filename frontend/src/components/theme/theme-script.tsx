@@ -1,15 +1,11 @@
-/**
- * Theme bootstrap: runs synchronously in <head> BEFORE first paint so the
- * stored (or system) theme applies without a flash of the wrong theme.
- * Order of precedence: localStorage('af-theme') → prefers-color-scheme → light.
- */
+/** Stored preferences win; first-time visitors see the cinematic dark theme before paint. */
 export const THEME_STORAGE_KEY = 'af-theme';
 
 export const THEME_INIT_SCRIPT =
   `(function(){try{var s=localStorage.getItem('${THEME_STORAGE_KEY}');` +
-  `var t=(s==='light'||s==='dark')?s:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');` +
+  `var t=(s==='light'||s==='dark')?s:'dark';` +
   `document.documentElement.setAttribute('data-theme',t)}catch(e){` +
-  `document.documentElement.setAttribute('data-theme','light')}})()`;
+  `document.documentElement.setAttribute('data-theme','dark')}})()`;
 
 export function ThemeScript() {
   return <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />;

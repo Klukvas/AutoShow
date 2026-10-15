@@ -1,6 +1,13 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { createHash, randomBytes } from 'node:crypto';
+import {
+  RECOVERY_PREFIX,
+  RECOVERY_SECONDS,
+  encryptRecovery,
+  decryptRecovery,
+  type RefreshRecovery,
+} from './refresh-recovery';
 import { RedisService } from '../../common/redis/redis.service';
 import type { AppConfig } from '../../config/config.module';
 import type { AdminRole } from '../admin-users/entities/admin-user.entity';
@@ -16,6 +23,7 @@ export interface AccessTokenPayload {
   sub: string;
   email: string;
   role: AdminRole;
+  authVersion: number;
   /** Issued-at (seconds) — added automatically by jwt.sign; used to reject
    *  access tokens minted before a revocation cut-off. */
   iat?: number;
@@ -24,6 +32,7 @@ export interface AccessTokenPayload {
 export interface RefreshTokenRecord {
   userId: string;
   role: AdminRole;
+  authVersion: number;
   email: string;
   family: string;
   issuedAt: number;
@@ -51,7 +60,7 @@ export class AuthTokenService {
   ) {}
 
   async issuePair(
-    user: { id: string; email: string; role: AdminRole },
+    user: { id: string; email: string; role: AdminRole; authVersion: number },
     familyOverride?: string,
   ): Promise<TokenPair> {
     const family = familyOverride ?? randomBytes(16).toString('hex');
@@ -83,12 +92,16 @@ export class AuthTokenService {
     refreshToken: string,
     validateUser?: (
       record: RefreshTokenRecord,
-    ) => Promise<{ id: string; email: string; role: AdminRole }>,
+    ) => Promise<{ id: string; email: string; role: AdminRole; authVersion: number }>,
+    retryProof?: string,
   ): Promise<TokenPair & { payload: RefreshTokenRecord }> {
     const refreshHash = this.hash(refreshToken);
     const family = refreshToken.split('.')[0];
+    const recover = () => this.recoverRotation(refreshHash, retryProof, validateUser);
     const recordRaw = await this.redis.client.get(REFRESH_PREFIX + refreshHash);
     if (!recordRaw) {
+      const recovered = await recover();
+      if (recovered) return recovered;
       if (family) await this.revokeFamily(family);
       throw new UnauthorizedException('Refresh token invalid or replayed');
     }
@@ -104,9 +117,23 @@ export class AuthTokenService {
           id: record.userId,
           email: record.email,
           role: record.role,
+          authVersion: record.authVersion,
         };
     const familyExpiresAt = record.expiresAt ?? record.issuedAt + this.config.JWT_REFRESH_TTL;
     const next = await this.buildPair(currentUser, record.family, familyExpiresAt);
+    const proofHash = retryProof ? this.hash(retryProof) : '';
+    const recovery: RefreshRecovery | null = retryProof
+      ? {
+          proofHash,
+          successorHash: next.refreshHash,
+          record,
+          encrypted: encryptRecovery(
+            next.pair,
+            this.config.JWT_REFRESH_SECRET,
+            `${refreshHash}:${proofHash}`,
+          ),
+        }
+      : null;
     const result = (await this.redis.client.eval(
       `
         local old = redis.call('GET', KEYS[1])
@@ -117,19 +144,25 @@ export class AuthTokenService {
         redis.call('SETEX', KEYS[3], ARGV[2], '1')
         redis.call('SETEX', KEYS[4], ARGV[2], ARGV[3])
         redis.call('SETEX', KEYS[2], ARGV[2], ARGV[4])
+        if ARGV[5] ~= '' then redis.call('SETEX', KEYS[5], ARGV[6], ARGV[5]) end
         return 1
       `,
-      4,
+      5,
       REFRESH_PREFIX + refreshHash,
       FAMILY_PREFIX + record.family,
       DENYLIST_PREFIX + refreshHash,
       REFRESH_PREFIX + next.refreshHash,
+      RECOVERY_PREFIX + refreshHash,
       refreshHash,
       next.pair.refreshExpiresIn,
       JSON.stringify(next.record),
       next.refreshHash,
+      recovery ? JSON.stringify(recovery) : '',
+      RECOVERY_SECONDS,
     )) as number;
     if (Number(result) !== 1) {
+      const recovered = await recover();
+      if (recovered) return recovered;
       await this.revokeFamily(record.family);
       throw new UnauthorizedException('Refresh token invalid or replayed');
     }
@@ -139,6 +172,48 @@ export class AuthTokenService {
       .expire(USER_FAMILIES_PREFIX + currentUser.id, this.config.JWT_REFRESH_TTL)
       .exec();
     return { ...next.pair, payload: record };
+  }
+
+  private async recoverRotation(
+    oldHash: string,
+    retryProof: string | undefined,
+    validateUser?: (
+      record: RefreshTokenRecord,
+    ) => Promise<{ id: string; email: string; role: AdminRole; authVersion: number }>,
+  ): Promise<(TokenPair & { payload: RefreshTokenRecord }) | null> {
+    if (!retryProof) return null;
+    const raw = await this.redis.client.get(RECOVERY_PREFIX + oldHash);
+    if (!raw) return null;
+    const recovery = JSON.parse(raw) as RefreshRecovery;
+    const proofHash = this.hash(retryProof);
+    if (recovery.proofHash !== proofHash) return null;
+    if (validateUser) await validateUser(recovery.record);
+    // Recheck cache, proof and family atomically after the DB authorization read.
+    const encrypted = await this.redis.client.eval(
+      `
+      local raw = redis.call('GET', KEYS[1])
+      if not raw then return false end
+      local value = cjson.decode(raw)
+      if value.proofHash ~= ARGV[1] then return false end
+      if redis.call('GET', KEYS[2]) ~= value.successorHash then return false end
+      if not redis.call('GET', ARGV[2] .. value.successorHash) then return false end
+      return value.encrypted
+    `,
+      2,
+      RECOVERY_PREFIX + oldHash,
+      FAMILY_PREFIX + recovery.record.family,
+      proofHash,
+      REFRESH_PREFIX,
+    );
+    if (typeof encrypted !== 'string') return null;
+    try {
+      return {
+        ...decryptRecovery(encrypted, this.config.JWT_REFRESH_SECRET, `${oldHash}:${proofHash}`),
+        payload: recovery.record,
+      };
+    } catch {
+      throw new UnauthorizedException('Refresh token invalid');
+    }
   }
 
   async revoke(refreshToken: string): Promise<void> {
@@ -208,7 +283,7 @@ export class AuthTokenService {
   }
 
   private async buildPair(
-    user: { id: string; email: string; role: AdminRole },
+    user: { id: string; email: string; role: AdminRole; authVersion: number },
     family: string,
     familyExpiresAt?: number,
   ): Promise<BuiltTokenPair> {
@@ -225,6 +300,7 @@ export class AuthTokenService {
         sub: user.id,
         email: user.email,
         role: user.role,
+        authVersion: user.authVersion,
       },
       {
         secret: this.config.JWT_ACCESS_SECRET,
@@ -239,6 +315,7 @@ export class AuthTokenService {
       record: {
         userId: user.id,
         role: user.role,
+        authVersion: user.authVersion,
         email: user.email,
         family,
         issuedAt: now,

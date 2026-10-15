@@ -1,0 +1,1 @@
+{"findings":[{"code":"duplicate_media_discovery_risk","severity":"warning","message":"Detected 2 matching img entries with the same source/start/duration.","fixHint":"Avoid duplicated media nodes that can be discovered twice during compilation.","snippet":"img src=assets/images/public-camry.png data-start= data-duration=","file":"compositions/scene-03.html"}]}

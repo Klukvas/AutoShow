@@ -89,8 +89,8 @@
 
 **Не реализовано в v1:** логика `reservations` (только сущность+миграция; статус
 `listing='reserved'` ставится вручную и не связан с таблицей `reservations`); импорт
-фидов/парсинг (`source_type='feed'|'parser'` — только заглушка типа); Telegram-уведомления
-менеджеров о заявках (публикация объявлений в каналы — реализована).
+фидов/парсинг (`source_type='feed'|'parser'` — только заглушка типа). Telegram-уведомления
+менеджеров о заявках реализованы (`TelegramLeadChannel`), как и публикация объявлений в каналы.
 
 ---
 
@@ -156,7 +156,6 @@ AutoFlow — программная витрина (каталог) автомо
 - **simple-icons через jsDelivr CDN** (`https://cdn.jsdelivr.net/npm/simple-icons`) — логотипы
   марок авто.
 - **Wikimedia Commons** — источник фото для демо-сидов (только dev, `seed-demo-cars.ts`).
-- **SMTP-сервер** (опционально) — email-уведомления о лидах через nodemailer.
 - **FX-курсы** — в v1 статические из env; внешний провайдер не подключён.
 - **Let's Encrypt** — TLS-сертификаты через Caddy (в domain-режиме).
 
@@ -295,7 +294,7 @@ stateDiagram-v2
 ### 2.5 Flow: Отправка заявки (Lead) посетителем
 
 **Цель:** покупатель оставляет обращение.
-🎬 публичный посетитель · 👥 leads-сервис, Redis (rate limit), notification-очередь, email.
+🎬 публичный посетитель · 👥 leads-сервис, Redis (rate limit), notification-очередь, Telegram.
 Источник: `src/modules/leads/leads.service.ts`, `src/modules/leads/dto/create-lead.dto.ts`.
 
 1. `POST /api/leads` с `CreateLeadDto` (`type`, `name`, `phone`, опц. `email`, `message`,
@@ -306,9 +305,13 @@ stateDiagram-v2
    (`leads:rate:phone:{digits}`), лимит `LEAD_RATE_PER_HOUR`/час → иначе `403`.
 4. Если задан `listingId` — проверка, что объявление `published|reserved` и не удалено.
 5. Создаёт `Lead(status='new')`: `message` собирается человекочитаемо из `details`; `ip_hash =
-   sha256(ip)` (обрезка). 💥 Если задан `LEAD_NOTIFY_TO` — enqueue email-нотификации (очередь
-   `notifications`).
-6. `NotificationWorker` → `EmailChannel.send` (nodemailer). Без `SMTP_HOST` — только лог.
+   sha256(ip)` (обрезка). 💥 Затем enqueue алерта менеджерам в очередь `notifications`
+   (5 попыток, exponential backoff): единственный канал — `telegram`, он ставится всегда
+   (адрес доставки читается воркером из БД). Падение enqueue логируется как
+   error и НЕ валит ответ посетителю — заявка уже сохранена.
+6. `NotificationWorker` → `TelegramLeadChannel.send` (`sendMessage` в
+   `site_settings.telegram.leadChatId` тем же ботом; без токена/чата — debug-лог и no-op, без
+   ретраев). Ошибка доставки прокидывается → очередь ретраит. Email-канала нет.
 
 **Успех:** `201`-подобный ответ `{ id, status: 'new' }`. Заявка видна в `GET /api/admin/leads`.
 
@@ -324,7 +327,8 @@ stateDiagram-v2
 3. **Валидация до записи:** все FX-пары должны существовать; отсутствие пары — abort (ничего не
    меняется).
 4. **Одна транзакция:** применяет все обновления цен + сохраняет `site_settings`.
-5. 💥 Audit: `branding.update` (при наличии `telegram.botToken` — маскируется `***`).
+5. 💥 Audit: `branding.update` (`telegram.botToken` и `telegram.leadChatId` в diff маскируются
+   как `***`).
 
 **Замечание:** курсы v1 статические из env — перед сменой базы нужно проверить их актуальность.
 
@@ -337,13 +341,20 @@ stateDiagram-v2
    60-сек Redis-бакеты). Проверка `locked_until`; при неверном пароле — инкремент
    `failed_login_attempts`, при достижении `AUTH_MAX_FAILED_ATTEMPTS` → `locked_until = now +
    AUTH_LOCKOUT_SECONDS`. Пароль — argon2id.
-2. Успех: выдаёт **access** (stateless JWT, TTL `JWT_ACCESS_TTL`) и **refresh** (stateful в Redis).
-   Refresh хранится как `sha256(token)` с записью `{ userId, role, email, family, ... }`.
-3. `POST /api/auth/refresh` `{ refreshToken }`: старый токен денилистится, выдаётся новый в той же
-   `family`. **Replay** того же refresh → revoke всей family + 401.
-4. `POST /api/auth/logout` — revoke refresh (денилист + kill family).
-5. Смена пароля/роли/деактивация/удаление админа → `revokeAllForUser` (все family) + отсечка access
-   через `auth:min-iat:{userId}`.
+2. Успех: access JWT и Redis refresh-запись содержат `authVersion` из проверенного
+   снимка пароля. Условное обновление login отвергает изменение версии во время argon2.
+3. `POST /api/auth/refresh` принимает `{ refreshToken, retryProof? }`. Ротация одноразовая;
+   replay отзывает family. Серверный HMAC proof от Next позволяет 5 секунд восстановить
+   тот же зашифрованный результат конкурентным запросам с одним подписанным cookie.
+   Проверяются актуальная версия БД, family и successor; старого bearer без proof недостаточно.
+4. `POST /api/auth/logout` отзывает refresh family. TTL family не продлевается ротацией.
+5. Изменение пароля/роли/активности/удаление увеличивает DB `auth_version` атомарно с audit;
+   guard и refresh проверяют живого активного пользователя и версию, роль берётся из БД.
+   Командные изменения используют общий advisory lock и проверяют последнего admin внутри
+   транзакции. Redis не является источником истины для отзыва access.
+6. Миграция `AdminAuthVersion1792000300000` обязательна; прежние сессии требуют повторного
+   входа. `GET /auth/me` позволяет Next проверить сессию до рендера; 401 проходит через
+   refresh с очисткой cookie, включая его исходный Domain/Path.
 
 ### 2.8 Flow: Подсчёт просмотров объявления
 
@@ -389,7 +400,7 @@ stateDiagram-v2
 | Тёмная тема | Переключатель темы | посетитель | — | `theme/*` | — | — | ✅ |
 | Бронирования (депозиты) | Hold авто с депозитом | — | — | — | reservations | — | ⛔ только сущность+миграция |
 | Импорт фидов/парсинг | Загрузка объявлений извне | — | — | — | listings (`source_type`) | — | ⛔ только заглушка типа |
-| Telegram-уведомления о лидах | Оповещение менеджеров в Telegram | — | — | — | notifications (`NotificationChannel`) | — | ⛔ только интерфейс (email реализован) |
+| Telegram-уведомления о лидах | Оповещение менеджеров в Telegram о новой заявке | admin (настройка) | `PATCH /api/admin/branding` (`telegram.leadChatId`) | `admin/branding/branding-editor` | notifications (`TelegramLeadChannel`), branding, leads | `site_settings.telegram.leadChatId` | ✅ |
 
 ---
 
@@ -423,7 +434,6 @@ flowchart TB
     subgraph External
       TG["Telegram Bot API"]
       JSD["jsDelivr (simple-icons)"]
-      SMTP["SMTP (опц.)"]
     end
 
     Browser --> Caddy
@@ -440,7 +450,6 @@ flowchart TB
     WORKER --> MINIO
     WORKER --> TG
     WORKER --> JSD
-    WORKER --> SMTP
     API -.enqueue.-> REDIS
 ```
 
@@ -456,7 +465,7 @@ flowchart TB
 ### 4.3 Синхронные vs асинхронные взаимодействия
 
 - **Синхронно (HTTP):** весь CRUD, чтение витрины, транзакции статусов, presigned upload.
-- **Асинхронно (BullMQ/Redis):** обработка изображений, Telegram-постинг, email-нотификации,
+- **Асинхронно (BullMQ/Redis):** обработка изображений, Telegram-постинг, алерты о заявках,
   flush просмотров, обслуживание (orphan-cleanup + логотипы марок).
 
 ### 4.4 Очереди, cron и воркеры
@@ -465,7 +474,7 @@ flowchart TB
 |------|--------|-----------|-----------|
 | `media` | `MediaProcessorWorker` | генерация рендишенов thumb/gallery/full × webp/avif/jpeg | по событию (confirm) |
 | `telegram` | `TelegramWorker` | `post` / `mark-sold` в каналы (concurrency 1) | по событию |
-| `notifications` | `NotificationWorker` | отправка email через канал | по событию |
+| `notifications` | `NotificationWorker` | доставка алерта о заявке в Telegram-чат менеджеров | по событию |
 | `views` | `ViewsFlushWorker` | flush Redis-дельт в `listings.views_count` | repeat `VIEW_FLUSH_INTERVAL_SECONDS` |
 | `maintenance` | `MaintenanceWorker` | `orphan-cleanup` (медиа) + `make-logo` (логотипы) + sweep пропущенных логотипов | repeat ежечасно + по событию |
 
@@ -550,10 +559,10 @@ src/
 | **leads** | `src/modules/leads` | публичный приём заявок, админ-список/статус | `LeadsService`; public/admin controllers | redis (rate), notifications, audit | 2.5 |
 | **branding** | `src/modules/branding` | singleton site_settings, переоценка при смене валюты | `BrandingService`; public/admin controllers | fx, audit | 2.6 |
 | **auth** | `src/modules/auth` | login/refresh/logout, guards | `AuthService`, `AuthTokenService`, `JwtAuthGuard`, `RolesGuard` | redis, argon2, jwt, admin-users | 2.7 |
-| **admin-users** | `src/modules/admin-users` | CRUD сотрудников | `AdminUsersService`; controller | auth (revoke), audit | 2.7 |
+| **admin-users** | `src/modules/admin-users` | CRUD сотрудников | `AdminUsersService`; controller | auth guards, audit | 2.7 |
 | **audit** | `src/modules/audit` | неизменяемый журнал + чтение | `AuditLogService`; admin controller | — | все мутации |
 | **telegram** | `src/modules/telegram` | постинг в каналы, история | `TelegramPostService`, `TelegramApiClient`; admin controller | branding (token), storage, audit, очередь `telegram` | 2.4 |
-| **notifications** | `src/modules/notifications` | абстракция каналов + email | `NotificationService`, `EmailChannel` | nodemailer, очередь `notifications` | 2.5 |
+| **notifications** | `src/modules/notifications` | абстракция каналов + Telegram-алерты о заявках | `NotificationService`, `TelegramLeadChannel` | `TelegramApiClient`, branding (`site_settings`), очередь `notifications` | 2.5 |
 | **fx** | `src/modules/fx` | курсы валют (статические) | `FxRateProvider` | redis | 2.1, 2.6 |
 | **storage** | `src/modules/storage` | S3-абстракция, presigned | `StorageService` | @aws-sdk/client-s3 | 2.2 |
 | **views** | `src/modules/views` | счётчик просмотров (Redis) | `ViewCounterService` | redis, очередь `views` | 2.8 |
@@ -564,8 +573,8 @@ src/
 | **reservations** | `src/modules/reservations` | ⛔ только сущность (не используется логикой) | — | — | — |
 
 **Техдолг/ограничения модулей:** `reservations` — мёртвая сущность (schema-ready, но нет сервиса/
-контроллера); `source_type='feed'/'parser'` — заглушка без импортёров; email — единственный
-реализованный `NotificationChannel`.
+контроллера); `source_type='feed'/'parser'` — заглушка без импортёров; канал уведомлений один
+(`telegram`) — остальные (email/SMS/push) не реализованы.
 
 ### 5.2 Frontend (`frontend/src/`)
 
@@ -607,7 +616,7 @@ frontend/src/
 | GET | `/api/listings` | список опубликованных | query: `q, make, model, bodyType, fuelType, transmission, driveType, city, condition, priceMin/Max, yearMin/Max, mileageMax, options[], sort, cursor, limit(≤100, def 24)` | `{ items: PublicListing[], nextCursor, total }` | — |
 | GET | `/api/listings/:slug` | деталь по slug | path `slug` | `PublicListing` (включая `sold` для SEO) | — |
 | POST | `/api/listings/:id/view` | beacon просмотра | path `id`, IP | `204` | Redis `HINCRBY` (best-effort) |
-| POST | `/api/leads` | отправка заявки | `CreateLeadDto` (+honeypot `website`) | `{ id, status:'new' }` | rate-limit, email-нотификация |
+| POST | `/api/leads` | отправка заявки | `CreateLeadDto` (+honeypot `website`) | `{ id, status:'new' }` | rate-limit, Telegram-алерт |
 | GET | `/api/catalog/makes` | марки (+`logoUrl`) | — | `CatalogMake[]` | — |
 | GET | `/api/catalog/models` | модели | query `make?` (slug) | `CatalogModel[]` | — |
 | GET | `/api/catalog/body-types` \| `/fuel-types` \| `/transmissions` \| `/drive-types` \| `/colors` \| `/options` | справочники | — | `CatalogRef[]` | — |
@@ -673,10 +682,9 @@ cursor, limit≤200).
 
 | Интеграция | Направление | Модуль | Особенности |
 |-----------|-------------|--------|-------------|
-| **Telegram Bot API** | исходящее | telegram | токен из `site_settings.telegram`; `sendMediaGroup`/`editMessageCaption`; timeout 30s; токен не логируется |
+| **Telegram Bot API** | исходящее | telegram, notifications | токен из `site_settings.telegram`; `sendMediaGroup`/`editMessageCaption` (посты) и `sendMessage` (алерты о заявках в `leadChatId`); timeout 30s; токен не логируется |
 | **simple-icons (jsDelivr)** | входящее | catalog/make-logo | SVG→PNG 512px через sharp; кандидаты slug; timeout 15s; ретрай раз в неделю |
 | **Wikimedia Commons** | входящее | seeds/demo | только dev-сиды фото |
-| **SMTP (nodemailer)** | исходящее | notifications | опционально (`SMTP_HOST`); без него — только лог |
 | **FX** | — | fx | v1 статические курсы из env (нет внешнего API) |
 | **Let's Encrypt** | — | Caddy | авто-TLS в domain-режиме |
 
@@ -816,7 +824,7 @@ reserved}`, `mark-sold{published,reserved}`, `reserve{published}`, `unreserve{re
 - Проданный листинг read-only (update → 403). Публикация требует готовности (422).
 - Оптимистичная блокировка `version` на всех мутациях листинга/переходах (409 при конфликте).
 - Self-guards admin-users (см. §6.2). Нельзя удалить make/model с зависимыми (409).
-- Telegram-токен: не отдаётся публичным/editor-API, маскируется в audit.
+- Telegram-токен и `leadChatId`: не отдаются публичным/editor-API, маскируются в audit.
 
 ### 8.4 Регистрация/вход/восстановление/аудит
 
@@ -906,7 +914,7 @@ zod, Framer Motion + Lenis. Порт dev/prod — 3001.
 | **S3** | `S3_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_FORCE_PATH_STYLE`(true), `S3_PUBLIC_URL`, `S3_PRESIGNED_PUT_TTL`(600) |
 | **Media** | `MEDIA_MAX_BYTES`(20MB), `MEDIA_ORPHAN_TTL_HOURS`(24) |
 | **FX** | `FX_PROVIDER`(static), `FX_STATIC_USD_UAH`, `FX_STATIC_USD_EUR`, `FX_STATIC_EUR_UAH`, `FX_CACHE_TTL`(3600) |
-| **SMTP/email** | `SMTP_HOST?`, `SMTP_PORT`(587), `SMTP_USER?`, `SMTP_PASS?`, `EMAIL_FROM`, `LEAD_NOTIFY_TO?` |
+| **Алерты о заявках** | не в env: единственный канал — Telegram, чат менеджеров `site_settings.telegram.leadChatId` (админка → Брендинг → Telegram), бот — тот же `botToken`. Email-рассылки заявок нет |
 | **Rate limit** | `LEAD_RATE_PER_HOUR`(5), `PUBLIC_API_RATE_PER_MIN`(120) |
 | **Views** | `VIEW_DEDUP_TTL_SECONDS`(600), `VIEW_FLUSH_INTERVAL_SECONDS`(60) |
 | **Seed** | `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD?` (обязателен в prod при сиде) |
@@ -945,8 +953,8 @@ revert,run:prod}`, `seed`/`seed:demo`/`seed:prod`, `test`/`test:cov`/`test:e2e`,
   работать медиа/очереди.
 - **dev:** MinIO как S3, `S3_FORCE_PATH_STYLE=true`, статические FX, editor-юзер и demo-листинги в
   сиде, `ADMIN_COOKIE_SECURE=false` (HTTP).
-- **prod (`README.md:216-223`, `deploy/`):** реальный S3 + CDN (Caddy immutable cache), включённый
-  SMTP, `JWT_*_SECRET` из `openssl rand -base64 32`, заменённые `DB_*_PASSWORD`/`S3_*_KEY`,
+- **prod (`README.md:216-223`, `deploy/`):** реальный S3 + CDN (Caddy immutable cache),
+  `JWT_*_SECRET` из `openssl rand -base64 32`, заменённые `DB_*_PASSWORD`/`S3_*_KEY`,
   `PUBLIC_SITE_URL` на публичный домен, `TRUST_PROXY=1` (за Caddy), Telegram: медиа-домен публичен.
 - **Docker (`docker-compose.yml`, `Dockerfile`):** multi-stage build с vips для `sharp`; сервисы
   postgres(5433:5432), redis(6380:6379), minio(9000/9001), minio-init, app(3000), worker.
@@ -978,6 +986,9 @@ revert,run:prod}`, `seed`/`seed:demo`/`seed:prod`, `test`/`test:cov`/`test:e2e`,
 | `src/modules/telegram/telegram-post.service.spec.ts` | идемпотентный постинг |
 | `src/modules/slug/slug.service.spec.ts` | генерация/уникальность slug |
 | `src/workers/views-flush.worker.spec.ts` | flush просмотров Redis→DB |
+| `src/modules/leads/lead-notifications.spec.ts` | сохранение заявки + enqueue только Telegram-канала, honeypot, устойчивость к падению enqueue |
+| `src/modules/notifications/telegram-channel.spec.ts` | no-op без `leadChatId`, отправка в чат заявок, проброс ошибки для ретрая |
+| `src/modules/branding/branding-public.controller.spec.ts` | публичный `/branding` без `telegram` (botToken / leadChatId) |
 
 E2E-конфиг backend: `test/jest-e2e.json` (каталог `test/`).
 
@@ -1016,9 +1027,11 @@ E2E-конфиг backend: `test/jest-e2e.json` (каталог `test/`).
   `reserved` ставится **вручную** и НЕ связан с `reservations`. Депозиты/платежи не проводятся.
 - **Импорт фидов/парсинг — заглушка.** `source_type='feed'/'parser'`, `external_id`,
   `ix_listings_external` присутствуют, но импортёров нет.
-- **Telegram-уведомления менеджерам о лидах — нет.** Реализован только `EmailChannel`
-  (`NotificationChannel` — абстракция). Без `LEAD_NOTIFY_TO` заявки сохраняются, но никого не
-  оповещают (backend пишет warning при старте).
+- **Уведомления о лидах: один канал, доставка best-effort.** Единственный канал —
+  `TelegramLeadChannel` (`site_settings.telegram.leadChatId`), через очередь `notifications` с
+  ретраями; email-канала нет. Ограничения: без `leadChatId` нет алерта вообще (debug-лог), а
+  исчерпавшая попытки задача остаётся только в failed-очереди — отдельного дашборда/алерта на
+  это нет. Заявка при этом всегда видна в `GET /api/admin/leads`.
 - **FX статические.** Курсы из env, без внешнего провайдера — перед сменой базовой валюты их надо
   вручную сверять; иначе переоценка каталога использует устаревшие курсы.
 - **SEO-коллекции хардкод.** 5 пресетов в `frontend/src/lib/collections.ts` **и** дублируются в
@@ -1148,7 +1161,7 @@ E2E-конфиг backend: `test/jest-e2e.json` (каталог `test/`).
 |---------------|-----------------|
 | TelegramPostService / TelegramWorker | Telegram Bot API |
 | MakeLogoService / MaintenanceWorker | jsDelivr (simple-icons) |
-| EmailChannel / NotificationWorker | SMTP |
+| TelegramLeadChannel / NotificationWorker | Telegram Bot API |
 | StorageService | S3/MinIO |
 | seed-demo-cars | Wikimedia Commons (dev) |
 | Caddy | Let's Encrypt |
@@ -1229,7 +1242,8 @@ E2E-конфиг backend: `test/jest-e2e.json` (каталог `test/`).
 - Цена: не сравнивай/сортируй по `price_amount` — только по `price_normalized`.
 - Публичный маппер скрывает back-office поля; не «прокидывай» fees/контакты продавца в public без
   явного решения.
-- `reservations`, импорт фидов, Telegram-уведомления о лидах — НЕ реализованы; не считай их рабочими.
+- `reservations` и импорт фидов — НЕ реализованы; не считай их рабочими. Telegram-уведомления о
+  лидах реализованы (`TelegramLeadChannel`) — см. ограничения доставки в §12.
 
 ### Что делать осторожно (высокий риск)
 
@@ -1251,8 +1265,8 @@ E2E-конфиг backend: `test/jest-e2e.json` (каталог `test/`).
 
 1. Затрагивает ли задача **prod-данные** (миграции/переоценка валюты/массовые обновления)? Есть ли
    бэкап?
-2. Нужно ли включать реально не реализованные фичи (reservations/платежи, импорт фидов,
-   Telegram-уведомления о лидах) — это новая разработка, не «доводка».
+2. Нужно ли включать реально не реализованные фичи (reservations/платежи, импорт фидов) — это
+   новая разработка, не «доводка».
 3. Публичность контактов продавца при консигнации — соблюдён ли оффлайн-процесс согласия? Менять ли
    это поведение?
 4. Целевые значения покрытия/линта, если задача про качество (глобальное правило — 80%, фактическое

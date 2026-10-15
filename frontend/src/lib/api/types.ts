@@ -23,6 +23,8 @@ export interface MediaRendition {
 }
 
 export interface PublicMedia {
+  sceneAltered?: boolean;
+  aiEdited?: boolean;
   id: string;
   type: 'image' | 'video';
   position: number;
@@ -129,6 +131,9 @@ export interface AdminTelegramPost {
 export interface CatalogMake extends CatalogRef {
   /** Manufacturer logo (auto-fetched from Wikipedia); null until found. */
   logoUrl?: string | null;
+}
+export interface AdminCatalogMake extends CatalogMake {
+  modelCount: number;
 }
 export interface CatalogModel extends CatalogRef {
   makeId: string;
