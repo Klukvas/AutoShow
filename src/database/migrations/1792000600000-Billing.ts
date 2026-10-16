@@ -6,7 +6,9 @@ import type { MigrationInterface, QueryRunner } from 'typeorm';
  * first use from BILLING_INITIAL_PAID_UNTIL (or now + one period), so a deploy
  * with billing disabled never starts a clock.
  *
- * The runtime user gets no DELETE: payment history is evidence, not cache.
+ * The runtime user should get no DELETE: payment history is evidence, not cache.
+ * Note: the schema's default privileges still granted DELETE here; that is
+ * revoked by 1792000900000-RevokeBillingDeletes.
  */
 export class Billing1792000600000 implements MigrationInterface {
   name = 'Billing1792000600000';
