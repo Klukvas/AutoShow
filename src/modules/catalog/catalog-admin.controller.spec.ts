@@ -19,6 +19,8 @@ describe('catalog editor HTTP permissions and validation', () => {
     updateModel: jest.fn(() => ({})),
     deleteMake: jest.fn(),
     deleteModel: jest.fn(),
+    createColor: jest.fn(() => ({})),
+    createBodyType: jest.fn(() => ({})),
   };
   beforeAll(async () => {
     const module = await Test.createTestingModule({
@@ -41,8 +43,14 @@ describe('catalog editor HTTP permissions and validation', () => {
       })
       .compile();
     app = module.createNestApplication();
+    // Same options as the APP_PIPE in src/app.module.ts: unknown keys are stripped.
     app.useGlobalPipes(
-      new ValidationPipe({ transform: true, whitelist: true, forbidNonWhitelisted: true }),
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: false,
+        transform: true,
+        transformOptions: { enableImplicitConversion: false },
+      }),
     );
     await app.init();
   });
@@ -67,7 +75,7 @@ describe('catalog editor HTTP permissions and validation', () => {
       .expect(201);
     await request(server).delete(`/admin/catalog/makes/${id}/logo`).expect(200);
   });
-  it('rejects invalid IDs, whitespace names, path-like slug and arbitrary keys', async () => {
+  it('rejects invalid IDs, whitespace names and path-like slug; strips arbitrary keys', async () => {
     const server = app.getHttpServer();
     await request(server).get('/admin/catalog/models?makeId=bad').expect(400);
     await request(server)
@@ -78,12 +86,70 @@ describe('catalog editor HTTP permissions and validation', () => {
       { nameUk: '   ', slug: 'test' },
       { nameUk: null, slug: 'test' },
       { nameUk: 'Test', slug: '../owned' },
-      { nameUk: 'Test', slug: 'test', logoS3Key: 'foreign' },
     ])
       await request(server).post('/admin/catalog/makes').send(body).expect(400);
+    await request(server)
+      .post('/admin/catalog/makes')
+      .send({ nameUk: 'Test', slug: 'test', logoS3Key: 'foreign' })
+      .expect(201);
+    expect(admin.createMake).toHaveBeenLastCalledWith(
+      { nameUk: 'Test', slug: 'test' },
+      expect.anything(),
+    );
     await request(server)
       .post(`/admin/catalog/makes/${id}/logo`)
       .attach('file', Buffer.alloc(2 * 1024 * 1024 + 1), 'test.png')
       .expect(413);
+  });
+  it('lets editors add a color by name only, keeping other dictionaries admin-only', async () => {
+    const server = app.getHttpServer();
+    await request(server).post('/admin/catalog/colors').send({ nameUk: 'Бежевий' }).expect(201);
+    expect(admin.createColor).toHaveBeenLastCalledWith(
+      { nameUk: 'Бежевий' },
+      expect.objectContaining({ role: 'editor' }),
+    );
+    await request(server).post('/admin/catalog/colors').send({ nameUk: '  Бежевий  ' }).expect(201);
+    expect(admin.createColor).toHaveBeenLastCalledWith({ nameUk: 'Бежевий' }, expect.anything());
+    const simple = { nameUk: 'Купе', slug: 'coupe' };
+    await request(server).post('/admin/catalog/body-types').send(simple).expect(403);
+    await request(server)
+      .post('/admin/catalog/body-types')
+      .set('x-test-role', 'admin')
+      .send(simple)
+      .expect(201);
+  });
+  it('rejects blank, overlong or malformed color input', async () => {
+    const server = app.getHttpServer();
+    const calls = admin.createColor.mock.calls.length;
+    for (const body of [
+      {},
+      { nameUk: '   ' },
+      { nameUk: 'x'.repeat(65) },
+      { nameUk: 'Бежевий', slug: '../owned' },
+      { nameUk: 'Бежевий', hex: 'beige' },
+    ])
+      await request(server).post('/admin/catalog/colors').send(body).expect(400);
+    expect(admin.createColor.mock.calls.length).toBe(calls);
+  });
+  it('passes only the name for editors but keeps admin-supplied color fields', async () => {
+    const server = app.getHttpServer();
+    const full = { nameUk: 'Бежевий', nameEn: 'Beige', slug: 'beige', hex: '#D8C8A8' };
+    await request(server)
+      .post('/admin/catalog/colors')
+      .send({ ...full, listingId: id })
+      .expect(201);
+    expect(admin.createColor).toHaveBeenLastCalledWith(
+      { nameUk: 'Бежевий' },
+      expect.objectContaining({ role: 'editor' }),
+    );
+    await request(server)
+      .post('/admin/catalog/colors')
+      .set('x-test-role', 'admin')
+      .send({ ...full, listingId: id })
+      .expect(201);
+    expect(admin.createColor).toHaveBeenLastCalledWith(
+      full,
+      expect.objectContaining({ role: 'admin' }),
+    );
   });
 });

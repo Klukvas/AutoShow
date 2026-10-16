@@ -1,5 +1,5 @@
 import { apiFetch } from './client';
-import type { CatalogTag, Collection, CursorPage, VehicleOption } from './types';
+import type { CatalogRef, CatalogTag, Collection, CursorPage, VehicleOption } from './types';
 
 export type AdminRole = 'admin' | 'editor';
 
@@ -232,6 +232,17 @@ export const adminApi = {
     opts: AdminCallOpts,
   ) {
     return apiFetch<VehicleOption>('/admin/catalog/options', {
+      method: 'POST',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  /**
+   * Adds a color by name (admin + editor). The slug is generated server-side;
+   * an existing color with the same name is returned instead of a duplicate.
+   */
+  createCatalogColor(body: { nameUk: string }, opts: AdminCallOpts) {
+    return apiFetch<CatalogRef>('/admin/catalog/colors', {
       method: 'POST',
       body,
       accessToken: opts.accessToken,

@@ -8,6 +8,7 @@ const actor = { id: 'editor', role: 'editor' } as AuthenticatedUser;
 function fixture() {
   const repository = () => ({
     findOne: jest.fn(async () => ({ id: 'id', slug: 'test', makeId: 'make' })),
+    find: jest.fn(async (): Promise<unknown[]> => []),
     count: jest.fn(async () => 0),
     update: jest.fn(async () => ({ affected: 1 })),
     create: jest.fn((value: unknown) => value),
@@ -16,7 +17,8 @@ function fixture() {
   });
   const makes = repository(),
     models = repository(),
-    listings = repository();
+    listings = repository(),
+    colors = repository();
   const catalog = { invalidate: jest.fn(async () => undefined) },
     audit = { record: jest.fn(async () => undefined) },
     queue = { add: jest.fn(async () => undefined) };
@@ -36,7 +38,7 @@ function fixture() {
     repository() as never,
     repository() as never,
     repository() as never,
-    repository() as never,
+    colors as never,
     repository() as never,
     repository() as never,
     repository() as never,
@@ -46,7 +48,7 @@ function fixture() {
     queue as never,
     { publicUrlFor: (key: string) => key } as never,
   );
-  return { service, makes, models, listings };
+  return { service, makes, models, listings, colors, catalog, audit };
 }
 const model = { nameUk: 'A4', slug: 'a4', makeId: 'make' };
 describe('catalog management integrity', () => {
@@ -90,5 +92,59 @@ describe('catalog management integrity', () => {
     await f.service.updateMake('id', { nameUk: 'New', slug: 'test' }, actor);
     expect(f.makes.update).toHaveBeenCalledWith('id', { nameUk: 'New', slug: 'test' });
     expect(f.makes.save).not.toHaveBeenCalled();
+  });
+});
+
+const color = (id: string, slug: string, nameUk: string) => ({ id, slug, nameUk });
+describe('adding a color by name', () => {
+  it('generates a transliterated slug and keeps cache invalidation + audit', async () => {
+    const f = fixture();
+    const saved = await f.service.createColor({ nameUk: '  Бежевий ' }, actor);
+    expect(saved).toMatchObject({ nameUk: 'Бежевий', slug: 'bezhevyi' });
+    expect(f.colors.save).toHaveBeenCalledTimes(1);
+    expect(f.catalog.invalidate).toHaveBeenCalledTimes(1);
+    expect(f.audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'catalog.color.create', actorRole: 'editor' }),
+    );
+  });
+  it('returns the alive color with the same name instead of creating a duplicate', async () => {
+    const f = fixture();
+    const existing = color('beige-id', 'beige', 'Бежевий');
+    f.colors.find.mockResolvedValue([color('red-id', 'red', 'Червоний'), existing]);
+    await expect(f.service.createColor({ nameUk: 'бежевий' }, actor)).resolves.toBe(existing);
+    await expect(f.service.createColor({ nameUk: '  БЕЖЕВИЙ  ' }, actor)).resolves.toBe(existing);
+    expect(f.colors.save).not.toHaveBeenCalled();
+    expect(f.audit.record).not.toHaveBeenCalled();
+  });
+  it('suffixes the generated slug when another color already owns it', async () => {
+    const f = fixture();
+    f.colors.find.mockResolvedValue([
+      color('a', 'bezhevyi', 'Бежевий металік'),
+      color('b', 'bezhevyi-2', 'Бежевий матовий'),
+    ]);
+    // Different name, same transliteration (apostrophe and case are dropped).
+    const saved = await f.service.createColor({ nameUk: 'Беж’евий' }, actor);
+    expect(saved).toMatchObject({ slug: 'bezhevyi-3' });
+  });
+  it('falls back to a generic slug when the name has no latin equivalent', async () => {
+    const f = fixture();
+    f.colors.find.mockResolvedValue([color('a', 'color', '???')]);
+    await expect(f.service.createColor({ nameUk: '★' }, actor)).resolves.toMatchObject({
+      slug: 'color-2',
+    });
+  });
+  it('returns the color created by a concurrent request on a unique violation', async () => {
+    const f = fixture();
+    const raced = color('raced', 'bezhevyi', 'Бежевий');
+    f.colors.find.mockResolvedValueOnce([]).mockResolvedValueOnce([raced]);
+    f.colors.save.mockRejectedValueOnce({ code: '23505' } as never);
+    await expect(f.service.createColor({ nameUk: 'Бежевий' }, actor)).resolves.toBe(raced);
+  });
+  it('keeps the 409 when the conflicting row is a different color', async () => {
+    const f = fixture();
+    f.colors.save.mockRejectedValueOnce({ code: '23505' } as never);
+    await expect(f.service.createColor({ nameUk: 'Бежевий' }, actor)).rejects.toBeInstanceOf(
+      ConflictException,
+    );
   });
 });

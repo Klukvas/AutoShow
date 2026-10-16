@@ -142,8 +142,14 @@ export class CatalogAdminController {
   ) {
     return this.admin.createDriveType(dto, user);
   }
-  @Post('colors') createColor(@Body() dto: UpsertColorDto, @CurrentUser() user: AuthenticatedUser) {
-    return this.admin.createColor(dto, user);
+  // Editors pick a color while filling a listing and may add a missing one —
+  // by name only; slug/nameEn/hex stay an admin decision.
+  @Post('colors')
+  @Roles('admin', 'editor')
+  @ApiOperation({ summary: 'Create a color (or return the alive one with the same name)' })
+  createColor(@Body() dto: UpsertColorDto, @CurrentUser() user: AuthenticatedUser) {
+    const input: UpsertColorDto = user.role === 'admin' ? dto : { nameUk: dto.nameUk };
+    return this.admin.createColor(input, user);
   }
   @Post('options') createOption(
     @Body() dto: UpsertOptionDto,

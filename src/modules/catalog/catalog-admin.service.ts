@@ -34,6 +34,16 @@ import { Transmission } from './entities/transmission.entity';
 import { VehicleOption } from './entities/vehicle-option.entity';
 import { Tag } from './entities/tag.entity';
 import { ListingTag } from '../listings/entities/listing-tag.entity';
+import { firstFreeSlug, ukSlug } from './uk-slug';
+
+const FALLBACK_COLOR_SLUG = 'color';
+
+const normalizeName = (name: string) => name.trim().replace(/\s+/g, ' ').toLocaleLowerCase('uk');
+
+function findColorByName(colors: readonly Color[], name: string): Color | undefined {
+  const wanted = normalizeName(name);
+  return colors.find((color) => normalizeName(color.nameUk) === wanted);
+}
 
 @Injectable()
 export class CatalogAdminService {
@@ -194,8 +204,29 @@ export class CatalogAdminService {
   createDriveType(dto: UpsertSimpleCatalogDto, actor: AuthenticatedUser) {
     return this.create(this.drives, dto, 'drive_type', actor);
   }
-  createColor(dto: UpsertColorDto, actor: AuthenticatedUser) {
-    return this.create(this.colors, dto, 'color', actor);
+  /**
+   * Idempotent by name: an alive color with the same name (case/space
+   * insensitive) is returned as is, so a double submit or two editors typing
+   * «бежевий» never produce duplicate options.
+   */
+  async createColor(dto: UpsertColorDto, actor: AuthenticatedUser): Promise<Color> {
+    const nameUk = dto.nameUk.trim();
+    const alive = await this.colors.find();
+    const sameName = findColorByName(alive, nameUk);
+    if (sameName) return sameName;
+    const slug =
+      dto.slug ??
+      firstFreeSlug(ukSlug(nameUk) || FALLBACK_COLOR_SLUG, new Set(alive.map((c) => c.slug)));
+    try {
+      return await this.create(this.colors, { ...dto, nameUk, slug }, 'color', actor);
+    } catch (err) {
+      // A concurrent request may have created the very same color first.
+      if (err instanceof ConflictException) {
+        const raced = findColorByName(await this.colors.find(), nameUk);
+        if (raced) return raced;
+      }
+      throw err;
+    }
   }
   createOption(dto: UpsertOptionDto, actor: AuthenticatedUser) {
     return this.create(this.options, dto, 'vehicle_option', actor);

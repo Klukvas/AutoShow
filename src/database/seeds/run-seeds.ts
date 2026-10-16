@@ -94,6 +94,19 @@ const colors = [
   { slug: 'grey', nameUk: 'Сірий', nameEn: 'Grey', hex: '#6E7479' },
   { slug: 'red', nameUk: 'Червоний', nameEn: 'Red', hex: '#B11030' },
   { slug: 'blue', nameUk: 'Синій', nameEn: 'Blue', hex: '#1E40AF' },
+  // Keep in sync with migration 1792000500000-CatalogDefaultColors.
+  { slug: 'beige', nameUk: 'Бежевий', nameEn: 'Beige', hex: '#D8C8A8' },
+  { slug: 'brown', nameUk: 'Коричневий', nameEn: 'Brown', hex: '#6B4226' },
+  { slug: 'green', nameUk: 'Зелений', nameEn: 'Green', hex: '#2F6B3A' },
+  { slug: 'orange', nameUk: 'Помаранчевий', nameEn: 'Orange', hex: '#E36A1C' },
+  { slug: 'yellow', nameUk: 'Жовтий', nameEn: 'Yellow', hex: '#F2C230' },
+  { slug: 'burgundy', nameUk: 'Бордовий', nameEn: 'Burgundy', hex: '#6D1A2C' },
+  { slug: 'gold', nameUk: 'Золотистий', nameEn: 'Gold', hex: '#C9A54C' },
+  { slug: 'graphite', nameUk: 'Графітовий', nameEn: 'Graphite', hex: '#3F4246' },
+  { slug: 'dark-blue', nameUk: 'Темно-синій', nameEn: 'Dark blue', hex: '#1B2A4A' },
+  { slug: 'light-blue', nameUk: 'Блакитний', nameEn: 'Light blue', hex: '#7FB3E0' },
+  { slug: 'purple', nameUk: 'Фіолетовий', nameEn: 'Purple', hex: '#5B3A8C' },
+  { slug: 'pearl-white', nameUk: 'Перламутровий білий', nameEn: 'Pearl white', hex: '#F1EEE6' },
 ];
 const options: Array<{
   slug: string;

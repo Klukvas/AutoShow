@@ -37,6 +37,7 @@ import { Dialog } from '@/components/admin/ui/dialog';
 import { useToast } from '@/components/admin/ui/toast';
 import { MakeEditor, ModelEditor } from '@/components/admin/catalog/catalog-editor';
 import { CatalogCombobox } from './catalog-combobox';
+import { ColorField } from './color-field';
 import { TransitionMenu } from './transition-menu';
 
 export interface ListingCatalog {
@@ -574,20 +575,11 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
                   </option>
                 ))}
               </SelectField>
-              <SelectField
-                label={t('form.color')}
-                name="colorId"
-                required
+              <ColorField
+                colors={catalog.colors}
                 defaultValue={initial?.colorId ?? ''}
                 error={err('colorId')}
-              >
-                <option value="">{t('form.selectPlaceholder')}</option>
-                {catalog.colors.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.nameUk}
-                  </option>
-                ))}
-              </SelectField>
+              />
               <TextField
                 label={t('form.engineVolume')}
                 name="engineVolumeL"
