@@ -3,6 +3,8 @@ import { PhotoAiGeneration } from '../modules/photo-ai/entities/photo-ai-generat
 import { PhotoAiPreset } from '../modules/photo-ai/entities/photo-ai-preset.entity';
 import { AdminUser } from '../modules/admin-users/entities/admin-user.entity';
 import { AuditLog } from '../modules/audit/entities/audit-log.entity';
+import { BillingAccount } from '../modules/billing/entities/billing-account.entity';
+import { BillingInvoice } from '../modules/billing/entities/billing-invoice.entity';
 import { SiteSettings } from '../modules/branding/entities/site-settings.entity';
 import { BodyType } from '../modules/catalog/entities/body-type.entity';
 import { Collection } from '../modules/collections/entities/collection.entity';
@@ -54,4 +56,6 @@ export const ALL_ENTITIES = [
   Review,
   AuditLog,
   Collection,
+  BillingAccount,
+  BillingInvoice,
 ];

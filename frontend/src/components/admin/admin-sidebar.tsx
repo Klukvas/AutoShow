@@ -25,7 +25,8 @@ export interface AdminNavLink {
     | 'tags'
     | 'team'
     | 'branding'
-    | 'audit';
+    | 'audit'
+    | 'billing';
   badge?: number;
 }
 
@@ -158,6 +159,18 @@ const ICONS: Record<AdminNavLink['key'], React.ReactNode> = {
       strokeWidth="1.5"
     >
       <path d="M2 3.5h12M2 8h12M2 12.5h8" />
+    </svg>
+  ),
+  billing: (
+    <svg
+      viewBox="0 0 16 16"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <rect x="1.5" y="3" width="13" height="10" rx="1.5" />
+      <path d="M1.5 6.5h13M4 10.5h3" />
     </svg>
   ),
 };

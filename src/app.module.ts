@@ -11,6 +11,8 @@ import { DatabaseModule } from './database/database.module';
 import { AdminUsersModule } from './modules/admin-users/admin-users.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { BillingGuard } from './modules/billing/billing.guard';
+import { BillingModule } from './modules/billing/billing.module';
 import { JwtAuthGuard } from './modules/auth/jwt.guard';
 import { RolesGuard } from './modules/auth/roles.guard';
 import { BrandingModule } from './modules/branding/branding.module';
@@ -62,6 +64,7 @@ import { ViewsModule } from './modules/views/views.module';
     AnalyticsModule,
     ReviewsModule,
     SitemapModule,
+    BillingModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
@@ -77,6 +80,9 @@ import { ViewsModule } from './modules/views/views.module';
     },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
+    // After auth: an unpaid subscription locks every authenticated route
+    // except @AllowWhenBillingBlocked ones; public routes are untouched.
+    { provide: APP_GUARD, useClass: BillingGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
   ],
 })

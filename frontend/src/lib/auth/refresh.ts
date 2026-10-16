@@ -3,6 +3,7 @@ import { cache } from 'react';
 import { redirect } from 'next/navigation';
 import { ApiClientError } from '@/lib/api/client';
 import { adminApi } from '@/lib/api/admin';
+import { readBillingStatus } from '../admin/billing-server';
 import {
   readSession,
   writeSession,
@@ -12,6 +13,7 @@ import {
 } from './session';
 
 const REFRESH_MARGIN_SEC = 30;
+const BILLING_PATH = '/admin/billing';
 
 /**
  * WHY THIS IS SPLIT
@@ -53,12 +55,21 @@ export const readServerToken = cache(async (): Promise<ServerAuth | null> => {
 
 /**
  * RSC helper: returns a valid token, or performs a redirect that never returns.
+ * While billing is blocked it also redirects every page but the billing one.
  * A stale token bounces through `/admin/refresh` (a Route Handler that CAN
  * rotate + persist) and comes back to `nextPath`.
  */
 export async function requireServerToken(nextPath: string): Promise<ServerAuth> {
   const auth = await readServerToken();
-  if (auth) return auth;
+  if (auth) {
+    // Unpaid subscription: every dashboard page funnels to the payment page
+    // (the layout renders the panel / editor notice there) instead of
+    // rendering in parallel and failing on 402s.
+    if (nextPath !== BILLING_PATH && (await readBillingStatus(auth.accessToken))?.blocked) {
+      redirect(BILLING_PATH);
+    }
+    return auth;
+  }
   const session = await readSession();
   if (!session) redirect('/admin/login');
   redirect(`/admin/refresh?next=${encodeURIComponent(nextPath)}`);

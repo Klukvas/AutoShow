@@ -1,4 +1,4 @@
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   readSession: vi.fn(),
   writeSession: vi.fn(),
@@ -102,4 +102,53 @@ it('an overlapping old-cookie request while the first cookie write is paused rec
   expect(second?.session.refreshToken).toBe('successor');
   expect(mocks.refresh).toHaveBeenCalledTimes(2);
   expect(mocks.clearSession).not.toHaveBeenCalled();
+});
+
+describe('requireServerToken while billing is blocked', () => {
+  const liveSession = {
+    accessToken: 'live',
+    refreshToken: 'r',
+    accessExpiresAt: 9999999999,
+    refreshExpiresAt: 9999999999,
+    user: { id: 'u', role: 'admin', email: 'test' },
+  };
+
+  async function load(blocked: boolean) {
+    const billingStatus = vi.fn().mockResolvedValue({ enabled: true, blocked });
+    const redirect = vi.fn((url: string) => {
+      throw new Error(`REDIRECT ${url}`);
+    });
+    vi.doMock('../admin/billing-server', () => ({ readBillingStatus: billingStatus }));
+    vi.doMock('next/navigation', () => ({ redirect }));
+    mocks.readSession.mockResolvedValue(liveSession);
+    mocks.currentUser.mockResolvedValue(liveSession.user);
+    const { requireServerToken } = await import('./refresh');
+    return { requireServerToken, redirect };
+  }
+
+  afterEach(() => {
+    vi.doUnmock('../admin/billing-server');
+    vi.doUnmock('next/navigation');
+  });
+
+  it('redirects every dashboard page to /admin/billing', async () => {
+    const { requireServerToken } = await load(true);
+    await expect(requireServerToken('/admin/listings')).rejects.toThrow('REDIRECT /admin/billing');
+  });
+
+  it('lets the billing page itself through', async () => {
+    const { requireServerToken, redirect } = await load(true);
+    await expect(requireServerToken('/admin/billing')).resolves.toMatchObject({
+      accessToken: 'live',
+    });
+    expect(redirect).not.toHaveBeenCalled();
+  });
+
+  it('does not redirect when billing is not blocked', async () => {
+    const { requireServerToken, redirect } = await load(false);
+    await expect(requireServerToken('/admin/listings')).resolves.toMatchObject({
+      accessToken: 'live',
+    });
+    expect(redirect).not.toHaveBeenCalled();
+  });
 });

@@ -23,6 +23,8 @@
     "migration:revert": "npm run typeorm -- migration:revert",
     "seed": "ts-node -r tsconfig-paths/register src/database/seeds/run-seeds.ts",
     "seed:prod": "node dist/src/database/seeds/run-seeds.js",
+    "billing:extend": "ts-node -r tsconfig-paths/register src/modules/billing/billing-extend.cli.ts",
+    "billing:extend:prod": "node dist/src/modules/billing/billing-extend.cli.js",
     "seed:demo": "ts-node -r tsconfig-paths/register src/database/seeds/demo/seed-demo-cars.ts",
     "test": "jest",
     "test:watch": "jest --watch",

@@ -13,7 +13,8 @@ function parseTrustProxy(value: string): boolean | number | string {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  // rawBody: the Monobank webhook signature is computed over the exact bytes.
+  const app = await NestFactory.create(AppModule, { bufferLogs: true, rawBody: true });
   app.useLogger(app.get(PinoLogger));
   const config = app.get(ConfigService) as ConfigService<EnvSchema, true>;
 

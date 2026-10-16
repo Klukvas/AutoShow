@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsEnum,
   IsInt,
+  IsISO8601,
   IsOptional,
   IsString,
   Max,
@@ -205,6 +206,45 @@ export class EnvSchema {
   @IsInt()
   @Min(10)
   VIEW_FLUSH_INTERVAL_SECONDS: number = 60;
+
+  // Hosting subscription (Monobank acquiring). Set by us, never by the client:
+  // the price and terms live only here. Off by default → no banner, no block.
+  @IsBoolean()
+  BILLING_ENABLED: boolean = false;
+
+  /** Monthly fee in whole UAH. Required when BILLING_ENABLED=true. */
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  BILLING_MONTHLY_PRICE_UAH?: number;
+
+  /** Months bought by one payment (invoice amount = price × months). */
+  @IsInt()
+  @Min(1)
+  @Max(12)
+  BILLING_PERIOD_MONTHS: number = 1;
+
+  /** Admin banner starts this many days before the paid period ends. */
+  @IsInt()
+  @Min(0)
+  @Max(60)
+  BILLING_REMIND_DAYS: number = 7;
+
+  /** Days after the paid period ends before the admin panel is blocked. */
+  @IsInt()
+  @Min(0)
+  @Max(60)
+  BILLING_GRACE_DAYS: number = 10;
+
+  /** Seeds paid_until on first use only; later changes are ignored. */
+  @IsISO8601({ strict: true })
+  @IsOptional()
+  BILLING_INITIAL_PAID_UNTIL?: string;
+
+  /** Monobank acquiring X-Token. Required when BILLING_ENABLED=true. */
+  @IsString()
+  @IsOptional()
+  MONOBANK_TOKEN?: string;
 }
 
 export function validateEnv(raw: Record<string, unknown>): EnvSchema {
@@ -216,7 +256,7 @@ export function validateEnv(raw: Record<string, unknown>): EnvSchema {
     }
   }
 
-  for (const key of ['S3_FORCE_PATH_STYLE'] as const) {
+  for (const key of ['S3_FORCE_PATH_STYLE', 'BILLING_ENABLED'] as const) {
     const value = coerced[key];
     if (typeof value !== 'string') continue;
     if (value !== 'true' && value !== 'false') {
@@ -246,6 +286,20 @@ export function validateEnv(raw: Record<string, unknown>): EnvSchema {
     ) {
       throw new Error(
         'Invalid environment configuration: PHOTO_AI_ENCRYPTION_KEY must be a base64 encoded 32-byte key',
+      );
+    }
+  }
+
+  if (instance.BILLING_ENABLED) {
+    const missing = [
+      ['MONOBANK_TOKEN', instance.MONOBANK_TOKEN],
+      ['BILLING_MONTHLY_PRICE_UAH', instance.BILLING_MONTHLY_PRICE_UAH],
+    ].filter(([, value]) => value === undefined || value === '');
+    if (missing.length) {
+      throw new Error(
+        `Invalid environment configuration:\n${missing
+          .map(([name]) => `${name}: is required when BILLING_ENABLED=true`)
+          .join('\n')}`,
       );
     }
   }

@@ -40,6 +40,9 @@ export type AppConfig = EnvSchema;
               'FX_STATIC_USD_UAH',
               'FX_STATIC_USD_EUR',
               'FX_STATIC_EUR_UAH',
+              'BILLING_MONTHLY_PRICE_UAH',
+              'BILLING_INITIAL_PAID_UNTIL',
+              'MONOBANK_TOKEN',
             ])
             .map((k) => [k, config.get(k as keyof EnvSchema, { infer: true })]),
         ) as AppConfig;

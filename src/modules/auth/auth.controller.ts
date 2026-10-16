@@ -5,6 +5,7 @@ import {
   CurrentUser,
   type AuthenticatedUser,
 } from '../../common/decorators/current-user.decorator';
+import { AllowWhenBillingBlocked } from '../../common/decorators/allow-when-billing-blocked.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -15,6 +16,9 @@ import { RefreshDto } from './dto/refresh.dto';
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  // The admin shell needs to know who is logged in to render the payment
+  // page / unpaid notice while billing is blocked.
+  @AllowWhenBillingBlocked()
   @Get('me')
   current(@CurrentUser() user: AuthenticatedUser) {
     return user;
