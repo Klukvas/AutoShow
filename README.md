@@ -180,7 +180,14 @@ refresh звіряють поточну версію, активність і в
 | `npm run migration:run`    | Прокатати міграції                         |
 | `npm run migration:generate -- src/database/migrations/Name` | Згенерувати нову |
 | `npm run seed`             | Залити довідники + site settings + демо-дані |
-| `npm test`                 | Юніти                                      |
+| `npx jest --testPathIgnorePatterns '/node_modules/' '/\.[a-z-]+-release/'` | Юніти (локально; див. примітку нижче) |
+| `npm run billing:extend -- <місяці>` | Вручну продовжити оплачений хостинг (оплата переказом); у контейнері — `billing:extend:prod` |
+
+Звичайний `npm test` локально може падати: у корені бувають gitignored-знімки
+`.roles-release/`, `.photo-ai-release/` (шаблон `.*-release/`) з копіями `src/`, і jest їх
+підхоплює. У CI (чистий checkout) цієї проблеми немає. Інтеграційні specs вмикаються
+змінними `PHOTO_CREDITS_TEST_PG_URL`, `AUDIT_TEST_PG_PORT`, `AUDIT_TEST_REDIS_PORT`,
+`CATALOG_TEST_PG=1`.
 
 ## Структура
 
@@ -198,10 +205,13 @@ src/
     data-source.ts        # owner DataSource (для CLI/seeds/migrations)
   modules/
     auth/                 # login (brute-force), refresh (rotation), logout
-    catalog/              # довідники (public read + admin upsert)
+    catalog/              # довідники, теги, логотипи марок (public read + admin upsert)
     listings/             # ядро: CRUD, status transitions, public read
     media/                # presigned upload + confirm
-    leads/                # public POST + admin list/status
+    leads/                # public POST + admin list/status + міні-CRM (відповідальний, follow-up, нотатки)
+    collections/          # SEO-добірки в БД (public read + admin CRUD)
+    photo-ai/             # обробка фото з ШІ, ключ (own_key / managed), баланс фото
+    billing/              # оплата хостингу та пакетів фото через Monobank, BillingGuard
     branding/             # site settings (singleton)
     admin-users/          # CRUD адмінів (admin / editor)
     audit/                # AuditLogService + read API
@@ -229,11 +239,21 @@ src/
   прокидання помилки для ретраю черги.
 - `branding-public.controller.spec.ts` — публічний `/branding` не віддає
   `telegram` (botToken / leadChatId).
+- `src/modules/billing/*.spec.ts` — стани оплати та межі, `BillingGuard` (402),
+  зарахування / mismatch / відкат при поверненні, підпис webhook, клієнт Monobank, пакети фото.
+- `src/modules/photo-ai/*.spec.ts`, `src/workers/photo-ai.worker.spec.ts` — генерація, доступ,
+  ключі (own_key / managed), резерв / списання / повернення фото.
+- `src/database/migrations/billing-migrations.spec.ts` — REVOKE на платіжних таблицях,
+  відмова `down()` при наявних пакетах.
+
+Повний перелік (55 spec-файлів) і що вони покривають — `docs/agent-context.md`, розділ 11.
 
 ## Не реалізовано в v1 (із спеки)
 
-- Логіка `reservations` (тільки сутність + міграція).
+- Логіка `reservations` (тільки сутність + міграція); оплата покупцями.
 - Імпорт фідів / парсинг (тільки інтерфейс `ListingSourceType`).
+- Нагадування по follow-up лідів, API/графік історії ціни, лінійка пакетів фото
+  (підтримується один розмір пакета), облік собівартості ШІ-обробки.
 
 Сповіщення про заявки (Telegram) реалізовані — див. розділ
 «Сповіщення про нові заявки» вище.
@@ -243,6 +263,12 @@ src/
 - `JwtAuthGuard` зареєстровано як `APP_GUARD` — будь-який роут без `@Public()`
   вимагає Bearer access-токен.
 - `RolesGuard` перевіряє `@Roles(...)` (admin / editor).
+- `BillingGuard` (після них): коли оплата хостингу `blocked`, будь-який авторизований роут
+  відповідає 402, крім `@AllowWhenBillingBlocked` (`/admin/billing/*`, `GET /auth/me`).
+- Runtime-роль БД не має DELETE на `billing_account`, `billing_invoices`, `photo_ai_balance`
+  та UPDATE/DELETE на `photo_ai_ledger` — платіжні записи не стираються. Примітка: default
+  privileges із `docker/postgres/init/01-roles.sh` дають DELETE/UPDATE на нові таблиці, тож для
+  журналів потрібен явний `REVOKE`.
 - Rate limiting: глобальний `ThrottlerModule` + окремі лімітери на `/auth/login`
   (по IP) та `/leads` (по IP + телефон).
 - Honeypot-поле `website` у `CreateLeadDto`.
@@ -342,3 +368,64 @@ fallback на серверний OpenAI-ключ відсутній, щоб ви
 моками й Playwright `frontend/e2e/photo-ai.spec.ts` з ізольованими локальними
 фото й API. Production mock-провайдера немає. Міграція в тестах не застосовується
 до робочої бази; production-ключі й реальні зовнішні виклики не потрібні.
+
+### Режим «наш ключ» (managed) і пакети фото
+
+Перемикач у env: `PHOTO_AI_MODE=own_key` (за замовчуванням, усе як описано вище) або
+`managed`. У режимі `managed` ключ OpenAI — постачальника сайту (`PHOTO_AI_MANAGED_API_KEY`),
+поле власного ключа в налаштуваннях приховане, а спроба зберегти ключ через API отримує 400.
+Увімкнення та політика доступу працюють як раніше. Режим не залежить від оплати хостингу.
+
+| Змінна | Обов'язкова | Значення |
+|--------|-------------|----------|
+| `PHOTO_AI_MODE` | — | `own_key` (default) / `managed` |
+| `PHOTO_AI_MANAGED_API_KEY` | при `managed` | наш ключ OpenAI (пробіли обрізаються) |
+| `PHOTO_AI_PACK_SIZE` | при `managed` | скільки фото в пакеті (1..10000) |
+| `PHOTO_AI_PACK_PRICE_UAH` | при `managed` | ціна пакета в гривнях (1..1 000 000) |
+| `PHOTO_AI_FREE_PHOTOS` | — | разові безкоштовні фото на старті (0) |
+| `MONOBANK_TOKEN` | при `managed` | оплата пакетів |
+
+Баланс: одне фото резервується при старті обробки, списується лише за успішний результат
+(`ready`), за помилку чи переривання — повертається. Безкоштовні фото нараховуються один раз.
+Невикористані фото не згорають. Admin купує пакет на сторінці брендингу («Купити пакет») через
+Monobank у будь-який день; повне повернення коштів знімає фото пакета (баланс може піти в мінус).
+Банери «мало фото» / «фото закінчилися» бачить лише admin; editor бачить тільки
+«Обробка ШІ недоступна». Поки хостинг заблоковано за неоплату, пакет купити не можна.
+
+## Оплата хостингу (Monobank)
+
+Клієнт платить щомісяця за хостинг на наших серверах. Функція **вимкнена за замовчуванням**
+(`BILLING_ENABLED=false`): немає банерів і блокування, рахунки хостингу ігноруються.
+
+| Змінна | Default | Значення |
+|--------|---------|----------|
+| `BILLING_ENABLED` | `false` | вмикає облік оплати (строго `true`/`false`) |
+| `BILLING_MONTHLY_PRICE_UAH` | — | ціна за місяць, обов'язкова при увімкненні |
+| `BILLING_PERIOD_MONTHS` | 1 | на скільки місяців продовжує одна оплата (1..12) |
+| `BILLING_REMIND_DAYS` | 7 | за скільки днів показувати нагадування |
+| `BILLING_GRACE_DAYS` | 10 | скільки днів після терміну до блокування |
+| `BILLING_INITIAL_PAID_UNTIL` | — | ISO-дата, до якої вже оплачено (засіває один раз) |
+| `MONOBANK_TOKEN` | — | токен мерчанта, обов'язковий при увімкненні |
+
+- **Стани:** `active` → `due_soon` (≤ REMIND_DAYS до терміну) → `overdue` (термін минув,
+  пільгові дні) → `blocked`.
+- **Нагадування:** банер на всіх сторінках адмінки, лише для admin.
+- **Оплата:** `/admin/billing` → «Оплатити» → сторінка Monobank. Webhook
+  `POST /api/billing/monobank/webhook` перевіряє підпис `X-Sign` і перечитує статус в API
+  Monobank; при поверненні на сторінку оплата перевіряється ще раз (на випадок втраченого
+  webhook). Термін продовжується рівно один раз.
+- **Блокування:** admin бачить лише сторінку оплати; editor — екран «не оплачено» і вихід;
+  API адмінки — 402; публічний сайт працює.
+- **Повернення коштів:** повне повернення відкочує термін рівно на оплачений період;
+  часткове — нічого не змінює.
+- **Вручну:** `npm run billing:extend -- <місяці>` (dev) або
+  `docker compose run --rm app npm run billing:extend:prod -- <місяці>` (прод).
+- **Вимоги до проду:** webhook іде на `${PUBLIC_URL}/api/billing/monobank/webhook`, тож
+  `PUBLIC_URL` має бути публічним. Змінні `BILLING_*`, `PHOTO_AI_*`, `MONOBANK_TOKEN`
+  задаються вручну в `.env` на сервері (шаблон — `deploy/.env.production.example`), workflow
+  деплою їх не синхронізує.
+- **Тестування:** у Monobank є тестовий токен (https://api.monobank.ua/) — будь-яка картка з
+  коректним номером, без реальних грошей; для webhook локально потрібен тунель.
+
+Детальні флоу, моделі та ризики — `docs/agent-context.md` (розділи 2.9–2.11), бізнес-огляд —
+`docs/features.md` (розділи 13–14).
