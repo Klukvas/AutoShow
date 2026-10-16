@@ -38,6 +38,9 @@ function makeDb(paidUntil: Date | null, invoice: Partial<BillingInvoice> = {}) {
       createdAt: new Date('2026-10-16T08:00:00Z'),
       modifiedAt: null,
       creditedAt: null,
+      creditedFrom: null,
+      creditedUntil: null,
+      reversedAt: null,
       ...invoice,
     } as BillingInvoice,
     accountWrites: 0,
@@ -232,28 +235,6 @@ describe('BillingService.applyStatus edge cases', () => {
     expect(db.state.invoice.modifiedAt).toEqual(new Date('2026-10-16T08:00:00Z'));
   });
 
-  it('audits a reversal of a credited payment without taking the period back', async () => {
-    const db = makeDb(new Date('2026-10-20T00:00:00Z'));
-    const { service, audit } = makeService(db);
-    await service.applyStatus(status(), null, NOW);
-    const paidUntil = db.state.paidUntil;
-
-    await expect(
-      service.applyStatus(
-        status({ status: 'reversed', modifiedDate: new Date('2026-10-16T09:30:00Z') }),
-        null,
-        NOW,
-      ),
-    ).resolves.toBe('updated');
-
-    expect(db.state.paidUntil).toEqual(paidUntil);
-    expect(db.state.invoice.status).toBe('reversed');
-    expect(audit.record).toHaveBeenCalledWith(
-      expect.objectContaining({ action: 'billing.payment_reversed' }),
-      expect.anything(),
-    );
-  });
-
   it('audits a wrong-amount payment once, however many webhooks repeat it', async () => {
     const db = makeDb(new Date('2026-10-20T00:00:00Z'));
     const { service, audit } = makeService(db);
@@ -270,12 +251,157 @@ describe('BillingService.applyStatus edge cases', () => {
     expect(db.state.accountWrites).toBe(0);
   });
 
-  it('does not audit a reversal of an invoice that was never credited', async () => {
+  it('does nothing on a reversal of an invoice that was never credited', async () => {
     const db = makeDb(new Date('2026-10-20T00:00:00Z'));
     const { service, audit } = makeService(db);
 
-    await service.applyStatus(status({ status: 'reversed' }), null, NOW);
+    await expect(service.applyStatus(status({ status: 'reversed' }), null, NOW)).resolves.toBe(
+      'updated',
+    );
     expect(audit.record).not.toHaveBeenCalled();
+    expect(db.state.accountWrites).toBe(0);
+    expect(db.state.paidUntil?.toISOString()).toBe('2026-10-20T00:00:00.000Z');
+  });
+});
+
+const reversed = (minute: number) =>
+  status({ status: 'reversed', modifiedDate: new Date(`2026-10-16T09:${minute}:00Z`) });
+
+describe('BillingService refund rollback', () => {
+  it('rolls paid_until back by exactly what the refunded payment added', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'));
+    const { service, audit } = makeService(db);
+    await service.applyStatus(status(), null, NOW);
+    expect(db.state.invoice.creditedFrom?.toISOString()).toBe('2026-10-20T00:00:00.000Z');
+    expect(db.state.invoice.creditedUntil?.toISOString()).toBe('2026-11-20T00:00:00.000Z');
+
+    await expect(service.applyStatus(reversed(30), null, NOW)).resolves.toBe('reversed');
+
+    expect(db.state.paidUntil?.toISOString()).toBe('2026-10-20T00:00:00.000Z');
+    expect(db.state.invoice.reversedAt).toEqual(NOW);
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'billing.payment_reversed',
+        diff: expect.objectContaining({
+          paidUntilBefore: '2026-11-20T00:00:00.000Z',
+          paidUntilAfter: '2026-10-20T00:00:00.000Z',
+        }),
+      }),
+      expect.anything(),
+    );
+  });
+
+  it('keeps a later stacked payment when an earlier one is refunded', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'));
+    const { service } = makeService(db);
+    await service.applyStatus(status(), null, NOW); // → 2026-11-20
+    db.state.paidUntil = new Date('2026-12-20T00:00:00Z'); // a later payment stacked a month
+
+    await service.applyStatus(reversed(30), null, NOW);
+
+    // The refund takes back the 31 days that payment added (20 Oct → 20 Nov);
+    // the later 30-day month stays, so the result is 19 Nov, not 20 Oct.
+    expect(db.state.paidUntil?.toISOString()).toBe('2026-11-19T00:00:00.000Z');
+  });
+
+  it('rolls a restart-from-now credit back to the credit instant, not the old date', async () => {
+    const db = makeDb(new Date('2026-06-01T00:00:00Z'));
+    const { service } = makeService(db);
+    await service.applyStatus(status(), null, NOW); // restart: now + 1 month
+    expect(db.state.invoice.creditedFrom).toEqual(NOW); // credit instant, not 1 Jun
+
+    await service.applyStatus(reversed(30), null, NOW);
+
+    expect(db.state.paidUntil).toEqual(NOW);
+  });
+
+  it('keeps a later stacked payment when an earlier restart-from-now credit is refunded', async () => {
+    const db = makeDb(new Date('2026-06-01T00:00:00Z'));
+    const { service } = makeService(db);
+    await service.applyStatus(status(), null, NOW); // 16 Oct 09:00 → 16 Nov 09:00
+    db.state.paidUntil = new Date('2026-12-16T09:00:00Z'); // a later payment stacked a month
+
+    await service.applyStatus(reversed(30), null, NOW);
+
+    // Only the refunded 31 days come off; the forgiven June–October gap does not.
+    expect(db.state.paidUntil?.toISOString()).toBe('2026-11-15T09:00:00.000Z');
+  });
+
+  it('rolls back once for duplicate and out-of-order reversed updates', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'));
+    const { service, audit } = makeService(db);
+    await service.applyStatus(status(), null, NOW);
+
+    await service.applyStatus(reversed(30), null, NOW);
+    await service.applyStatus(reversed(30), null, NOW); // duplicate webhook
+    await service.applyStatus(reversed(31), null, NOW); // later sync, same status
+    // A dateless success slipping in is ignored; reversed again is a no-op.
+    await expect(service.applyStatus(status({ modifiedDate: null }), null, NOW)).resolves.toBe(
+      'stale',
+    );
+    await service.applyStatus(reversed(32), null, NOW);
+
+    expect(db.state.paidUntil?.toISOString()).toBe('2026-10-20T00:00:00.000Z');
+    expect(db.state.accountWrites).toBe(2); // one credit + one rollback
+    const reversals = audit.record.mock.calls.filter(
+      ([entry]) => (entry as { action: string }).action === 'billing.payment_reversed',
+    );
+    expect(reversals).toHaveLength(1);
+  });
+
+  it('treats a stored reversal as final: a later success neither relabels nor credits', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'));
+    const { service, audit } = makeService(db);
+    await service.applyStatus(status(), null, NOW);
+    await service.applyStatus(reversed(30), null, NOW);
+    const writes = db.state.accountWrites;
+    audit.record.mockClear();
+
+    await expect(
+      service.applyStatus(status({ modifiedDate: new Date('2026-10-16T09:45:00Z') }), null, NOW),
+    ).resolves.toBe('stale');
+
+    expect(db.state.invoice.status).toBe('reversed');
+    expect(db.state.accountWrites).toBe(writes);
+    expect(audit.record).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the invoice period for credits made before amounts were stored', async () => {
+    const db = makeDb(new Date('2026-03-31T12:00:00Z'), {
+      status: 'success',
+      creditedAt: new Date('2026-02-01T00:00:00Z'),
+      modifiedAt: new Date('2026-02-01T00:00:00Z'),
+    });
+    const { service } = makeService(db);
+
+    await service.applyStatus(reversed(30), null, NOW);
+
+    // 31 Mar − 1 month clamps to the end of February.
+    expect(db.state.paidUntil?.toISOString()).toBe('2026-02-28T12:00:00.000Z');
+  });
+
+  it('undoes a month-end credit exactly (31 Jan → 28 Feb → 31 Jan)', async () => {
+    const db = makeDb(new Date('2026-01-31T12:00:00Z'));
+    const { service } = makeService(db);
+    const january = new Date('2026-01-20T00:00:00Z');
+    await service.applyStatus(status(), null, january);
+    expect(db.state.paidUntil?.toISOString()).toBe('2026-02-28T12:00:00.000Z');
+
+    await service.applyStatus(reversed(30), null, january);
+
+    expect(db.state.paidUntil?.toISOString()).toBe('2026-01-31T12:00:00.000Z');
+  });
+
+  it('applies a blocking rollback to the guard immediately (cache invalidated)', async () => {
+    // Blocked since 15 Oct; the credit stacks (5 Oct → 5 Nov), the refund undoes it.
+    const db = makeDb(new Date('2026-10-05T00:00:00Z'));
+    const { service } = makeService(db);
+    await service.applyStatus(status(), null, NOW);
+    await expect(service.isBlocked(NOW)).resolves.toBe(false); // now cached
+
+    await service.applyStatus(reversed(30), null, NOW);
+
+    await expect(service.isBlocked(NOW)).resolves.toBe(true);
   });
 });
 

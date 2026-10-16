@@ -87,6 +87,42 @@ export function addMonthsUtc(date: Date, months: number): Date {
  * so a long-overdue client is not charged for months they never had.
  */
 export function extendPaidUntil(paidUntil: Date, months: number, now: Date): Date {
+  return grantedPeriod(paidUntil, months, now).until;
+}
+
+export interface GrantedPeriod {
+  /** Old paid_until when the payment stacks; `now` when it restarts. */
+  from: Date;
+  /** The new paid_until. */
+  until: Date;
+  isRestart: boolean;
+}
+
+/** The period one payment grants — see extendPaidUntil for the rule. */
+export function grantedPeriod(paidUntil: Date, months: number, now: Date): GrantedPeriod {
   const extended = addMonthsUtc(paidUntil, months);
-  return extended.getTime() > now.getTime() ? extended : addMonthsUtc(now, months);
+  if (extended.getTime() > now.getTime()) {
+    return { from: new Date(paidUntil.getTime()), until: extended, isRestart: false };
+  }
+  return { from: new Date(now.getTime()), until: addMonthsUtc(now, months), isRestart: true };
+}
+
+export interface CreditedPeriod {
+  creditedFrom: Date | null;
+  creditedUntil: Date | null;
+  periodMonths: number;
+}
+
+/**
+ * paid_until after a full refund: subtract exactly what that payment added,
+ * so later (stacked) payments and manual extensions are kept. Credits made
+ * before the before/after values were stored fall back to the invoice's
+ * period in calendar months. The result may be in the past (→ overdue/blocked).
+ */
+export function rollbackPaidUntil(current: Date, credit: CreditedPeriod): Date {
+  if (credit.creditedFrom && credit.creditedUntil) {
+    const added = credit.creditedUntil.getTime() - credit.creditedFrom.getTime();
+    return new Date(current.getTime() - added);
+  }
+  return addMonthsUtc(current, -credit.periodMonths);
 }

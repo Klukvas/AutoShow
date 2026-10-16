@@ -17,4 +17,15 @@ export class BillingInvoice {
   /** Monobank's modifiedDate of the last applied status — guards against stale updates. */
   @Column({ name: 'modified_at', type: 'timestamptz', nullable: true }) modifiedAt!: Date | null;
   @Column({ name: 'credited_at', type: 'timestamptz', nullable: true }) creditedAt!: Date | null;
+  /**
+   * Start/end of the period this credit granted; start = old paid_until when
+   * stacked, the credit instant when restarted. Null for credits made before
+   * these columns existed.
+   */
+  @Column({ name: 'credited_from', type: 'timestamptz', nullable: true })
+  creditedFrom!: Date | null;
+  @Column({ name: 'credited_until', type: 'timestamptz', nullable: true })
+  creditedUntil!: Date | null;
+  /** When a full refund rolled paid_until back — set at most once. */
+  @Column({ name: 'reversed_at', type: 'timestamptz', nullable: true }) reversedAt!: Date | null;
 }

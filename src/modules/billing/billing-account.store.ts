@@ -1,5 +1,5 @@
 import type { EntityManager } from 'typeorm';
-import { extendPaidUntil } from './billing-state';
+import { grantedPeriod, rollbackPaidUntil, type CreditedPeriod } from './billing-state';
 
 /**
  * Raw-SQL access to the billing_account singleton. Shared by the Nest service
@@ -47,20 +47,45 @@ export interface PaidUntilChange {
   after: Date;
 }
 
+async function writePaidUntil(em: EntityManager, paidUntil: Date): Promise<void> {
+  await em.query(
+    `UPDATE billing_account
+        SET paid_until = $1, revision = revision + 1, updated_at = now()
+      WHERE id = 1`,
+    [paidUntil],
+  );
+}
+
+/** Must run inside a transaction. Takes back what one refunded credit added. */
+export async function rollbackAccount(
+  em: EntityManager,
+  credit: CreditedPeriod,
+  seedPaidUntil: Date,
+): Promise<PaidUntilChange> {
+  const before = await lockPaidUntil(em, seedPaidUntil);
+  const after = rollbackPaidUntil(before, credit);
+  await writePaidUntil(em, after);
+  return { before, after };
+}
+
+export interface CreditChange extends PaidUntilChange {
+  /**
+   * Start of the period this credit granted: `before` when stacked, the credit
+   * instant when a long-overdue account restarted. Storing this (not `before`)
+   * keeps a later refund from also taking back the forgiven gap.
+   */
+  creditedFrom: Date;
+}
+
 /** Must run inside a transaction. Adds `months` to the locked account. */
 export async function extendAccount(
   em: EntityManager,
   months: number,
   now: Date,
   seedPaidUntil: Date,
-): Promise<PaidUntilChange> {
+): Promise<CreditChange> {
   const before = await lockPaidUntil(em, seedPaidUntil);
-  const after = extendPaidUntil(before, months, now);
-  await em.query(
-    `UPDATE billing_account
-        SET paid_until = $1, revision = revision + 1, updated_at = now()
-      WHERE id = 1`,
-    [after],
-  );
-  return { before, after };
+  const granted = grantedPeriod(before, months, now);
+  await writePaidUntil(em, granted.until);
+  return { before, after: granted.until, creditedFrom: granted.from };
 }

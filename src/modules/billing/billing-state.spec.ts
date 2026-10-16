@@ -1,4 +1,11 @@
-import { addMonthsUtc, computeBillingState, DAY_MS, extendPaidUntil } from './billing-state';
+import {
+  addMonthsUtc,
+  computeBillingState,
+  DAY_MS,
+  extendPaidUntil,
+  grantedPeriod,
+  rollbackPaidUntil,
+} from './billing-state';
 
 const terms = { remindDays: 7, graceDays: 10 };
 const paidUntil = new Date('2026-11-01T00:00:00.000Z');
@@ -116,5 +123,60 @@ describe('extendPaidUntil', () => {
     expect(extendPaidUntil(new Date('2026-09-16T09:00:00Z'), 1, now).toISOString()).toBe(
       '2026-11-16T09:00:00.000Z',
     );
+  });
+});
+
+describe('rollbackPaidUntil', () => {
+  it('subtracts the stored credited duration', () => {
+    const credit = {
+      creditedFrom: new Date('2026-10-20T00:00:00Z'),
+      creditedUntil: new Date('2026-11-20T00:00:00Z'),
+      periodMonths: 1,
+    };
+    expect(rollbackPaidUntil(new Date('2026-12-20T00:00:00Z'), credit).toISOString()).toBe(
+      '2026-11-19T00:00:00.000Z',
+    );
+  });
+
+  it('falls back to calendar months with month-end clamping', () => {
+    const legacy = { creditedFrom: null, creditedUntil: null, periodMonths: 1 };
+    expect(rollbackPaidUntil(new Date('2026-03-31T00:00:00Z'), legacy).toISOString()).toBe(
+      '2026-02-28T00:00:00.000Z',
+    );
+    expect(
+      rollbackPaidUntil(new Date('2027-01-15T00:00:00Z'), {
+        ...legacy,
+        periodMonths: 2,
+      }).toISOString(),
+    ).toBe('2026-11-15T00:00:00.000Z');
+  });
+});
+
+describe('grantedPeriod', () => {
+  const now = new Date('2026-10-16T09:00:00Z');
+
+  it('starts at the old paid_until when the payment stacks', () => {
+    expect(grantedPeriod(new Date('2026-10-10T00:00:00Z'), 1, now)).toEqual({
+      from: new Date('2026-10-10T00:00:00Z'),
+      until: new Date('2026-11-10T00:00:00Z'),
+      isRestart: false,
+    });
+  });
+
+  it('starts at now when a long-overdue account restarts', () => {
+    expect(grantedPeriod(new Date('2026-06-01T00:00:00Z'), 1, now)).toEqual({
+      from: now,
+      until: new Date('2026-11-16T09:00:00Z'),
+      isRestart: true,
+    });
+  });
+
+  it('treats an extension landing exactly on now as a restart', () => {
+    expect(grantedPeriod(new Date('2026-09-16T09:00:00Z'), 1, now).isRestart).toBe(true);
+  });
+
+  it('is what extendPaidUntil returns as the new paid_until', () => {
+    const paidUntil = new Date('2026-01-31T12:00:00Z');
+    expect(extendPaidUntil(paidUntil, 1, now)).toEqual(grantedPeriod(paidUntil, 1, now).until);
   });
 });

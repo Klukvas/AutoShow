@@ -36,6 +36,8 @@ interface BillingPanelProps {
 const INVOICE_TONE: Partial<Record<BillingInvoice['status'], string>> = {
   success: 'text-st-published-fg',
   mismatch: 'text-danger',
+  // Refunded: the paid period was rolled back.
+  reversed: 'text-ratelimit',
 };
 
 type Feedback = { tone: 'error' | 'info'; text: string } | null;

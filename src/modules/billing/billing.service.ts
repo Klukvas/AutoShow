@@ -11,7 +11,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { EntityManager, Repository } from 'typeorm';
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { AuditLogService } from '../audit/audit-log.service';
-import { extendAccount, readPaidUntil, seedAccount } from './billing-account.store';
+import {
+  extendAccount,
+  readPaidUntil,
+  rollbackAccount,
+  seedAccount,
+} from './billing-account.store';
 import {
   BILLING_SETTINGS,
   invoiceAmountKop,
@@ -63,7 +68,7 @@ export interface BillingInvoiceView {
   pageUrl: string | null;
 }
 
-export type ApplyResult = 'credited' | 'updated' | 'stale' | 'mismatch';
+export type ApplyResult = 'credited' | 'reversed' | 'updated' | 'stale' | 'mismatch';
 
 interface CachedAccount {
   paidUntil: Date;
@@ -217,7 +222,8 @@ export class BillingService {
     const result = await this.invoices.manager.transaction((em) =>
       this.applyStatusInTx(em, info, actor, now),
     );
-    if (result === 'credited') this.invalidateCache();
+    // Both move paid_until: the guard must see it now, not after its cache TTL.
+    if (result === 'credited' || result === 'reversed') this.invalidateCache();
     return result;
   }
 
@@ -274,6 +280,9 @@ export class BillingService {
     // Webhooks may arrive out of order: never let an older status overwrite a
     // newer one. Monobank's modifiedDate is optional — compare only when both exist.
     if (isOlder(info.modifiedDate, invoice.modifiedAt)) return 'stale';
+    // A refund is final: nothing (e.g. a late, dateless `success`) may
+    // overwrite it, re-label it or credit it again.
+    if (invoice.status === 'reversed' && info.status !== 'reversed') return 'stale';
 
     await em
       .getRepository(BillingInvoice)
@@ -282,9 +291,16 @@ export class BillingService {
         { status: info.status, modifiedAt: info.modifiedDate ?? invoice.modifiedAt },
       );
 
-    if (info.status === 'reversed' && invoice.creditedAt && invoice.status !== 'reversed') {
-      await this.recordReversal(em, info, actor);
-      return 'updated';
+    // Full refund of a credited payment: roll back once. Only the transition
+    // into `reversed` counts (duplicates are no-ops). Since a stored reversal
+    // is terminal (checked above), the reversed_at check is purely defensive
+    // and unreachable today. Partial refunds stay `success` at Monobank and
+    // never get here.
+    const isNewReversal =
+      info.status === 'reversed' && invoice.status !== 'reversed' && !invoice.reversedAt;
+    if (isNewReversal && invoice.creditedAt) {
+      await this.reverseInvoice(em, info, invoice, actor, now);
+      return 'reversed';
     }
     if (info.status !== 'success' || invoice.creditedAt) return 'updated';
 
@@ -306,7 +322,12 @@ export class BillingService {
   ): Promise<void> {
     const seed = seedPaidUntil(this.settings, now);
     const change = await extendAccount(em, invoice.periodMonths, now, seed);
-    await em.getRepository(BillingInvoice).update({ id: invoice.id }, { creditedAt: now });
+    await em
+      .getRepository(BillingInvoice)
+      .update(
+        { id: invoice.id },
+        { creditedAt: now, creditedFrom: change.creditedFrom, creditedUntil: change.after },
+      );
     await this.audit.record(
       {
         action: 'billing.payment_credited',
@@ -350,21 +371,38 @@ export class BillingService {
     );
   }
 
-  /** A credited payment was refunded. The period is NOT taken back automatically. */
-  private async recordReversal(
+  /**
+   * A credited payment was fully refunded: take back exactly the period it
+   * added (later payments stay) and mark the invoice so it happens once.
+   */
+  private async reverseInvoice(
     em: EntityManager,
     info: MonobankInvoiceStatusInfo,
+    invoice: BillingInvoice,
     actor: AuthenticatedUser | null,
+    now: Date,
   ): Promise<void> {
+    const change = await rollbackAccount(em, invoice, seedPaidUntil(this.settings, now));
+    await em.getRepository(BillingInvoice).update({ id: invoice.id }, { reversedAt: now });
     this.logger.warn(
-      { invoiceId: info.invoiceId, amount: info.amount },
-      'A credited Monobank payment was reversed — paid period left unchanged',
+      {
+        invoiceId: info.invoiceId,
+        amount: info.amount,
+        paidUntilBefore: change.before.toISOString(),
+        paidUntilAfter: change.after.toISOString(),
+      },
+      'A credited Monobank payment was reversed — paid period rolled back',
     );
     await this.audit.record(
       {
         action: 'billing.payment_reversed',
         entityType: 'billing',
-        diff: { invoiceId: info.invoiceId, amountKop: info.amount },
+        diff: {
+          invoiceId: info.invoiceId,
+          amountKop: info.amount,
+          paidUntilBefore: change.before.toISOString(),
+          paidUntilAfter: change.after.toISOString(),
+        },
         ...auditActor(actor),
       },
       em,
