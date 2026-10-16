@@ -5,6 +5,7 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import { PhotoAiService } from './photo-ai.service';
 import { PhotoAiGeneration } from './entities/photo-ai-generation.entity';
 import { ListingMedia } from '../listings/entities/listing-media.entity';
@@ -18,7 +19,7 @@ const dto = {
   category: 'enhance' as const,
   prompt: 'Improve exposure naturally',
 };
-function setup() {
+function setup(credits: object = ownKeyCredits) {
   const media = {
     id: 'media',
     listingId: 'listing',
@@ -81,9 +82,12 @@ function setup() {
     audit as never,
     { PHOTO_AI_JOBS_PER_HOUR: 10, PHOTO_AI_TIMEOUT_SECONDS: 240 } as never,
     access as never,
+    credits as never,
   );
   return { service, media, generation, em, repo, queue, provider, audit, access };
 }
+/** own_key mode: the credit service never limits or reserves anything. */
+const ownKeyCredits = { reserve: async () => undefined, hasCredit: async () => true };
 describe('PhotoAiService', () => {
   it('always appends identity/defect protection after editable requests and forbids scene changes in enhance', () => {
     const prompt = protectedPrompt(
@@ -268,5 +272,80 @@ describe('PhotoAiService access enforcement', () => {
     expect(em.findOne).not.toHaveBeenCalled();
     expect(em.save).not.toHaveBeenCalled();
     expect(access.requireAllowed).toHaveBeenCalledWith(actor.id);
+  });
+});
+
+describe('PhotoAiService in managed mode', () => {
+  const emptyCredits = (reserve = jest.fn()) => ({
+    hasCredit: jest.fn().mockResolvedValue(false),
+    exhaustedReason: (role: string) =>
+      role === 'admin' ? 'Фото закінчилися — докупіть пакет.' : 'Обробка ШІ недоступна.',
+    reserve,
+  });
+
+  it('tells an editor only that AI is unavailable — no balance or price', async () => {
+    const { service } = setup(emptyCredits());
+    const workspace = await service.workspace('media', actor);
+    expect(workspace).toMatchObject({ enabled: false, reason: 'Обробка ШІ недоступна.' });
+    expect(Object.keys(workspace)).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(/balance|price|pack|credit|available/i)]),
+    );
+    expect((workspace as { reason: string }).reason).not.toMatch(/пакет|₴/);
+  });
+
+  it('tells the admin to buy a pack when photos ran out', async () => {
+    const { service } = setup(emptyCredits());
+    await expect(service.workspace('media', { ...actor, role: 'admin' })).resolves.toMatchObject({
+      enabled: false,
+      reason: 'Фото закінчилися — докупіть пакет.',
+    });
+  });
+
+  it('keeps the provider reason when AI itself is switched off', async () => {
+    const credits = emptyCredits();
+    const { service, provider } = setup(credits);
+    provider.availability.mockReturnValue({
+      enabled: false,
+      reason: 'Обробка ШІ поки недоступна.',
+    });
+    await expect(service.workspace('media', actor)).resolves.toMatchObject({
+      enabled: false,
+      reason: 'Обробка ШІ поки недоступна.',
+    });
+    expect(credits.hasCredit).not.toHaveBeenCalled();
+  });
+
+  it('reserves a photo inside the generation transaction and enqueues the job', async () => {
+    const reserve = jest.fn().mockResolvedValue(undefined);
+    const { service, em, queue } = setup({ ...emptyCredits(reserve), hasCredit: async () => true });
+    await service.generate('media', dto, actor);
+    expect(reserve).toHaveBeenCalledWith(em, 'generation', actor);
+    expect(queue.add).toHaveBeenCalled();
+  });
+
+  it('creates no job when the reservation is refused', async () => {
+    const refusal = new Error('Фото закінчилися');
+    const reserve = jest.fn().mockRejectedValue(refusal);
+    const { service, queue, audit } = setup(emptyCredits(reserve));
+    await expect(service.generate('media', dto, actor)).rejects.toBe(refusal);
+    expect(queue.add).not.toHaveBeenCalled();
+    expect(audit.record).not.toHaveBeenCalled();
+  });
+
+  it('does not reserve again for an idempotent repeat of the same request', async () => {
+    const reserve = jest.fn().mockResolvedValue(undefined);
+    const { service, em } = setup({ ...emptyCredits(reserve), hasCredit: async () => true });
+    const fingerprint = createHash('sha256')
+      .update(JSON.stringify(['media', dto.category, dto.prompt]))
+      .digest('hex');
+    em.findOne.mockImplementation(async (entity: unknown) =>
+      entity === PhotoAiGeneration
+        ? { id: 'generation', status: 'queued', fingerprint, createdAt: new Date() }
+        : entity === Listing
+          ? { id: 'listing' }
+          : { id: 'media', listingId: 'listing', status: 'ready', type: 'image' },
+    );
+    await service.generate('media', dto, actor);
+    expect(reserve).not.toHaveBeenCalled();
   });
 });

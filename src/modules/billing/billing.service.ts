@@ -20,13 +20,16 @@ import {
 import {
   BILLING_SETTINGS,
   invoiceAmountKop,
+  isMonobankConfigured,
   seedPaidUntil,
   type BillingSettings,
 } from './billing.config';
 import { computeBillingState, type BillingSnapshot } from './billing-state';
-import { BillingInvoice } from './entities/billing-invoice.entity';
-import { INVOICE_VALIDITY_SECONDS, MonobankApiError, MonobankClient } from './monobank.client';
+import { BillingInvoice, type BillingInvoiceKind } from './entities/billing-invoice.entity';
+import { toInvoiceView, type BillingInvoiceView } from './billing-invoice.view';
+import { MonobankApiError, MonobankClient } from './monobank.client';
 import { UAH_CCY, type MonobankInvoiceStatusInfo } from './monobank.types';
+import { creditPhotoPack, refundPhotoPack } from './photo-pack.ledger';
 
 /** Guard lookups hit the DB at most this often per process (credits invalidate it). */
 export const ACCOUNT_CACHE_TTL_MS = 15_000;
@@ -51,31 +54,23 @@ export type AdminBillingStatus =
       graceDays: number;
     };
 
-/**
- * `mismatch`: Monobank reports the invoice paid, but amount/currency differ
- * from what we billed, so nothing was credited — needs a manual check.
- */
-export type InvoiceViewStatus = BillingInvoice['status'] | 'mismatch';
-
-export interface BillingInvoiceView {
-  invoiceId: string;
-  amountUah: number;
-  status: InvoiceViewStatus;
-  periodMonths: number;
-  createdAt: string;
-  creditedAt: string | null;
-  /** Only while the invoice can still be paid. */
-  pageUrl: string | null;
-}
+export type { BillingInvoiceView, InvoiceViewStatus } from './billing-invoice.view';
 
 export type ApplyResult = 'credited' | 'reversed' | 'updated' | 'stale' | 'mismatch';
+
+export interface NewInvoice {
+  kind: BillingInvoiceKind;
+  amountKop: number;
+  destination: string;
+  periodMonths: number | null;
+  photos: number | null;
+  redirectUrl?: string;
+}
 
 interface CachedAccount {
   paidUntil: Date;
   fetchedAt: number;
 }
-
-const PAYABLE_STATUSES: ReadonlyArray<BillingInvoice['status']> = ['created', 'processing'];
 
 @Injectable()
 export class BillingService {
@@ -89,8 +84,14 @@ export class BillingService {
     private readonly audit: AuditLogService,
   ) {}
 
+  /** Hosting billing (reminders + lockout). */
   get isEnabled(): boolean {
     return this.settings.isEnabled;
+  }
+
+  /** Incoming webhooks/syncs: on whenever a Monobank token is configured. */
+  get isMonobankConfigured(): boolean {
+    return isMonobankConfigured(this.settings);
   }
 
   /** null when billing is disabled — nothing is ever blocked or reminded then. */
@@ -130,8 +131,9 @@ export class BillingService {
     };
   }
 
-  async listInvoices(): Promise<BillingInvoiceView[]> {
+  async listInvoices(kind: BillingInvoiceKind = 'hosting'): Promise<BillingInvoiceView[]> {
     const rows = await this.invoices.find({
+      where: { kind },
       order: { createdAt: 'DESC' },
       take: INVOICE_HISTORY_LIMIT,
     });
@@ -141,15 +143,36 @@ export class BillingService {
 
   async createInvoice(actor: AuthenticatedUser): Promise<{ invoiceId: string; pageUrl: string }> {
     this.assertEnabled();
-    const id = randomUUID();
-    const amountKop = invoiceAmountKop(this.settings);
     const months = this.settings.periodMonths;
+    return this.createMonobankInvoice(
+      {
+        kind: 'hosting',
+        amountKop: invoiceAmountKop(this.settings),
+        destination: `Оплата хостингу та обслуговування сайту (${months} міс.)`,
+        periodMonths: months,
+        photos: null,
+      },
+      actor,
+    );
+  }
+
+  /**
+   * Creates the invoice at Monobank, then stores it with its audit row. If
+   * storing fails, the Monobank invoice is cancelled so it can't take money
+   * that would never be credited.
+   */
+  async createMonobankInvoice(
+    input: NewInvoice,
+    actor: AuthenticatedUser,
+  ): Promise<{ invoiceId: string; pageUrl: string }> {
+    const id = randomUUID();
     let created: { invoiceId: string; pageUrl: string };
     try {
       created = await this.monobank.createInvoice({
-        amountKop,
+        amountKop: input.amountKop,
         reference: id,
-        destination: `Оплата хостингу та обслуговування сайту (${months} міс.)`,
+        destination: input.destination,
+        redirectUrl: input.redirectUrl,
       });
     } catch (err) {
       throw this.toGatewayError(err, 'Не вдалося створити рахунок у Monobank. Спробуйте пізніше.');
@@ -159,10 +182,12 @@ export class BillingService {
         await em.getRepository(BillingInvoice).insert({
           id,
           invoiceId: created.invoiceId,
-          amountKop,
+          kind: input.kind,
+          amountKop: input.amountKop,
           ccy: UAH_CCY,
           status: 'created',
-          periodMonths: months,
+          periodMonths: input.periodMonths,
+          photos: input.photos,
           pageUrl: created.pageUrl,
           createdBy: actor.id,
           modifiedAt: null,
@@ -172,7 +197,13 @@ export class BillingService {
           {
             action: 'billing.invoice_created',
             entityType: 'billing',
-            diff: { invoiceId: created.invoiceId, amountKop, periodMonths: months },
+            diff: {
+              invoiceId: created.invoiceId,
+              kind: input.kind,
+              amountKop: input.amountKop,
+              ...(input.periodMonths !== null ? { periodMonths: input.periodMonths } : {}),
+              ...(input.photos !== null ? { photos: input.photos } : {}),
+            },
             actorId: actor.id,
             actorRole: actor.role,
           },
@@ -187,10 +218,17 @@ export class BillingService {
   }
 
   /** Admin fallback when a webhook was missed: re-reads Monobank and credits if paid. */
-  async syncInvoice(invoiceId: string, actor: AuthenticatedUser): Promise<BillingInvoiceView> {
-    this.assertEnabled();
-    const known = await this.invoices.findOne({ where: { invoiceId } });
+  async syncInvoice(
+    invoiceId: string,
+    actor: AuthenticatedUser,
+    kind?: BillingInvoiceKind,
+  ): Promise<BillingInvoiceView> {
+    if (kind === 'hosting') this.assertEnabled();
+    this.assertMonobankConfigured();
+    const known = await this.invoices.findOne({ where: { invoiceId, ...(kind ? { kind } : {}) } });
     if (!known) throw new NotFoundException('Рахунок не знайдено');
+    // Hosting time is only ever extended while hosting billing is on.
+    if (known.kind === 'hosting') this.assertEnabled();
     await this.refreshFromMonobank(invoiceId, actor);
     const updated = await this.invoices.findOneOrFail({ where: { invoiceId } });
     return toInvoiceView(updated, new Date());
@@ -198,12 +236,20 @@ export class BillingService {
 
   /** Webhook entry point (signature already verified). Unknown invoices are ignored. */
   async handleWebhook(invoiceId: string): Promise<ApplyResult | 'ignored'> {
-    if (!this.settings.isEnabled) return 'ignored';
+    if (!this.isMonobankConfigured) return 'ignored';
     const known = await this.invoices.findOne({ where: { invoiceId } });
     if (!known) {
       // A signed webhook for an invoice we never stored means money may have
       // arrived for an orphan invoice — loud, so an operator can reconcile it.
       this.logger.error({ invoiceId }, 'Monobank webhook for an unknown invoice ignored');
+      return 'ignored';
+    }
+    // "Billing disabled never starts a clock": hosting invoices are left alone.
+    if (known.kind === 'hosting' && !this.settings.isEnabled) {
+      this.logger.warn(
+        { invoiceId },
+        'Hosting invoice webhook ignored: hosting billing is disabled',
+      );
       return 'ignored';
     }
     return this.refreshFromMonobank(invoiceId, null);
@@ -296,10 +342,19 @@ export class BillingService {
     // is terminal (checked above), the reversed_at check is purely defensive
     // and unreachable today. Partial refunds stay `success` at Monobank and
     // never get here.
+    // Defensive: hosting time never moves while hosting billing is off (the
+    // status is recorded; a credit can still happen once billing is back on).
+    const isHostingFrozen = invoice.kind === 'hosting' && !this.settings.isEnabled;
+    if (isHostingFrozen) return 'updated';
+
     const isNewReversal =
       info.status === 'reversed' && invoice.status !== 'reversed' && !invoice.reversedAt;
     if (isNewReversal && invoice.creditedAt) {
-      await this.reverseInvoice(em, info, invoice, actor, now);
+      if (invoice.kind === 'photo_pack') {
+        await refundPhotoPack({ em, audit: this.audit, info, invoice, actor, now }, this.logger);
+      } else {
+        await this.reverseInvoice(em, info, invoice, actor, now);
+      }
       return 'reversed';
     }
     if (info.status !== 'success' || invoice.creditedAt) return 'updated';
@@ -309,7 +364,11 @@ export class BillingService {
       if (invoice.status !== 'success') await this.recordMismatch(em, info, invoice, actor);
       return 'mismatch';
     }
-    await this.creditInvoice(em, info, invoice, actor, now);
+    if (invoice.kind === 'photo_pack') {
+      await creditPhotoPack({ em, audit: this.audit, info, invoice, actor, now });
+    } else {
+      await this.creditInvoice(em, info, invoice, actor, now);
+    }
     return 'credited';
   }
 
@@ -321,7 +380,8 @@ export class BillingService {
     now: Date,
   ): Promise<void> {
     const seed = seedPaidUntil(this.settings, now);
-    const change = await extendAccount(em, invoice.periodMonths, now, seed);
+    const months = hostingMonths(invoice);
+    const change = await extendAccount(em, months, now, seed);
     await em
       .getRepository(BillingInvoice)
       .update(
@@ -335,7 +395,7 @@ export class BillingService {
         diff: {
           invoiceId: info.invoiceId,
           amountKop: info.amount,
-          periodMonths: invoice.periodMonths,
+          periodMonths: months,
           paidUntilBefore: change.before.toISOString(),
           paidUntilAfter: change.after.toISOString(),
         },
@@ -382,7 +442,8 @@ export class BillingService {
     actor: AuthenticatedUser | null,
     now: Date,
   ): Promise<void> {
-    const change = await rollbackAccount(em, invoice, seedPaidUntil(this.settings, now));
+    const credit = { ...invoice, periodMonths: hostingMonths(invoice) };
+    const change = await rollbackAccount(em, credit, seedPaidUntil(this.settings, now));
     await em.getRepository(BillingInvoice).update({ id: invoice.id }, { reversedAt: now });
     this.logger.warn(
       {
@@ -428,10 +489,21 @@ export class BillingService {
     if (!this.settings.isEnabled) throw new ConflictException('Оплату обслуговування вимкнено');
   }
 
+  private assertMonobankConfigured(): void {
+    if (!this.isMonobankConfigured) throw new ConflictException('Онлайн-оплату вимкнено');
+  }
+
   private toGatewayError(err: unknown, message: string): Error {
     if (err instanceof MonobankApiError) return new BadGatewayException(message);
     return err instanceof Error ? err : new Error(String(err));
   }
+}
+
+function hostingMonths(invoice: BillingInvoice): number {
+  if (!invoice.periodMonths) {
+    throw new Error(`Hosting invoice ${invoice.invoiceId} has no period`);
+  }
+  return invoice.periodMonths;
 }
 
 function isOlder(incoming: Date | null, stored: Date | null): boolean {
@@ -440,31 +512,4 @@ function isOlder(incoming: Date | null, stored: Date | null): boolean {
 
 function auditActor(actor: AuthenticatedUser | null) {
   return { actorId: actor?.id ?? null, actorRole: actor?.role ?? null };
-}
-
-/**
- * Monobank sends no webhook when an invoice expires, so an unpaid invoice
- * past its validity is shown as expired and its payment link is dropped.
- * A `success` that was never credited (amount/currency mismatch) is shown as
- * `mismatch`, never as paid.
- */
-function toInvoiceView(row: BillingInvoice, now: Date): BillingInvoiceView {
-  const isPayable = PAYABLE_STATUSES.includes(row.status);
-  const isPastValidity = now.getTime() - row.createdAt.getTime() >= INVOICE_VALIDITY_SECONDS * 1000;
-  const isExpired = isPayable && isPastValidity;
-  return {
-    invoiceId: row.invoiceId,
-    amountUah: row.amountKop / 100,
-    status: viewStatus(row, isExpired),
-    periodMonths: row.periodMonths,
-    createdAt: row.createdAt.toISOString(),
-    creditedAt: row.creditedAt ? row.creditedAt.toISOString() : null,
-    pageUrl: isPayable && !isExpired ? row.pageUrl : null,
-  };
-}
-
-function viewStatus(row: BillingInvoice, isExpired: boolean): InvoiceViewStatus {
-  if (isExpired) return 'expired';
-  if (row.status === 'success' && !row.creditedAt) return 'mismatch';
-  return row.status;
 }

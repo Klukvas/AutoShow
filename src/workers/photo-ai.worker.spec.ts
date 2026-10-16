@@ -42,6 +42,10 @@ function setup() {
   };
   const queue = { getJob: jest.fn().mockResolvedValue(null), upsertJobScheduler: jest.fn() };
   const access = { requireAllowed: jest.fn().mockResolvedValue(undefined) };
+  const credits = {
+    settle: jest.fn().mockResolvedValue(false),
+    sweep: jest.fn().mockResolvedValue(0),
+  };
   const worker = new PhotoAiWorker(
     repo as never,
     photos as never,
@@ -50,8 +54,9 @@ function setup() {
     queue as never,
     { PHOTO_AI_TIMEOUT_SECONDS: 10, MEDIA_MAX_BYTES: 20_000_000 } as never,
     access as never,
+    credits as never,
   );
-  return { worker, repo, generation, photos, provider, storage, queue, access };
+  return { worker, repo, generation, photos, provider, storage, queue, access, credits };
 }
 describe('PhotoAiWorker', () => {
   it('never calls provider on redelivery once queued claim has been consumed', async () => {
@@ -212,5 +217,113 @@ describe('Queued photo AI policy revocation', () => {
         failureReason: 'Власник сайту не надав вам доступу до обробки фото з ШІ.',
       },
     );
+  });
+
+  describe('managed photo balance settlement', () => {
+    /** findOne reflects the latest status written by the worker. */
+    function trackStatus(ctx: ReturnType<typeof setup>) {
+      let status = 'processing';
+      ctx.repo.update.mockImplementation(
+        async (_criteria: unknown, values: { status?: string }) => {
+          if (values.status) status = values.status;
+          return { affected: 1 };
+        },
+      );
+      ctx.repo.findOne.mockImplementation(async () => ({ ...ctx.generation, status }));
+    }
+    async function image() {
+      return sharp({ create: { width: 8, height: 8, channels: 3, background: '#888' } })
+        .png()
+        .toBuffer();
+    }
+
+    it('consumes the reserved photo only after a ready result', async () => {
+      const ctx = setup();
+      trackStatus(ctx);
+      const png = await image();
+      ctx.storage.head.mockResolvedValue({ size: png.length });
+      ctx.storage.getBuffer.mockResolvedValue(png);
+      ctx.provider.edit.mockResolvedValue(png);
+      await ctx.worker.process({ name: 'generate', data: { generationId: 'g' } } as never);
+      expect(ctx.credits.settle).toHaveBeenCalledWith('g', 'ready');
+    });
+
+    it('releases the photo when the provider fails or times out', async () => {
+      const ctx = setup();
+      trackStatus(ctx);
+      const png = await image();
+      ctx.storage.head.mockResolvedValue({ size: png.length });
+      ctx.storage.getBuffer.mockResolvedValue(png);
+      ctx.provider.edit.mockRejectedValue(new Error('The operation was aborted due to timeout'));
+      await ctx.worker.process({ name: 'generate', data: { generationId: 'g' } } as never);
+      expect(ctx.credits.settle).toHaveBeenCalledWith(
+        'g',
+        expect.stringMatching(/failed|interrupted/),
+      );
+      expect(ctx.credits.settle).not.toHaveBeenCalledWith('g', 'ready');
+    });
+
+    it('releases the photo when preparation fails before any provider call', async () => {
+      const ctx = setup();
+      trackStatus(ctx);
+      ctx.storage.head.mockResolvedValue(null);
+      await ctx.worker.process({ name: 'generate', data: { generationId: 'g' } } as never);
+      expect(ctx.provider.edit).not.toHaveBeenCalled();
+      expect(ctx.credits.settle).toHaveBeenCalledWith('g', 'failed');
+    });
+
+    it('does not settle a job it never claimed', async () => {
+      const ctx = setup();
+      ctx.repo.update.mockResolvedValue({ affected: 0 });
+      await ctx.worker.process({ name: 'generate', data: { generationId: 'g' } } as never);
+      expect(ctx.credits.settle).not.toHaveBeenCalled();
+    });
+
+    it('keeps the job alive and logs the reason when settlement fails', async () => {
+      const ctx = setup();
+      trackStatus(ctx);
+      ctx.storage.head.mockResolvedValue(null);
+      ctx.credits.settle.mockRejectedValue(new Error('db down'));
+      const warn = jest
+        .spyOn((ctx.worker as unknown as { logger: { warn: () => void } }).logger, 'warn')
+        .mockImplementation(() => undefined);
+      await expect(
+        ctx.worker.process({ name: 'generate', data: { generationId: 'g' } } as never),
+      ).resolves.toBeUndefined();
+      expect(warn).toHaveBeenCalledWith(
+        { generationId: 'g', reason: 'db down' },
+        'photo AI settlement deferred to recovery',
+      );
+    });
+
+    it('still sweeps reservations when the generation repair fails', async () => {
+      const ctx = setup();
+      ctx.repo.find.mockRejectedValue(new Error('query timeout'));
+      const error = jest
+        .spyOn((ctx.worker as unknown as { logger: { error: () => void } }).logger, 'error')
+        .mockImplementation(() => undefined);
+      await ctx.worker.process({ name: 'recover', data: {} } as never);
+      expect(ctx.credits.sweep).toHaveBeenCalledTimes(1);
+      expect(error).toHaveBeenCalledWith(
+        { reason: 'query timeout' },
+        'photo AI generation recovery failed',
+      );
+    });
+
+    it('sweeps open reservations after repairing stuck jobs on recovery', async () => {
+      const ctx = setup();
+      const order: string[] = [];
+      ctx.repo.find.mockImplementation(async () => {
+        order.push('repair');
+        return [];
+      });
+      ctx.credits.sweep.mockImplementation(async () => {
+        order.push('sweep');
+        return 0;
+      });
+      await ctx.worker.process({ name: 'recover', data: {} } as never);
+      expect(order[order.length - 1]).toBe('sweep');
+      expect(order.filter((step) => step === 'repair').length).toBeGreaterThan(0);
+    });
   });
 });

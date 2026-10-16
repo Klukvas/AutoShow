@@ -16,6 +16,13 @@ const settings: BillingSettings = {
   monobankToken: TOKEN,
   webhookUrl: 'https://site.example/api/billing/monobank/webhook',
   redirectUrl: 'https://site.example/admin/billing?returned=1',
+  photoPacks: {
+    isEnabled: false,
+    size: 0,
+    priceUah: 0,
+    freePhotos: 0,
+    redirectUrl: 'https://site.example/admin/branding?photoPackReturned=1',
+  },
 };
 
 function respond(status: number, data: unknown) {

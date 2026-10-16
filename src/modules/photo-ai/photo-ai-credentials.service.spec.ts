@@ -96,6 +96,7 @@ describe('Owner photo AI credentials', () => {
       actor,
     );
     expect(response).toEqual({
+      mode: 'own_key',
       accessMode: 'all',
       selectedEditorIds: [],
       configured: true,

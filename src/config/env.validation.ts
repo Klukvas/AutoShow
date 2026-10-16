@@ -1,4 +1,4 @@
-import { plainToInstance } from 'class-transformer';
+import { plainToInstance, Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsEnum,
@@ -15,6 +15,11 @@ export enum NodeEnv {
   Development = 'development',
   Production = 'production',
   Test = 'test',
+}
+
+export enum PhotoAiMode {
+  OwnKey = 'own_key',
+  Managed = 'managed',
 }
 
 export class EnvSchema {
@@ -34,6 +39,39 @@ export class EnvSchema {
   @Min(1)
   @Max(100)
   PHOTO_AI_JOBS_PER_HOUR: number = 10;
+
+  /**
+   * own_key: the site owner stores their own OpenAI key in the admin UI.
+   * managed: we provide the key and sell photos in packs (Monobank).
+   */
+  @IsEnum(PhotoAiMode)
+  PHOTO_AI_MODE: PhotoAiMode = PhotoAiMode.OwnKey;
+
+  /** Our OpenAI key for managed mode (secret; never shown in the UI). Trimmed once here. */
+  @Transform(({ value }: { value: unknown }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @IsOptional()
+  PHOTO_AI_MANAGED_API_KEY?: string;
+
+  /** Photos in one purchasable pack (managed mode). */
+  @IsInt()
+  @Min(1)
+  @Max(10_000)
+  @IsOptional()
+  PHOTO_AI_PACK_SIZE?: number;
+
+  /** Price of one pack in whole UAH (managed mode). */
+  @IsInt()
+  @Min(1)
+  @Max(1_000_000)
+  @IsOptional()
+  PHOTO_AI_PACK_PRICE_UAH?: number;
+
+  /** One-time starter photos granted on first use (managed mode). */
+  @IsInt()
+  @Min(0)
+  @Max(10_000)
+  PHOTO_AI_FREE_PHOTOS: number = 0;
 
   @IsEnum(NodeEnv)
   NODE_ENV: NodeEnv = NodeEnv.Development;
@@ -291,17 +329,18 @@ export function validateEnv(raw: Record<string, unknown>): EnvSchema {
   }
 
   if (instance.BILLING_ENABLED) {
-    const missing = [
+    requireKeys('BILLING_ENABLED=true', [
       ['MONOBANK_TOKEN', instance.MONOBANK_TOKEN],
       ['BILLING_MONTHLY_PRICE_UAH', instance.BILLING_MONTHLY_PRICE_UAH],
-    ].filter(([, value]) => value === undefined || value === '');
-    if (missing.length) {
-      throw new Error(
-        `Invalid environment configuration:\n${missing
-          .map(([name]) => `${name}: is required when BILLING_ENABLED=true`)
-          .join('\n')}`,
-      );
-    }
+    ]);
+  }
+  if (instance.PHOTO_AI_MODE === PhotoAiMode.Managed) {
+    requireKeys('PHOTO_AI_MODE=managed', [
+      ['PHOTO_AI_MANAGED_API_KEY', instance.PHOTO_AI_MANAGED_API_KEY],
+      ['PHOTO_AI_PACK_SIZE', instance.PHOTO_AI_PACK_SIZE],
+      ['PHOTO_AI_PACK_PRICE_UAH', instance.PHOTO_AI_PACK_PRICE_UAH],
+      ['MONOBANK_TOKEN', instance.MONOBANK_TOKEN],
+    ]);
   }
 
   // Placeholder secrets from .env.example must never survive into production —
@@ -325,4 +364,16 @@ export function validateEnv(raw: Record<string, unknown>): EnvSchema {
     }
   }
   return instance;
+}
+
+function requireKeys(condition: string, entries: Array<[string, unknown]>): void {
+  const missing = entries.filter(
+    ([, value]) => value === undefined || (typeof value === 'string' && value.trim() === ''),
+  );
+  if (!missing.length) return;
+  throw new Error(
+    `Invalid environment configuration:\n${missing
+      .map(([name]) => `${name}: is required when ${condition}`)
+      .join('\n')}`,
+  );
 }

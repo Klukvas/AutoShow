@@ -100,6 +100,8 @@ export function generationAttempt(
 }
 
 export type PhotoAiSettingsMetadata = {
+  /** own_key: the owner's OpenAI key; managed: provided key, photos sold in packs. */
+  mode: 'own_key' | 'managed';
   accessMode: PhotoAiAccessMode;
   selectedEditorIds: string[];
   configured: boolean;

@@ -74,4 +74,83 @@ describe('validateEnv', () => {
       'BILLING_MONTHLY_PRICE_UAH',
     );
   });
+
+  describe('photo AI mode', () => {
+    const managed = {
+      PHOTO_AI_MODE: 'managed',
+      PHOTO_AI_MANAGED_API_KEY: 'sk-managed',
+      PHOTO_AI_PACK_SIZE: '50',
+      PHOTO_AI_PACK_PRICE_UAH: '300',
+      MONOBANK_TOKEN: 'tok',
+    };
+
+    it('defaults to own_key with no free photos', () => {
+      const config = validateEnv(exampleEnv());
+      expect(config.PHOTO_AI_MODE).toBe('own_key');
+      expect(config.PHOTO_AI_FREE_PHOTOS).toBe(0);
+    });
+
+    it('accepts managed mode with key, pack terms and a Monobank token (billing off)', () => {
+      const config = validateEnv({ ...exampleEnv(), ...managed, PHOTO_AI_FREE_PHOTOS: '5' });
+      expect(config.PHOTO_AI_MODE).toBe('managed');
+      expect(config.PHOTO_AI_PACK_SIZE).toBe(50);
+      expect(config.PHOTO_AI_PACK_PRICE_UAH).toBe(300);
+      expect(config.PHOTO_AI_FREE_PHOTOS).toBe(5);
+      expect(config.BILLING_ENABLED).toBe(false);
+    });
+
+    it.each([
+      'PHOTO_AI_MANAGED_API_KEY',
+      'PHOTO_AI_PACK_SIZE',
+      'PHOTO_AI_PACK_PRICE_UAH',
+      'MONOBANK_TOKEN',
+    ] as const)('requires %s in managed mode', (key) => {
+      const env: Record<string, string> = { ...exampleEnv(), ...managed };
+      delete env[key];
+      expect(() => validateEnv(env)).toThrow(`${key}: is required when PHOTO_AI_MODE=managed`);
+    });
+
+    it('rejects an unknown mode and invalid pack numbers', () => {
+      expect(() => validateEnv({ ...exampleEnv(), PHOTO_AI_MODE: 'free' })).toThrow(
+        'PHOTO_AI_MODE',
+      );
+      expect(() => validateEnv({ ...exampleEnv(), ...managed, PHOTO_AI_PACK_SIZE: '0' })).toThrow(
+        'PHOTO_AI_PACK_SIZE',
+      );
+      expect(() =>
+        validateEnv({ ...exampleEnv(), ...managed, PHOTO_AI_PACK_PRICE_UAH: '-1' }),
+      ).toThrow('PHOTO_AI_PACK_PRICE_UAH');
+      expect(() => validateEnv({ ...exampleEnv(), PHOTO_AI_FREE_PHOTOS: '-2' })).toThrow(
+        'PHOTO_AI_FREE_PHOTOS',
+      );
+    });
+
+    it('trims the managed key once at startup', () => {
+      const config = validateEnv({
+        ...exampleEnv(),
+        ...managed,
+        PHOTO_AI_MANAGED_API_KEY: '  sk-managed \n',
+      });
+      expect(config.PHOTO_AI_MANAGED_API_KEY).toBe('sk-managed');
+    });
+
+    it('rejects a blank managed key and absurd pack prices', () => {
+      expect(() =>
+        validateEnv({ ...exampleEnv(), ...managed, PHOTO_AI_MANAGED_API_KEY: '   ' }),
+      ).toThrow('PHOTO_AI_MANAGED_API_KEY: is required when PHOTO_AI_MODE=managed');
+      expect(() =>
+        validateEnv({ ...exampleEnv(), ...managed, PHOTO_AI_PACK_PRICE_UAH: '1000001' }),
+      ).toThrow('PHOTO_AI_PACK_PRICE_UAH');
+      expect(() =>
+        validateEnv({ ...exampleEnv(), ...managed, PHOTO_AI_PACK_SIZE: '10001' }),
+      ).toThrow('PHOTO_AI_PACK_SIZE');
+      expect(() => validateEnv({ ...exampleEnv(), PHOTO_AI_FREE_PHOTOS: '10001' })).toThrow(
+        'PHOTO_AI_FREE_PHOTOS',
+      );
+    });
+
+    it('does not require managed settings in own_key mode', () => {
+      expect(() => validateEnv({ ...exampleEnv(), PHOTO_AI_MODE: 'own_key' })).not.toThrow();
+    });
+  });
 });

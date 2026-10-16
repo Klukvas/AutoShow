@@ -3,6 +3,7 @@ import {
   Controller,
   Headers,
   HttpCode,
+  Logger,
   Post,
   Req,
   ServiceUnavailableException,
@@ -24,6 +25,8 @@ import { parseWebhookInvoiceId } from './monobank.types';
 @ApiExcludeController()
 @Controller('billing/monobank')
 export class BillingWebhookController {
+  private readonly logger = new Logger(BillingWebhookController.name);
+
   constructor(
     private readonly billing: BillingService,
     private readonly monobank: MonobankClient,
@@ -38,7 +41,12 @@ export class BillingWebhookController {
     @Req() req: RawBodyRequest<Request>,
     @Headers('x-sign') signature: string | undefined,
   ): Promise<{ ok: true }> {
-    if (!this.billing.isEnabled) return { ok: true };
+    if (!this.billing.isMonobankConfigured) {
+      // Without a token the signature can't be verified (pubkey needs it) —
+      // nothing can be credited; make it loud so an operator notices.
+      this.logger.error('Monobank webhook received but MONOBANK_TOKEN is not configured');
+      return { ok: true };
+    }
     const rawBody = req.rawBody;
     if (!rawBody?.length || !signature) throw new BadRequestException('Invalid signature');
 

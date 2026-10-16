@@ -43,6 +43,9 @@ export type AppConfig = EnvSchema;
               'BILLING_MONTHLY_PRICE_UAH',
               'BILLING_INITIAL_PAID_UNTIL',
               'MONOBANK_TOKEN',
+              'PHOTO_AI_MANAGED_API_KEY',
+              'PHOTO_AI_PACK_SIZE',
+              'PHOTO_AI_PACK_PRICE_UAH',
             ])
             .map((k) => [k, config.get(k as keyof EnvSchema, { infer: true })]),
         ) as AppConfig;

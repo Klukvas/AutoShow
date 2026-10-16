@@ -10,6 +10,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { type EntityManager, Repository } from 'typeorm';
 import type { AppConfig } from '../../config/config.module';
+import { PhotoAiMode } from '../../config/env.validation';
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { AuditLogService } from '../audit/audit-log.service';
 import { PhotoAiSettings } from './entities/photo-ai-settings.entity';
@@ -17,6 +18,8 @@ import { decryptCredential, encryptCredential, encryptionKey } from './photo-ai-
 import type { UpdatePhotoAiSettingsDto } from './photo-ai-settings.dto';
 
 export type PhotoAiSettingsMetadata = {
+  /** own_key: the owner's stored key; managed: our key, photos sold in packs. */
+  mode: 'own_key' | 'managed';
   accessMode: PhotoAiAccessMode;
   selectedEditorIds: string[];
   configured: boolean;
@@ -27,6 +30,8 @@ export type PhotoAiSettingsMetadata = {
   status: 'ready' | 'disabled' | 'not-configured' | 'unavailable';
 };
 const unavailable = () => new ServiceUnavailableException('Налаштування ШІ поки недоступні.');
+export const MANAGED_KEY_REJECTED =
+  'Ключ ШІ надає постачальник сайту — власний ключ не потрібен і не зберігається.';
 
 @Injectable()
 export class PhotoAiCredentialsService {
@@ -46,13 +51,32 @@ export class PhotoAiCredentialsService {
     if (!row) throw unavailable();
     return row;
   }
+  private get isManaged(): boolean {
+    return this.config.PHOTO_AI_MODE === PhotoAiMode.Managed;
+  }
+  /** Managed mode: the key comes from env; only enable + access policy are editable. */
+  private managedMetadata(row: PhotoAiSettings): PhotoAiSettingsMetadata {
+    return {
+      mode: 'managed',
+      accessMode: row.accessMode,
+      selectedEditorIds: row.selectedEditorIds,
+      configured: true,
+      enabled: row.enabled,
+      available: row.enabled,
+      setupAvailable: true,
+      revision: row.revision,
+      status: row.enabled ? 'ready' : 'disabled',
+    };
+  }
   private metadataFor(row: PhotoAiSettings): PhotoAiSettingsMetadata {
+    if (this.isManaged) return this.managedMetadata(row);
     const master = encryptionKey(this.config.PHOTO_AI_ENCRYPTION_KEY);
     const configured = Boolean(row.encryptedKey);
     const usable = Boolean(
       master && row.encryptedKey && decryptCredential(row.encryptedKey, master),
     );
     return {
+      mode: 'own_key',
       accessMode: row.accessMode,
       selectedEditorIds: row.selectedEditorIds,
       configured,
@@ -81,6 +105,11 @@ export class PhotoAiCredentialsService {
   async requireCredential(): Promise<string> {
     try {
       const row = await this.read(this.repo.manager);
+      if (this.isManaged) {
+        const managedKey = this.config.PHOTO_AI_MANAGED_API_KEY;
+        if (!row.enabled || !managedKey) throw unavailable();
+        return managedKey;
+      }
       const master = encryptionKey(this.config.PHOTO_AI_ENCRYPTION_KEY);
       const credential =
         row.enabled && row.encryptedKey && master
@@ -100,6 +129,8 @@ export class PhotoAiCredentialsService {
     if (dto.selectedEditorIds !== undefined)
       await this.access.validateSelected(dto.selectedEditorIds);
     const key = dto.apiKey?.trim();
+    if (this.isManaged && (key || dto.removeKey))
+      throw new BadRequestException(MANAGED_KEY_REJECTED);
     if (dto.removeKey && key)
       throw new BadRequestException('Збереження та видалення ключа — окремі дії.');
     try {
@@ -115,7 +146,11 @@ export class PhotoAiCredentialsService {
             ? encryptCredential(key, master)
             : row.encryptedKey;
         const enabled = dto.removeKey ? false : (dto.enabled ?? row.enabled);
-        if (enabled && (!master || !encryptedKey || !decryptCredential(encryptedKey, master)))
+        if (
+          !this.isManaged &&
+          enabled &&
+          (!master || !encryptedKey || !decryptCredential(encryptedKey, master))
+        )
           throw new BadRequestException('Спочатку збережіть доступний ключ.');
         const accessMode = dto.accessMode ?? row.accessMode;
         const selectedEditorIds = dto.selectedEditorIds ?? row.selectedEditorIds;

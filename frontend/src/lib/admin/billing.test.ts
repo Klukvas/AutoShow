@@ -27,6 +27,7 @@ const invoice = (id: string, status: BillingInvoice['status'], createdAt: string
   amountUah: 500,
   status,
   periodMonths: 1,
+  photos: null,
   createdAt,
   creditedAt: null,
   pageUrl: null,

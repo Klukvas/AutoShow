@@ -1,4 +1,5 @@
 import type { AppConfig } from '../../config/config.module';
+import { PhotoAiMode } from '../../config/env.validation';
 import { addMonthsUtc, type BillingTerms } from './billing-state';
 
 export const BILLING_SETTINGS = 'BILLING_SETTINGS';
@@ -14,6 +15,25 @@ export interface BillingSettings extends BillingTerms {
   webhookUrl: string;
   /** Where the payer returns after paying (admin billing page). */
   redirectUrl: string;
+  /** Managed photo-AI packs — independent of hosting billing (isEnabled). */
+  photoPacks: PhotoPackSettings;
+}
+
+export interface PhotoPackSettings {
+  isEnabled: boolean;
+  size: number;
+  priceUah: number;
+  freePhotos: number;
+  /** Where the payer returns after buying a pack (photo-AI settings). */
+  redirectUrl: string;
+}
+
+/**
+ * Webhooks/syncs keep working whenever a token is configured — even after a
+ * feature was switched off, an already-issued invoice may still get paid.
+ */
+export function isMonobankConfigured(settings: BillingSettings): boolean {
+  return settings.monobankToken.trim() !== '';
 }
 
 const trimSlash = (url: string) => url.replace(/\/+$/, '');
@@ -32,6 +52,13 @@ export function buildBillingSettings(config: AppConfig): BillingSettings {
     monobankToken: config.MONOBANK_TOKEN ?? '',
     webhookUrl: `${trimSlash(config.PUBLIC_URL)}/${prefix}/billing/monobank/webhook`,
     redirectUrl: `${trimSlash(config.PUBLIC_SITE_URL)}/admin/billing?returned=1`,
+    photoPacks: {
+      isEnabled: config.PHOTO_AI_MODE === PhotoAiMode.Managed,
+      size: config.PHOTO_AI_PACK_SIZE ?? 0,
+      priceUah: config.PHOTO_AI_PACK_PRICE_UAH ?? 0,
+      freePhotos: config.PHOTO_AI_FREE_PHOTOS,
+      redirectUrl: `${trimSlash(config.PUBLIC_SITE_URL)}/admin/branding?photoPackReturned=1`,
+    },
   };
 }
 

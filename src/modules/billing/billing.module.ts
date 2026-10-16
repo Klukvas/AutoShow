@@ -10,10 +10,12 @@ import { BillingService } from './billing.service';
 import { BillingAccount } from './entities/billing-account.entity';
 import { BillingInvoice } from './entities/billing-invoice.entity';
 import { MonobankClient } from './monobank.client';
+import { PhotoPackController } from './photo-pack.controller';
+import { PhotoPackService } from './photo-pack.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([BillingAccount, BillingInvoice]), AuditModule, AuthModule],
-  controllers: [BillingAdminController, BillingWebhookController],
+  controllers: [BillingAdminController, BillingWebhookController, PhotoPackController],
   providers: [
     {
       provide: BILLING_SETTINGS,
@@ -22,6 +24,7 @@ import { MonobankClient } from './monobank.client';
     },
     MonobankClient,
     BillingService,
+    PhotoPackService,
   ],
   exports: [BillingService],
 })

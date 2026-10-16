@@ -6,6 +6,7 @@ import { SectionCard } from '@/components/admin/ui/section-card';
 import { TextField } from '@/components/admin/ui/field';
 import { Banner } from '@/components/admin/ui/banner';
 import { photoAiSettingsApi, type PhotoAiAccessMode } from '@/lib/admin/photo-ai';
+import { PhotoPackPanel } from './photo-pack-panel';
 
 const button =
   'focus-ring min-h-11 border border-line-input px-4 py-2 text-sm font-medium text-ink disabled:opacity-50';
@@ -85,7 +86,9 @@ export function PhotoAiSettings() {
 
   return (
     <SectionCard title={t('title')}>
-      <p className="mb-4 text-sm leading-relaxed text-ink-2">{t('description')}</p>
+      <p className="mb-4 text-sm leading-relaxed text-ink-2">
+        {metadata?.mode === 'managed' ? t('managed.description') : t('description')}
+      </p>
       {query.isPending && (
         <p role="status" className="text-sm text-ink-3">
           {t('loading')}
@@ -104,27 +107,33 @@ export function PhotoAiSettings() {
       {metadata && (
         <div className="space-y-4">
           <p className="text-sm text-ink-2" role="status">
-            {t(`status.${metadata.status}`)}
+            {metadata.mode === 'managed'
+              ? t(`managed.status.${metadata.status === 'ready' ? 'ready' : 'disabled'}`)
+              : t(`status.${metadata.status}`)}
           </p>
           {!metadata.setupAvailable && <Banner tone="info">{t('setupUnavailable')}</Banner>}
-          <TextField
-            label={t('key')}
-            hint={t(metadata.configured ? 'replaceHint' : 'keyHint')}
-            type="password"
-            autoComplete="new-password"
-            spellCheck={false}
-            autoCapitalize="none"
-            maxLength={512}
-            value={apiKey}
-            disabled={busy || !metadata.setupAvailable}
-            onChange={(e) => setApiKey(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                if (!busy && metadata.setupAvailable) void save();
-              }
-            }}
-          />
+          {metadata.mode === 'managed' ? (
+            <p className="text-sm text-ink-2">{t('managed.keyProvided')}</p>
+          ) : (
+            <TextField
+              label={t('key')}
+              hint={t(metadata.configured ? 'replaceHint' : 'keyHint')}
+              type="password"
+              autoComplete="new-password"
+              spellCheck={false}
+              autoCapitalize="none"
+              maxLength={512}
+              value={apiKey}
+              disabled={busy || !metadata.setupAvailable}
+              onChange={(e) => setApiKey(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  if (!busy && metadata.setupAvailable) void save();
+                }
+              }}
+            />
+          )}
           <label className="flex items-start gap-3 text-sm text-ink">
             <input
               type="checkbox"
@@ -187,7 +196,9 @@ export function PhotoAiSettings() {
               </fieldset>
             )}
           </div>
-          <p className="text-xs leading-relaxed text-ink-3">{t('billing')}</p>
+          {metadata.mode !== 'managed' && (
+            <p className="text-xs leading-relaxed text-ink-3">{t('billing')}</p>
+          )}
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
@@ -201,7 +212,7 @@ export function PhotoAiSettings() {
             >
               {busy ? t('saving') : t('save')}
             </button>
-            {metadata.configured && (
+            {metadata.mode !== 'managed' && metadata.configured && (
               <button
                 type="button"
                 className={button}
@@ -212,6 +223,7 @@ export function PhotoAiSettings() {
               </button>
             )}
           </div>
+          {metadata.mode === 'managed' && <PhotoPackPanel />}
           {removing && (
             <div className="border border-danger-line bg-danger-bg p-3 text-sm text-danger">
               <p>{t('removeConfirm')}</p>

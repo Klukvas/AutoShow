@@ -203,7 +203,7 @@ function InvoiceRow({
       <span className="w-[150px] text-ink-2">{formatBillingDate(invoice.createdAt)}</span>
       <span className="w-[90px] text-ink">{formatUah(invoice.amountUah)}</span>
       <span className="w-[90px] text-ink-3">
-        {t('periodValue', { months: invoice.periodMonths })}
+        {t('periodValue', { months: invoice.periodMonths ?? 0 })}
       </span>
       <span className={cn('flex-1', INVOICE_TONE[invoice.status] ?? 'text-ink-2')}>
         {t(`invoiceStatus.${invoice.status}`)}

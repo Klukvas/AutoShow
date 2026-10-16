@@ -49,6 +49,7 @@ export class BillingAdminController {
   @ApiOperation({ summary: 'Re-check an invoice with Monobank and credit it if paid' })
   sync(@Param('invoiceId') invoiceId: string, @CurrentUser() user: AuthenticatedUser) {
     if (!isValidInvoiceId(invoiceId)) throw new BadRequestException('Некоректний номер рахунку');
-    return this.billing.syncInvoice(invoiceId, user);
+    // Hosting only: photo packs have their own (non-allowlisted) endpoint.
+    return this.billing.syncInvoice(invoiceId, user, 'hosting');
   }
 }

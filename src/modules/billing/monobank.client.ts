@@ -20,6 +20,8 @@ export interface CreateInvoiceInput {
   amountKop: number;
   reference: string;
   destination: string;
+  /** Overrides the default return page (hosting billing). */
+  redirectUrl?: string;
 }
 
 /** Monobank call failed — message is safe to log (never contains the token). */
@@ -47,7 +49,7 @@ export class MonobankClient {
       amount: input.amountKop,
       ccy: UAH_CCY,
       merchantPaymInfo: { reference: input.reference, destination: input.destination },
-      redirectUrl: this.settings.redirectUrl,
+      redirectUrl: input.redirectUrl ?? this.settings.redirectUrl,
       webHookUrl: this.settings.webhookUrl,
       validity: INVOICE_VALIDITY_SECONDS,
       paymentType: 'debit',

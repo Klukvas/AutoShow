@@ -17,6 +17,7 @@ import {
   PhotoAiProvider,
 } from '../modules/photo-ai/photo-ai.provider';
 import { PhotoAiService } from '../modules/photo-ai/photo-ai.service';
+import { PhotoCreditsService } from '../modules/photo-ai/photo-credits.service';
 import {
   generationKeys,
   type PhotoAiManifest,
@@ -37,6 +38,7 @@ export class PhotoAiWorker extends WorkerHost implements OnModuleInit {
     @InjectQueue(PHOTO_AI_QUEUE) private readonly queue: Queue,
     @Inject('APP_CONFIG') private readonly config: AppConfig,
     private readonly access: PhotoAiAccessService,
+    private readonly credits: PhotoCreditsService,
   ) {
     super();
   }
@@ -52,6 +54,30 @@ export class PhotoAiWorker extends WorkerHost implements OnModuleInit {
     }
     const row = await this.claim(job.data.generationId);
     if (!row) return;
+    try {
+      await this.generate(row);
+    } finally {
+      // Charge only a `ready` result; every other ending gives the photo back.
+      // Still processing (e.g. re-queued with stored output) → nothing yet.
+      await this.settleQuietly(row.id);
+    }
+  }
+
+  private async settleQuietly(generationId: string): Promise<void> {
+    try {
+      const current = await this.generations.findOne({
+        where: { id: generationId },
+        withDeleted: true,
+      });
+      await this.credits.settle(generationId, current?.status ?? null);
+    } catch (error) {
+      // The recovery sweep settles it later; never fail the job over this.
+      const reason = error instanceof Error ? error.message : String(error);
+      this.logger.warn({ generationId, reason }, 'photo AI settlement deferred to recovery');
+    }
+  }
+
+  private async generate(row: PhotoAiGeneration): Promise<void> {
     const keys = generationKeys(row.listingId, row.mediaId, row.id);
     try {
       await this.photos.liveMedia(this.generations.manager, row.mediaId);
@@ -185,6 +211,19 @@ export class PhotoAiWorker extends WorkerHost implements OnModuleInit {
   }
 
   async recover(): Promise<void> {
+    try {
+      await this.recoverGenerations();
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      this.logger.error({ reason }, 'photo AI generation recovery failed');
+    } finally {
+      // After the status repairs above (even if they failed part-way): settle
+      // reservations left open by a crash between a terminal status and its settlement.
+      await this.credits.sweep();
+    }
+  }
+
+  private async recoverGenerations(): Promise<void> {
     const terminal = await this.generations.find({
       where: [
         {

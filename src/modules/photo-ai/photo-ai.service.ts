@@ -27,6 +27,7 @@ import { PhotoAiPreset } from './entities/photo-ai-preset.entity';
 import type { ApplyPhotoAiDto, GeneratePhotoAiDto, SavePhotoAiPresetDto } from './photo-ai.dto';
 import { BUILTIN_PHOTO_PRESETS, protectedPrompt } from './photo-ai.prompts';
 import { PhotoAiProvider } from './photo-ai.provider';
+import { PhotoCreditsService } from './photo-credits.service';
 import { generationKeys } from './photo-ai.types';
 
 @Injectable()
@@ -42,6 +43,7 @@ export class PhotoAiService {
     private readonly audit: AuditLogService,
     @Inject('APP_CONFIG') private readonly config: AppConfig,
     private readonly access: PhotoAiAccessService,
+    private readonly credits: PhotoCreditsService,
   ) {}
 
   async liveMedia(em: EntityManager, mediaId: string, lock = false): Promise<ListingMedia> {
@@ -82,7 +84,7 @@ export class PhotoAiService {
     const history = active ? [...recent, active] : recent;
     return {
       ...permission,
-      ...(await this.provider.availability()),
+      ...(await this.availabilityFor(actor)),
       mediaId,
       revision: media.aiRevision,
       activeGenerationId: media.activeAiVariant?.generationId ?? null,
@@ -95,6 +97,13 @@ export class PhotoAiService {
         take: 50,
       }),
     };
+  }
+
+  /** Credential availability, plus (managed mode) whether any photos are left. */
+  private async availabilityFor(actor: AuthenticatedUser) {
+    const availability = await this.provider.availability();
+    if (!availability.enabled || (await this.credits.hasCredit())) return availability;
+    return { enabled: false, reason: this.credits.exhaustedReason(actor.role) };
   }
 
   generationView(g: PhotoAiGeneration) {
@@ -157,6 +166,8 @@ export class PhotoAiService {
           status: 'queued',
         }),
       );
+      // Managed mode: hold one photo for this job (402 + rollback when none left).
+      await this.credits.reserve(em, row.id, actor);
       await this.audit.record(
         {
           action: 'photo_ai.generate',

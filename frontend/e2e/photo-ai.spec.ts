@@ -160,6 +160,7 @@ async function fixture(
     presets: [],
   };
   const settings: PhotoAiSettingsMetadata = {
+    mode: 'own_key',
     accessMode: 'all',
     selectedEditorIds: [],
     configured: false,

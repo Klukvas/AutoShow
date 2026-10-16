@@ -41,7 +41,10 @@ export interface BillingInvoice {
   invoiceId: string;
   amountUah: number;
   status: InvoiceStatus;
-  periodMonths: number;
+  /** Hosting invoices only. */
+  periodMonths: number | null;
+  /** Photo-AI packs only. */
+  photos: number | null;
   createdAt: string;
   creditedAt: string | null;
   pageUrl: string | null;

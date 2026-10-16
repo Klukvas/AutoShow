@@ -16,6 +16,8 @@ import { PhotoAiPreset } from './entities/photo-ai-preset.entity';
 import { PhotoAiController } from './photo-ai.controller';
 import { PhotoAiProvider } from './photo-ai.provider';
 import { PhotoAiService } from './photo-ai.service';
+import { PhotoCreditsService } from './photo-credits.service';
+import { PhotoAiBalance } from './entities/photo-ai-balance.entity';
 
 @Module({
   imports: [
@@ -25,6 +27,7 @@ import { PhotoAiService } from './photo-ai.service';
       PhotoAiGeneration,
       PhotoAiPreset,
       PhotoAiSettings,
+      PhotoAiBalance,
       AdminUser,
     ]),
     BullModule.registerQueue({ name: PHOTO_AI_QUEUE }),
@@ -32,7 +35,19 @@ import { PhotoAiService } from './photo-ai.service';
     AuditModule,
   ],
   controllers: [PhotoAiController, PhotoAiSettingsController],
-  providers: [PhotoAiService, PhotoAiProvider, PhotoAiCredentialsService, PhotoAiAccessService],
-  exports: [PhotoAiService, PhotoAiProvider, PhotoAiAccessService, TypeOrmModule],
+  providers: [
+    PhotoAiService,
+    PhotoAiProvider,
+    PhotoAiCredentialsService,
+    PhotoAiAccessService,
+    PhotoCreditsService,
+  ],
+  exports: [
+    PhotoAiService,
+    PhotoAiProvider,
+    PhotoAiAccessService,
+    PhotoCreditsService,
+    TypeOrmModule,
+  ],
 })
 export class PhotoAiModule {}

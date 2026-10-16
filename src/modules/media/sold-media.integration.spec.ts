@@ -100,6 +100,7 @@ integration('sold listing media (real PostgreSQL locks)', () => {
         requireAllowed: async () => undefined,
         permission: async () => ({ permitted: true }),
       } as never,
+      { reserve: async () => undefined, hasCredit: async () => true } as never,
     );
     service = new MediaService(
       db.getRepository(ListingMedia),

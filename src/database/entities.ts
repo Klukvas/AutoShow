@@ -1,6 +1,8 @@
 import { PhotoAiSettings } from '../modules/photo-ai/entities/photo-ai-settings.entity';
 import { PhotoAiGeneration } from '../modules/photo-ai/entities/photo-ai-generation.entity';
 import { PhotoAiPreset } from '../modules/photo-ai/entities/photo-ai-preset.entity';
+import { PhotoAiBalance } from '../modules/photo-ai/entities/photo-ai-balance.entity';
+import { PhotoAiLedgerEntry } from '../modules/photo-ai/entities/photo-ai-ledger-entry.entity';
 import { AdminUser } from '../modules/admin-users/entities/admin-user.entity';
 import { AuditLog } from '../modules/audit/entities/audit-log.entity';
 import { BillingAccount } from '../modules/billing/entities/billing-account.entity';
@@ -58,4 +60,6 @@ export const ALL_ENTITIES = [
   Collection,
   BillingAccount,
   BillingInvoice,
+  PhotoAiBalance,
+  PhotoAiLedgerEntry,
 ];

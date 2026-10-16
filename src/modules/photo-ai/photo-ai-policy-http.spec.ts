@@ -50,6 +50,7 @@ describe('Actual live policy HTTP enforcement', () => {
       {} as never,
       {} as never,
       access,
+      { reserve: async () => undefined, hasCredit: async () => true } as never,
     );
     const module = await Test.createTestingModule({
       controllers: [PhotoAiController, PhotoAiSettingsController],

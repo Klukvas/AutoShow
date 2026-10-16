@@ -11,9 +11,15 @@ const goodSign = sign('sha256', body, privateKey).toString('base64');
 function setup(isEnabled = true) {
   const verifier = new MonobankSignatureVerifier(async () => pem);
   const monobank = { verifyWebhook: (raw: Buffer, s: string) => verifier.verify(raw, s) };
-  const billing = { isEnabled, handleWebhook: jest.fn().mockResolvedValue('credited') };
+  const billing = {
+    isMonobankConfigured: isEnabled,
+    handleWebhook: jest.fn().mockResolvedValue('credited'),
+  };
   const controller = new BillingWebhookController(billing as never, monobank as never);
-  return { controller, billing };
+  const logError = jest
+    .spyOn((controller as unknown as { logger: { error: () => void } }).logger, 'error')
+    .mockImplementation(() => undefined);
+  return { controller, billing, logError };
 }
 
 const request = (rawBody: Buffer | undefined) => ({ rawBody }) as never;
@@ -45,9 +51,10 @@ describe('BillingWebhookController', () => {
     expect(billing.handleWebhook).not.toHaveBeenCalled();
   });
 
-  it('acknowledges but ignores webhooks while billing is disabled', async () => {
-    const { controller, billing } = setup(false);
+  it('acknowledges but loudly logs webhooks when Monobank is not configured', async () => {
+    const { controller, billing, logError } = setup(false);
     await expect(controller.webhook(request(body), 'whatever')).resolves.toEqual({ ok: true });
     expect(billing.handleWebhook).not.toHaveBeenCalled();
+    expect(logError).toHaveBeenCalledWith(expect.stringContaining('MONOBANK_TOKEN'));
   });
 });

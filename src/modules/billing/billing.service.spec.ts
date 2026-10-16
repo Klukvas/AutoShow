@@ -3,6 +3,16 @@ import type { BillingSettings } from './billing.config';
 import { BillingService } from './billing.service';
 import type { BillingInvoice } from './entities/billing-invoice.entity';
 import type { MonobankInvoiceStatusInfo } from './monobank.types';
+import * as photoStore from '../photo-ai/photo-credits.store';
+
+// Photo-pack effects go to the photo ledger; their SQL is covered by
+// photo-credits.integration.spec.ts — here only the calls matter.
+jest.mock('../photo-ai/photo-credits.store', () => ({
+  ...jest.requireActual('../photo-ai/photo-credits.store'),
+  creditPack: jest.fn().mockResolvedValue(true),
+  refundPack: jest.fn().mockResolvedValue(true),
+}));
+const photoLedger = photoStore as jest.Mocked<typeof photoStore>;
 
 const settings: BillingSettings = {
   isEnabled: true,
@@ -14,6 +24,13 @@ const settings: BillingSettings = {
   monobankToken: 'token',
   webhookUrl: 'https://site.example/api/billing/monobank/webhook',
   redirectUrl: 'https://site.example/admin/billing?returned=1',
+  photoPacks: {
+    isEnabled: false,
+    size: 0,
+    priceUah: 0,
+    freePhotos: 0,
+    redirectUrl: 'https://site.example/admin/branding?photoPackReturned=1',
+  },
 };
 
 const admin: AuthenticatedUser = { id: 'admin-1', email: 'a@x', role: 'admin' };
@@ -32,7 +49,9 @@ function makeDb(paidUntil: Date | null, invoice: Partial<BillingInvoice> = {}) {
       amountKop: 50_000,
       ccy: 980,
       status: 'created',
+      kind: 'hosting',
       periodMonths: 1,
+      photos: null,
       pageUrl: 'https://pay.mbnk.biz/p2_abc',
       createdBy: admin.id,
       createdAt: new Date('2026-10-16T08:00:00Z'),
@@ -52,6 +71,7 @@ function makeDb(paidUntil: Date | null, invoice: Partial<BillingInvoice> = {}) {
     update: jest.fn(async (_criteria: unknown, patch: Partial<BillingInvoice>) => {
       state.invoice = { ...state.invoice, ...patch };
     }),
+    findOneOrFail: jest.fn(async () => ({ ...state.invoice })),
     insert: jest.fn().mockResolvedValue(undefined),
     find: jest.fn(async () => [{ ...state.invoice }]),
   };
@@ -598,5 +618,200 @@ describe('BillingService.createInvoice', () => {
 
     await expect(service.createInvoice(admin)).rejects.toThrow('вимкнено');
     expect(monobank.createInvoice).not.toHaveBeenCalled();
+  });
+});
+
+const managedPacks = {
+  photoPacks: { ...settings.photoPacks, isEnabled: true, size: 50, priceUah: 300 },
+};
+const packInvoice = {
+  kind: 'photo_pack' as const,
+  photos: 50,
+  periodMonths: null,
+  amountKop: 30_000,
+};
+const packStatus = (overrides: Partial<MonobankInvoiceStatusInfo> = {}) =>
+  status({ amount: 30_000, ...overrides });
+
+describe('BillingService photo packs', () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it('credits a paid pack to the photo balance and leaves hosting untouched', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'), packInvoice);
+    const { service, audit } = makeService(db, managedPacks);
+
+    await expect(service.applyStatus(packStatus(), null, NOW)).resolves.toBe('credited');
+
+    expect(photoLedger.creditPack).toHaveBeenCalledWith(expect.anything(), 'p2_abc', 50, null);
+    expect(db.state.accountWrites).toBe(0);
+    expect(db.state.paidUntil?.toISOString()).toBe('2026-10-20T00:00:00.000Z');
+    expect(db.state.invoice.creditedAt).toEqual(NOW);
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'billing.photo_pack_credited' }),
+      expect.anything(),
+    );
+  });
+
+  it('credits a pack once however many webhooks/syncs repeat', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'), packInvoice);
+    const { service } = makeService(db, managedPacks);
+    await service.applyStatus(packStatus(), null, NOW);
+    await service.applyStatus(packStatus(), null, NOW);
+    await service.applyStatus(packStatus({ modifiedDate: null }), null, NOW);
+    expect(photoLedger.creditPack).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not credit a pack paid with the wrong amount', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'), packInvoice);
+    const { service, audit } = makeService(db, managedPacks);
+    await expect(service.applyStatus(packStatus({ amount: 100 }), null, NOW)).resolves.toBe(
+      'mismatch',
+    );
+    expect(photoLedger.creditPack).not.toHaveBeenCalled();
+    expect(audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ action: 'billing.payment_mismatch' }),
+      expect.anything(),
+    );
+  });
+
+  it('removes a refunded pack once and never touches paid_until', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'), packInvoice);
+    const { service, audit } = makeService(db, managedPacks);
+    await service.applyStatus(packStatus(), null, NOW);
+    const refund = (minute: number) =>
+      packStatus({ status: 'reversed', modifiedDate: new Date(`2026-10-16T09:${minute}:00Z`) });
+
+    await expect(service.applyStatus(refund(30), null, NOW)).resolves.toBe('reversed');
+    await service.applyStatus(refund(30), null, NOW);
+    await service.applyStatus(refund(31), null, NOW);
+
+    expect(photoLedger.refundPack).toHaveBeenCalledTimes(1);
+    expect(photoLedger.refundPack).toHaveBeenCalledWith(expect.anything(), 'p2_abc', 50, null);
+    expect(db.state.accountWrites).toBe(0);
+    expect(
+      audit.record.mock.calls.filter(
+        ([entry]) => (entry as { action: string }).action === 'billing.photo_pack_reversed',
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('processes webhooks for packs while hosting billing is disabled', async () => {
+    const db = makeDb(null, packInvoice);
+    const { service, monobank } = makeService(db, { isEnabled: false, ...managedPacks });
+    monobank.getInvoiceStatus.mockResolvedValue(packStatus());
+
+    expect(service.isMonobankConfigured).toBe(true);
+    await expect(service.handleWebhook('p2_abc')).resolves.toBe('credited');
+    await expect(service.isBlocked(NOW)).resolves.toBe(false); // hosting still off
+  });
+
+  it('still credits a pack paid after switching back to own_key (token still configured)', async () => {
+    const db = makeDb(null, packInvoice);
+    const { service, monobank } = makeService(db, { isEnabled: false }); // packs off too
+    monobank.getInvoiceStatus.mockResolvedValue(packStatus());
+    await expect(service.handleWebhook('p2_abc')).resolves.toBe('credited');
+    expect(photoLedger.creditPack).toHaveBeenCalledTimes(1);
+  });
+
+  it('ignores webhooks only when no Monobank token is configured', async () => {
+    const db = makeDb(null, packInvoice);
+    const { service, monobank } = makeService(db, { isEnabled: false, monobankToken: '' });
+    await expect(service.handleWebhook('p2_abc')).resolves.toBe('ignored');
+    expect(monobank.getInvoiceStatus).not.toHaveBeenCalled();
+  });
+
+  it('refuses to sync a hosting invoice while hosting billing is off (managed packs on)', async () => {
+    const db = makeDb(null); // hosting invoice fixture
+    const { service, monobank } = makeService(db, { isEnabled: false, ...managedPacks });
+    await expect(service.syncInvoice('p2_abc', admin, 'hosting')).rejects.toThrow(
+      'Оплату обслуговування вимкнено',
+    );
+    await expect(service.syncInvoice('p2_abc', admin)).rejects.toThrow(
+      'Оплату обслуговування вимкнено',
+    );
+    expect(monobank.getInvoiceStatus).not.toHaveBeenCalled();
+    expect(db.state.accountWrites).toBe(0);
+  });
+
+  it('ignores a hosting webhook while hosting billing is off, but still credits packs', async () => {
+    const hosting = makeDb(null); // hosting invoice fixture, no account row
+    const off = makeService(hosting, { isEnabled: false, ...managedPacks });
+    await expect(off.service.handleWebhook('p2_abc')).resolves.toBe('ignored');
+    expect(off.monobank.getInvoiceStatus).not.toHaveBeenCalled();
+    expect(hosting.state.accountWrites).toBe(0);
+    expect(hosting.state.paidUntil).toBeNull();
+
+    const pack = makeDb(null, packInvoice);
+    const packs = makeService(pack, { isEnabled: false, ...managedPacks });
+    packs.monobank.getInvoiceStatus.mockResolvedValue(packStatus());
+    await expect(packs.service.handleWebhook('p2_abc')).resolves.toBe('credited');
+    expect(photoLedger.creditPack).toHaveBeenCalledTimes(1);
+  });
+
+  it('never credits or reverses hosting time while hosting billing is off', async () => {
+    const db = makeDb(null);
+    const { service } = makeService(db, { isEnabled: false, ...managedPacks });
+    await expect(service.applyStatus(status(), null, NOW)).resolves.toBe('updated');
+    await expect(
+      service.applyStatus(
+        status({ status: 'reversed', modifiedDate: new Date('2026-10-16T09:30:00Z') }),
+        null,
+        NOW,
+      ),
+    ).resolves.toBe('updated');
+    expect(db.state.accountWrites).toBe(0);
+    expect(db.state.paidUntil).toBeNull();
+    expect(db.state.invoice.creditedAt).toBeNull();
+  });
+
+  it('syncs a pack invoice while hosting billing is off', async () => {
+    const db = makeDb(null, packInvoice);
+    const { service, monobank } = makeService(db, { isEnabled: false, ...managedPacks });
+    monobank.getInvoiceStatus.mockResolvedValue(packStatus());
+    await expect(service.syncInvoice('p2_abc', admin, 'photo_pack')).resolves.toMatchObject({
+      status: 'success',
+    });
+    expect(photoLedger.creditPack).toHaveBeenCalledTimes(1);
+  });
+
+  it('stores a pack invoice with its photo count and the photo-AI return page', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'));
+    const { service, monobank } = makeService(db, managedPacks);
+    monobank.createInvoice.mockResolvedValue({
+      invoiceId: 'p2_pack',
+      pageUrl: 'https://pay.mbnk.biz/p2_pack',
+    });
+
+    await service.createMonobankInvoice(
+      {
+        kind: 'photo_pack',
+        amountKop: 30_000,
+        destination: 'pack',
+        periodMonths: null,
+        photos: 50,
+        redirectUrl: managedPacks.photoPacks.redirectUrl,
+      },
+      admin,
+    );
+
+    expect(monobank.createInvoice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        amountKop: 30_000,
+        redirectUrl: managedPacks.photoPacks.redirectUrl,
+      }),
+    );
+    expect(db.repo.insert).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'photo_pack', photos: 50, periodMonths: null }),
+    );
+  });
+
+  it('syncs only invoices of the requested kind', async () => {
+    const db = makeDb(new Date('2026-10-20T00:00:00Z'), packInvoice);
+    const { service } = makeService(db, managedPacks);
+    db.repo.findOne.mockImplementation(
+      async ({ where }: { where: { invoiceId: string; kind?: string } }) =>
+        where.kind && where.kind !== 'photo_pack' ? null : { ...db.state.invoice },
+    );
+    await expect(service.syncInvoice('p2_abc', admin, 'hosting')).rejects.toThrow('не знайдено');
   });
 });
