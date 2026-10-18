@@ -26,7 +26,7 @@ export function CompareBar() {
     <AnimatePresence>
       {visible && (
         <motion.div
-          className="pointer-events-none fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4"
+          className="compare-tray pointer-events-none fixed inset-x-0 bottom-[max(1rem,env(safe-area-inset-bottom))] z-40 flex justify-center px-4"
           initial={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}
           animate={reduce ? { opacity: 1 } : { opacity: 1, y: 0, scale: 1 }}
           exit={reduce ? { opacity: 0 } : { opacity: 0, y: 24, scale: 0.96 }}

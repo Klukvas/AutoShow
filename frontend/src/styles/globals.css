@@ -676,3 +676,13 @@ html.lenis body {
 
 .homepage-cinematic .home-stats-inner { max-width: 1600px; padding-inline: clamp(24px, 3.75vw, 64px); grid-template-columns: repeat(auto-fit, minmax(min(100%, 6rem), 1fr)); }
 .homepage-cinematic .home-stats-value { font-weight: 300; font-size: clamp(32px, 3vw, 46px); }
+
+/* Listing pages pin a CTA bar to the bottom on phones (md:hidden); the compare
+   tray floats above it instead of covering it. 5rem = the bar's pt-3 + 52px
+   button + 1px border + a 15px gap; its bottom padding is added the same way
+   the bar computes it. The query is the exact complement of Tailwind's md. */
+@media not all and (min-width: 768px) {
+  body:has([data-mobile-cta-bar]) .compare-tray {
+    bottom: calc(5rem + max(12px, env(safe-area-inset-bottom)));
+  }
+}

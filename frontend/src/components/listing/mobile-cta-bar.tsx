@@ -24,7 +24,10 @@ export function MobileCtaBar({
   if (!phoneHref && !acceptsLeads) return null;
 
   return (
-    <div className="material-bar fixed inset-x-0 bottom-0 z-40 border-t border-line px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 shadow-none md:hidden">
+    <div
+      data-mobile-cta-bar
+      className="material-bar fixed inset-x-0 bottom-0 z-40 border-t border-line px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 shadow-none md:hidden"
+    >
       <div className="flex items-center gap-2.5">
         {phoneHref && (
           <a
