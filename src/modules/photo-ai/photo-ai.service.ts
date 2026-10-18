@@ -25,7 +25,12 @@ import { PHOTO_AI_QUEUE } from '../../workers/queue.tokens';
 import { PhotoAiGeneration } from './entities/photo-ai-generation.entity';
 import { PhotoAiPreset } from './entities/photo-ai-preset.entity';
 import type { ApplyPhotoAiDto, GeneratePhotoAiDto, SavePhotoAiPresetDto } from './photo-ai.dto';
-import { BUILTIN_PHOTO_PRESETS, protectedPrompt } from './photo-ai.prompts';
+import {
+  builtinPreset,
+  effectivePrompt,
+  legacyBuiltinId,
+  publicBuiltins,
+} from './photo-ai.prompts';
 import { PhotoAiProvider } from './photo-ai.provider';
 import { PhotoCreditsService } from './photo-credits.service';
 import { generationKeys } from './photo-ai.types';
@@ -90,7 +95,7 @@ export class PhotoAiService {
       activeGenerationId: media.activeAiVariant?.generationId ?? null,
       originalUrl: this.storage.publicUrlFor(media.originalS3Key),
       history: history.map((g) => this.generationView(g)),
-      builtins: BUILTIN_PHOTO_PRESETS,
+      builtins: publicBuiltins(),
       presets: await this.presets.find({
         where: { actorId: actor.id },
         order: { createdAt: 'DESC' },
@@ -107,10 +112,16 @@ export class PhotoAiService {
   }
 
   generationView(g: PhotoAiGeneration) {
+    // Builtin instructions are never shown: a preset run shows its name plus
+    // the owner's own wishes, including rows saved before presets had ids.
+    const legacyId = g.presetId ? undefined : legacyBuiltinId(g.prompt);
+    const presetId = g.presetId ?? legacyId ?? null;
     return {
       id: g.id,
       category: g.category,
-      prompt: g.prompt,
+      presetId,
+      presetName: presetId ? (builtinPreset(presetId)?.name ?? null) : null,
+      prompt: legacyId ? '' : g.prompt,
       status: g.status,
       failureReason: g.failureReason,
       createdAt: g.createdAt,
@@ -121,8 +132,16 @@ export class PhotoAiService {
 
   async generate(mediaId: string, dto: GeneratePhotoAiDto, actor: AuthenticatedUser) {
     await this.access.requireAllowed(actor.id);
+    const request = this.resolveRequest(dto);
     const fingerprint = createHash('sha256')
-      .update(JSON.stringify([mediaId, dto.category, dto.prompt]))
+      // Plain prompts keep the pre-preset shape so in-flight retries still match.
+      .update(
+        JSON.stringify(
+          request.presetId
+            ? [mediaId, dto.category, request.presetId, request.prompt]
+            : [mediaId, dto.category, request.prompt],
+        ),
+      )
       .digest('hex');
     const row = await this.generations.manager.transaction(async (em) => {
       await em.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`photo-ai:${actor.id}`]);
@@ -160,8 +179,9 @@ export class PhotoAiService {
           requestId: dto.requestId,
           fingerprint,
           category: dto.category,
-          prompt: dto.prompt,
-          effectivePrompt: protectedPrompt(dto.prompt, dto.category),
+          presetId: request.presetId,
+          prompt: request.prompt,
+          effectivePrompt: request.effectivePrompt,
           sourceS3Key: media.originalS3Key,
           status: 'queued',
         }),
@@ -190,6 +210,32 @@ export class PhotoAiService {
       }
     }
     return this.generationView(row);
+  }
+
+  /** Resolves a builtin preset server-side, so its instructions never travel to the client. */
+  private resolveRequest(dto: GeneratePhotoAiDto) {
+    const prompt = dto.prompt?.trim() ?? '';
+    if (!dto.presetId) {
+      if (prompt.length < 5)
+        throw new BadRequestException('Опишіть, що змінити на фото, щонайменше 5 символами.');
+      return {
+        presetId: null,
+        prompt,
+        effectivePrompt: effectivePrompt({ category: dto.category, ownerRequest: prompt }),
+      };
+    }
+    const preset = builtinPreset(dto.presetId);
+    if (!preset || preset.category !== dto.category)
+      throw new BadRequestException('Пресет не відповідає вибраному режиму.');
+    return {
+      presetId: preset.id,
+      prompt,
+      effectivePrompt: effectivePrompt({
+        category: preset.category,
+        presetInstructions: preset.instructions,
+        ownerRequest: prompt,
+      }),
+    };
   }
 
   async enqueue(id: string): Promise<void> {

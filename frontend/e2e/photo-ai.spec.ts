@@ -11,57 +11,19 @@ import type {
 
 let server: Server;
 let origin = '';
-const presets = [
-  {
-    id: 'natural',
-    category: 'enhance' as const,
-    name: 'Природне покращення',
-    prompt: 'Improve exposure naturally.',
-  },
-  { id: 'dark', category: 'enhance' as const, name: 'Темне фото', prompt: 'Recover dark areas.' },
-  {
-    id: 'interior',
-    category: 'enhance' as const,
-    name: 'Салон',
-    prompt: 'Balance interior exposure.',
-  },
-  {
-    id: 'consistent',
-    category: 'enhance' as const,
-    name: 'Єдиний стиль оголошення',
-    prompt: 'Use consistent neutral exposure.',
-  },
-  {
-    id: 'studio',
-    category: 'scene' as const,
-    name: 'Світла студія',
-    prompt: 'Bright studio scene.',
-  },
-  {
-    id: 'golden',
-    category: 'scene' as const,
-    name: 'Золота година',
-    prompt: 'Golden hour sunlight.',
-  },
-  {
-    id: 'morning',
-    category: 'scene' as const,
-    name: 'Місто вранці',
-    prompt: 'Morning city scene.',
-  },
-  {
-    id: 'evening',
-    category: 'scene' as const,
-    name: 'Вечірнє місто',
-    prompt: 'Evening city scene.',
-  },
-  {
-    id: 'concrete',
-    category: 'scene' as const,
-    name: 'Мінімалістичний бетон',
-    prompt: 'Concrete architecture.',
-  },
-];
+const presets = (
+  [
+    ['natural', 'enhance', 'Природне покращення'],
+    ['dark', 'enhance', 'Темне фото'],
+    ['interior', 'enhance', 'Салон'],
+    ['consistent', 'enhance', 'Єдиний стиль оголошення'],
+    ['studio', 'scene', 'Світла студія'],
+    ['golden', 'scene', 'Золота година'],
+    ['morning', 'scene', 'Місто вранці'],
+    ['evening', 'scene', 'Вечірнє місто'],
+    ['concrete', 'scene', 'Мінімалістичний бетон'],
+  ] as const
+).map(([id, category, name]) => ({ id, category, name, description: `Опис пресету «${name}».` }));
 function picture(result = false) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800"><rect width="1200" height="800" fill="${result ? '#d6d8d4' : '#b2b8ba'}"/><path d="M0 620H1200" stroke="#777" stroke-width="4"/><path d="M180 545L260 420L770 420L880 530L1010 570L1010 640H140V585Z" fill="#273b49"/><path d="M290 435H745L823 528H242Z" fill="#9fc1cf"/><circle cx="310" cy="632" r="70" fill="#161e24"/><circle cx="856" cy="632" r="70" fill="#161e24"/><path d="M565 576L635 568" stroke="#ced7dc" stroke-width="4"/><text x="30" y="55" fill="#334" font-size="24">LOCAL TEST FIXTURE</text></svg>`;
 }
@@ -184,7 +146,8 @@ async function fixture(
   });
   const brandingCalls: object[] = [];
   const settingsCalls: object[] = [];
-  const calls: Array<{ requestId: string; prompt: string; category: string }> = [];
+  const calls: Array<{ requestId: string; prompt: string; category: string; presetId?: string }> =
+    [];
   let lost = lostResponse;
   await page.route('**/*', async (route) => {
     const url = new URL(route.request().url());
@@ -235,13 +198,19 @@ async function fixture(
       }
       if (url.pathname.endsWith('/generations')) {
         calls.push(body);
+        const preset = presets.find((p) => p.id === body.presetId);
         let generation = state.history.find(
-          (g) => g.prompt === body.prompt && g.category === body.category,
+          (g) =>
+            g.prompt === body.prompt &&
+            g.category === body.category &&
+            g.presetId === (body.presetId ?? null),
         );
         if (!generation) {
           generation = {
             id: `g${state.history.length}`,
             category: body.category,
+            presetId: preset?.id ?? null,
+            presetName: preset?.name ?? null,
             prompt: body.prompt,
             status: 'queued',
             failureReason: null,
@@ -398,6 +367,38 @@ test('disabled setup stays browsable and mobile keyboard focus/scroll are contai
   await expect(page.getByRole('button', { name: 'Редагувати з ШІ', exact: true })).toBeFocused();
   await expect(page.locator('body')).not.toHaveCSS('overflow', 'hidden');
 });
+test('our preset is sent by id with optional wishes; history shows its name, not instructions', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1080 });
+  const { calls } = await fixture(page);
+  await page.getByRole('button', { name: 'Змінити сцену', exact: true }).click();
+  const studio = page.getByRole('button', { name: 'Світла студія', exact: true });
+  await studio.click();
+  await expect(studio).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByText('Опис пресету «Світла студія».', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Назва пресету')).toHaveCount(0);
+  const wishes = page.getByLabel('Побажання до пресету (необов’язково)');
+  await expect(wishes).toHaveValue('');
+  await page.getByRole('button', { name: 'Створити варіант', exact: true }).click();
+  await expect.poll(() => calls.length).toBe(1);
+  expect(calls[0]).toMatchObject({ category: 'scene', presetId: 'studio', prompt: '' });
+  const history = page.getByRole('button', { name: /Світла студія/ }).filter({ hasText: 'Сцена' });
+  await expect(history).toBeVisible();
+  await wishes.fill('Темніша підлога');
+  await studio.click();
+  await expect(wishes).toHaveValue('Темніша підлога');
+  await expect(page.getByRole('group', { name: 'Готові пресети' })).toBeVisible();
+  await page
+    .getByRole('dialog')
+    .screenshot({ path: test.info().outputPath('photo-ai-builtin-preset.png') });
+
+  await page.getByRole('button', { name: 'Свій промпт', exact: true }).click();
+  await expect(studio).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByLabel('Інструкція для ШІ')).toBeVisible();
+  await expect(page.getByLabel('Назва пресету')).toBeVisible();
+});
+
 test('lost response retries the same paid request identity', async ({ page }) => {
   const { calls } = await fixture(page, true, true);
   await page.getByRole('button', { name: 'Природне покращення', exact: true }).click();

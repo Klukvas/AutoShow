@@ -10,7 +10,9 @@ import {
   photoAiApi,
   scenePrompt,
   generationAttempt,
+  generationLabel,
   type PhotoAiAttempt,
+  type PhotoAiBuiltin,
   type PhotoAiCategory,
   type PhotoAiPreset,
 } from '@/lib/admin/photo-ai';
@@ -33,6 +35,8 @@ export function PhotoAiWorkspace({
   const attempt = useRef<PhotoAiAttempt | null>(null);
   const [category, setCategory] = useState<PhotoAiCategory>('enhance');
   const [prompt, setPrompt] = useState('');
+  // Our preset is sent by id; while one is chosen, `prompt` holds optional wishes.
+  const [builtinId, setBuiltinId] = useState<string | null>(null);
   const [presetName, setPresetName] = useState('');
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reviewed, setReviewed] = useState(false);
@@ -82,19 +86,36 @@ export function PhotoAiWorkspace({
       setBusy(false);
     }
   }
+  function chooseBuiltin(preset: PhotoAiBuiltin) {
+    // Re-pressing the chosen preset must not wipe the wishes typed for it.
+    if (builtinId === preset.id) return;
+    setCategory(preset.category);
+    setBuiltinId(preset.id);
+    setPrompt('');
+    setConstructor(false);
+    setNotice(null);
+  }
+  function chooseOwn(text: string) {
+    setBuiltinId(null);
+    setPrompt(text);
+  }
   function choosePreset(preset: PhotoAiPreset) {
     setCategory(preset.category);
-    setPrompt(preset.prompt);
+    chooseOwn(preset.prompt);
     setConstructor(false);
     setNotice(null);
   }
   function chooseCategory(value: PhotoAiCategory) {
     setCategory(value);
+    setBuiltinId(null);
     setConstructor(false);
     // Manual instructions survive category switches; selection explicitly replaces them.
     if (prompt) setNotice(t('retainedPrompt'));
   }
-  const canGenerate = Boolean(data?.enabled && !inFlight && prompt.trim().length >= 5 && !busy);
+  const builtin = data?.builtins.find((preset) => preset.id === builtinId);
+  const canGenerate = Boolean(
+    data?.enabled && !inFlight && !busy && (builtin || prompt.trim().length >= 5),
+  );
 
   return (
     <Dialog
@@ -236,7 +257,9 @@ export function PhotoAiWorkspace({
                           minute: '2-digit',
                         })}
                       </span>
-                      <span className="block truncate text-xs text-ink-3">{g.prompt}</span>
+                      <span className="block truncate text-xs text-ink-3">
+                        {generationLabel(g)}
+                      </span>
                     </span>
                     <span className="shrink-0 text-xs">
                       {g.id === data.activeGenerationId ? t('applied') : t(`status.${g.status}`)}
@@ -263,19 +286,37 @@ export function PhotoAiWorkspace({
                 </button>
               ))}
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2" role="group" aria-label={t('presets')}>
               {data.builtins
                 .filter((preset) => preset.category === category)
                 .map((preset) => (
                   <button
                     key={preset.id}
-                    className={cn(button, 'text-left')}
-                    onClick={() => choosePreset(preset)}
+                    className={cn(
+                      button,
+                      'text-left',
+                      builtinId === preset.id && 'border-accent bg-accent/10 text-accent',
+                    )}
+                    aria-pressed={builtinId === preset.id}
+                    aria-describedby={
+                      builtinId === preset.id ? 'photo-ai-preset-description' : undefined
+                    }
+                    onClick={() => chooseBuiltin(preset)}
                   >
                     {preset.name}
                   </button>
                 ))}
             </div>
+            {builtin && (
+              <div className="flex items-start justify-between gap-3 border border-line p-3">
+                <p id="photo-ai-preset-description" className="text-sm text-ink-2">
+                  {builtin.description}
+                </p>
+                <button className={cn(button, 'shrink-0')} onClick={() => chooseOwn(prompt)}>
+                  {t('ownPrompt')}
+                </button>
+              </div>
+            )}
             {category === 'scene' && (
               <button
                 className={button}
@@ -322,13 +363,13 @@ export function PhotoAiWorkspace({
                 </Label>
                 <button
                   className={button}
-                  onClick={() => setPrompt(scenePrompt(background, time, lighting, extra))}
+                  onClick={() => chooseOwn(scenePrompt(background, time, lighting, extra))}
                 >
                   {t('buildPrompt')}
                 </button>
               </div>
             )}
-            <Label text={t('prompt')}>
+            <Label text={builtin ? t('wishes') : t('prompt')}>
               <textarea
                 className={input}
                 rows={6}
@@ -360,42 +401,49 @@ export function PhotoAiWorkspace({
                 </select>
               </Label>
             )}
-            <div className="flex items-end gap-2">
-              <div className="min-w-0 flex-1">
-                <Label text={t('presetName')}>
-                  <input
-                    className={input}
-                    maxLength={80}
-                    value={presetName}
-                    onChange={(e) => setPresetName(e.target.value)}
-                  />
-                </Label>
+            {!builtin && (
+              <div className="flex items-end gap-2">
+                <div className="min-w-0 flex-1">
+                  <Label text={t('presetName')}>
+                    <input
+                      className={input}
+                      maxLength={80}
+                      value={presetName}
+                      onChange={(e) => setPresetName(e.target.value)}
+                    />
+                  </Label>
+                </div>
+                <button
+                  className={button}
+                  disabled={busy || !presetName.trim() || prompt.trim().length < 5}
+                  onClick={() =>
+                    void action(async () => {
+                      await photoAiApi.savePreset({
+                        name: presetName.trim(),
+                        category,
+                        prompt: prompt.trim(),
+                      });
+                      await refresh();
+                      setPresetName('');
+                      setNotice(t('presetSaved'));
+                    })
+                  }
+                >
+                  {t('savePreset')}
+                </button>
               </div>
-              <button
-                className={button}
-                disabled={busy || !presetName.trim() || prompt.trim().length < 5}
-                onClick={() =>
-                  void action(async () => {
-                    await photoAiApi.savePreset({
-                      name: presetName.trim(),
-                      category,
-                      prompt: prompt.trim(),
-                    });
-                    await refresh();
-                    setPresetName('');
-                    setNotice(t('presetSaved'));
-                  })
-                }
-              >
-                {t('savePreset')}
-              </button>
-            </div>
+            )}
             <button
               className={cn(button, 'w-full bg-accent text-on-accent border-accent')}
               disabled={!canGenerate}
               onClick={() =>
                 void action(async () => {
-                  attempt.current = generationAttempt(attempt.current, category, prompt);
+                  attempt.current = generationAttempt(
+                    attempt.current,
+                    category,
+                    builtin?.id ?? null,
+                    prompt,
+                  );
                   const generation = await photoAiApi.generate(mediaId, attempt.current);
                   attempt.current = null;
                   setSelectedId(generation.id);

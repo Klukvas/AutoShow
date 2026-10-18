@@ -70,6 +70,10 @@ describe('PhotoAiController HTTP contract', () => {
       { requestId: id, category: 'scene', prompt: 'x'.repeat(4001) },
       { requestId: id, category: 'unknown', prompt: 'Studio' },
       { requestId: id, category: 'scene', prompt: 'Studio', sourceUrl: 'http://internal' },
+      { requestId: id, category: 'scene' },
+      { requestId: id, category: 'scene', presetId: 'not-a-preset' },
+      { requestId: id, category: 'scene', presetId: 'studio', prompt: 'x'.repeat(4001) },
+      { requestId: id, category: 'scene', presetId: 'studio', prompt: 42 },
     ]) {
       await request(app.getHttpServer())
         .post(`/api/admin/media/${id}/photo-ai/generations`)
@@ -78,6 +82,23 @@ describe('PhotoAiController HTTP contract', () => {
         .expect(400);
     }
     expect(service.generate).not.toHaveBeenCalled();
+  });
+  it('queues a builtin preset by id with or without owner wishes', async () => {
+    for (const body of [
+      { requestId: id, category: 'scene', presetId: 'studio' },
+      { requestId: id, category: 'scene', presetId: 'studio', prompt: ' x ' },
+    ]) {
+      await request(app.getHttpServer())
+        .post(`/api/admin/media/${id}/photo-ai/generations`)
+        .set('Authorization', 'Bearer editor')
+        .send(body)
+        .expect(202);
+    }
+    expect(service.generate).toHaveBeenLastCalledWith(
+      id,
+      { requestId: id, category: 'scene', presetId: 'studio', prompt: 'x' },
+      expect.objectContaining({ role: 'editor' }),
+    );
   });
   it('queues validated generation and uses the authenticated actor', async () => {
     await request(app.getHttpServer())

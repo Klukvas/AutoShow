@@ -15,6 +15,11 @@ export class PhotoAiGeneration extends BaseEntity {
   @Column({ name: 'request_id', type: 'uuid' }) requestId!: string;
   @Column({ type: 'varchar', length: 64 }) fingerprint!: string;
   @Column({ type: 'varchar', length: 12 }) category!: PhotoAiCategory;
+  /** Builtin preset id; the preset text itself lives only in effectivePrompt. */
+  @Column({ name: 'preset_id', type: 'varchar', length: 32, nullable: true }) presetId!:
+    | string
+    | null;
+  /** What the owner typed (their own instruction, or wishes added to a preset). */
   @Column({ type: 'text' }) prompt!: string;
   @Column({ name: 'effective_prompt', type: 'text' }) effectivePrompt!: string;
   @Column({ name: 'source_s3_key', type: 'varchar', length: 512 }) sourceS3Key!: string;
