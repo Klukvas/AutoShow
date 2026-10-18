@@ -13,6 +13,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { BillingGuard } from './modules/billing/billing.guard';
 import { BillingModule } from './modules/billing/billing.module';
+import { ListingAiModule } from './modules/listing-ai/listing-ai.module';
 import { JwtAuthGuard } from './modules/auth/jwt.guard';
 import { RolesGuard } from './modules/auth/roles.guard';
 import { BrandingModule } from './modules/branding/branding.module';
@@ -65,6 +66,7 @@ import { ViewsModule } from './modules/views/views.module';
     ReviewsModule,
     SitemapModule,
     BillingModule,
+    ListingAiModule,
   ],
   providers: [
     { provide: APP_FILTER, useClass: HttpExceptionFilter },
