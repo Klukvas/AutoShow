@@ -151,6 +151,10 @@ export interface ListingsQuery {
   q?: string;
   make?: string;
   model?: string;
+  /** Vehicle sets "make:model1,model2:yearFrom-yearTo", OR-ed — see lib/car-filter. */
+  car?: string[];
+  /** Makes or models to leave out: "make" or "make:model1,model2". */
+  exclude?: string[];
   bodyType?: string;
   fuelType?: string;
   transmission?: string;

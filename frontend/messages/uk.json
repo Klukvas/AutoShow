@@ -186,7 +186,24 @@
     "errorRetry": "Спробувати знову",
     "rateLimitTitle": "Забагато запитів",
     "rateLimitBody": "Зачекайте кілька секунд і повторіть.",
-    "collectionAllFilters": "Дивитися з фільтрами"
+    "collectionAllFilters": "Дивитися з фільтрами",
+    "carSets": {
+      "title": "Марка, модель, рік",
+      "anyMake": "Будь-яка марка",
+      "anyModel": "Будь-яка модель",
+      "models": "Моделі",
+      "yearFrom": "Рік від",
+      "yearTo": "Рік до",
+      "add": "Додати ще марку",
+      "remove": "Прибрати рядок",
+      "excludeTitle": "Виключити",
+      "excludeAdd": "Виключити марку чи модель",
+      "excludeMake": "Марка для виключення",
+      "excludeModels": "Моделі для виключення",
+      "chooseMake": "Оберіть марку",
+      "allModels": "Усі моделі",
+      "excludeChip": "Крім"
+    }
   },
   "listing": {
     "specPrice": "Ціна",

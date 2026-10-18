@@ -8,6 +8,7 @@ import { MakeLogoStrip } from '@/components/listing/make-logo-strip';
 import { publicApi } from '@/lib/api/public';
 import { getSiteBranding } from '@/lib/branding/resolve';
 import type { ListingsQuery } from '@/lib/api/types';
+import { carFiltersQuery, readCarFilters } from '@/lib/car-filter';
 
 export const revalidate = 30;
 
@@ -20,10 +21,15 @@ function buildQuery(search: Record<string, string | string[] | undefined>): List
     const value = search[key];
     return Array.isArray(value) ? value[0] : value;
   };
-  const getMany = (key: string) => {
-    const value = search[`${key}[]`] ?? search[key];
-    if (!value) return undefined;
+  const getAll = (key: string) => {
+    const value = search[key];
+    if (!value) return [];
     return Array.isArray(value) ? value : [value];
+  };
+  const getMany = (key: string) => {
+    const values = getAll(`${key}[]`);
+    const all = values.length > 0 ? values : getAll(key);
+    return all.length > 0 ? all : undefined;
   };
   const num = (key: string) => {
     const v = get(key);
@@ -32,15 +38,13 @@ function buildQuery(search: Record<string, string | string[] | undefined>): List
     return Number.isFinite(n) ? n : undefined;
   };
 
-  // A model only makes sense scoped to its make — drop an orphaned model that
-  // survived manual URL editing so the API never sees an inconsistent pair.
-  const make = get('make');
-  const model = make ? get('model') : undefined;
+  // Vehicle sets carry make, models and years — including old ?make=&yearMin=
+  // links, which read as a single set.
+  const cars = readCarFilters(getAll);
 
   return {
     q: get('q'),
-    make,
-    model,
+    ...carFiltersQuery(cars),
     bodyType: get('bodyType'),
     fuelType: get('fuelType'),
     transmission: get('transmission'),
@@ -49,8 +53,6 @@ function buildQuery(search: Record<string, string | string[] | undefined>): List
     city: get('city'),
     priceMin: num('priceMin'),
     priceMax: num('priceMax'),
-    yearMin: num('yearMin'),
-    yearMax: num('yearMax'),
     mileageMax: num('mileageMax'),
     options: getMany('options'),
     tags: getMany('tags'),
@@ -69,6 +71,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
   const t = await getTranslations('catalog');
   const params = await searchParams;
   const query = buildQuery(params);
+  // The brand strip highlights a make only when it is the whole selection.
+  const onlyMake =
+    query.car?.length === 1 && !query.car[0].includes(':') ? query.car[0] : undefined;
 
   const [
     page,
@@ -110,11 +115,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       resultCount={page.total}
       baseCurrency={branding?.defaultCurrency}
     >
-      <MakeLogoStrip
-        makes={makes}
-        activeMake={typeof params.make === 'string' ? params.make : undefined}
-        label={t('brands')}
-      />
+      <MakeLogoStrip makes={makes} activeMake={onlyMake} label={t('brands')} />
       {page.items.length === 0 ? (
         <EmptyState title={t('emptyTitle')} body={t('emptyBody')} resetLabel={t('emptyReset')} />
       ) : (

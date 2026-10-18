@@ -27,6 +27,7 @@ import { TelegramPostService } from '../telegram/telegram-post.service';
 import { AdminListListingsQuery } from './dto/admin-list-listings.query';
 import { CreateListingDto } from './dto/create-listing.dto';
 import { ListListingsQuery } from './dto/list-listings.query';
+import { applyCarFilters } from './car-filter';
 import { UpdateListingDto } from './dto/update-listing.dto';
 import { ListingMedia } from './entities/listing-media.entity';
 import { ListingOption } from './entities/listing-option.entity';
@@ -159,8 +160,12 @@ export class ListingsService {
       // cursor pagination can't produce/decode an empty-string sort key.
       .andWhere('l.published_at IS NOT NULL');
 
-    if (query.make) qb.andWhere('make.slug = :make', { make: query.make });
-    if (query.model) qb.andWhere('model.slug = :model', { model: query.model });
+    // car[] supersedes the single make/model/year filters it replaced, so a
+    // hand-mixed URL (?make=bmw&car[]=audi) doesn't AND itself into nothing.
+    const hasCarSets = Boolean(query.car?.length);
+    if (query.make && !hasCarSets) qb.andWhere('make.slug = :make', { make: query.make });
+    if (query.model && !hasCarSets) qb.andWhere('model.slug = :model', { model: query.model });
+    applyCarFilters(qb, query.car, query.exclude);
     if (query.bodyType) qb.andWhere('bodyType.slug = :bodyType', { bodyType: query.bodyType });
     if (query.fuelType) qb.andWhere('fuelType.slug = :fuelType', { fuelType: query.fuelType });
     if (query.transmission)
@@ -172,8 +177,10 @@ export class ListingsService {
       qb.andWhere('l.price_normalized >= :priceMin', { priceMin: query.priceMin });
     if (query.priceMax != null)
       qb.andWhere('l.price_normalized <= :priceMax', { priceMax: query.priceMax });
-    if (query.yearMin != null) qb.andWhere('l.year >= :yearMin', { yearMin: query.yearMin });
-    if (query.yearMax != null) qb.andWhere('l.year <= :yearMax', { yearMax: query.yearMax });
+    if (query.yearMin != null && !hasCarSets)
+      qb.andWhere('l.year >= :yearMin', { yearMin: query.yearMin });
+    if (query.yearMax != null && !hasCarSets)
+      qb.andWhere('l.year <= :yearMax', { yearMax: query.yearMax });
     if (query.mileageMax != null)
       qb.andWhere('l.mileage_km <= :mileageMax', { mileageMax: query.mileageMax });
 

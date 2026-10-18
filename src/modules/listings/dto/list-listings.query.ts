@@ -1,6 +1,7 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray,
   IsEnum,
   IsIn,
@@ -10,7 +11,25 @@ import {
   Max,
   MaxLength,
   Min,
+  ValidateBy,
 } from 'class-validator';
+import { MAX_CAR_SETS, MAX_EXCLUSIONS, parseCarExclusion, parseCarSet } from '../car-filter';
+
+/** Validates every array item with a car-filter parser (null = malformed). */
+function ParsesWith(parse: (raw: string) => unknown, message: string) {
+  return ValidateBy(
+    {
+      name: 'parsesWith',
+      validator: {
+        validate: (value: unknown) => typeof value === 'string' && parse(value) !== null,
+        defaultMessage: () => message,
+      },
+    },
+    { each: true },
+  );
+}
+
+const toArray = ({ value }: { value: unknown }) => (Array.isArray(value) ? value : [value]);
 
 export class ListListingsQuery {
   @ApiPropertyOptional({ description: 'Free-text search across title, make, model and city' })
@@ -22,6 +41,31 @@ export class ListListingsQuery {
 
   @ApiPropertyOptional() @IsOptional() @IsString() make?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() model?: string;
+  @ApiPropertyOptional({
+    isArray: true,
+    type: String,
+    description:
+      'Vehicle sets, OR-ed together: "make:model1,model2:yearFrom-yearTo" — e.g. "bmw:x5,x6:2018-2022", "audi", "::2015-"',
+  })
+  @IsOptional()
+  @Transform(toArray)
+  @IsArray()
+  @ArrayMaxSize(MAX_CAR_SETS)
+  @ParsesWith(parseCarSet, 'car must look like "make:model1,model2:2018-2022"')
+  car?: string[];
+
+  @ApiPropertyOptional({
+    isArray: true,
+    type: String,
+    description: 'Makes or models to leave out: "make" or "make:model1,model2"',
+  })
+  @IsOptional()
+  @Transform(toArray)
+  @IsArray()
+  @ArrayMaxSize(MAX_EXCLUSIONS)
+  @ParsesWith(parseCarExclusion, 'exclude must look like "make" or "make:model1,model2"')
+  exclude?: string[];
+
   @ApiPropertyOptional() @IsOptional() @IsString() bodyType?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() fuelType?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() transmission?: string;

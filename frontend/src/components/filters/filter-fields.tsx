@@ -119,6 +119,7 @@ export function SelectField({
   placeholder,
   onChange,
   disabled,
+  hideLabel,
 }: {
   label: string;
   value: string | undefined;
@@ -126,10 +127,12 @@ export function SelectField({
   placeholder: string;
   onChange: (next: string | undefined) => void;
   disabled?: boolean;
+  /** Keep the label for screen readers only (compact rows with a shared heading). */
+  hideLabel?: boolean;
 }) {
   return (
-    <label className="block">
-      <Eyebrow className="mb-1.5 block">{label}</Eyebrow>
+    <label className="block min-w-0 flex-1">
+      <Eyebrow className={hideLabel ? 'sr-only' : 'mb-1.5 block'}>{label}</Eyebrow>
       <span className="relative block">
       <select
         value={value ?? ''}
@@ -188,14 +191,16 @@ export function RangeField({
   );
 }
 
-function RangeInput({
+export function RangeInput({
   value,
   placeholder,
   onChange,
+  ariaLabel,
 }: {
   value: string | undefined;
   placeholder: string;
   onChange: (next: string | undefined) => void;
+  ariaLabel?: string;
 }) {
   const [draft, setDraft] = useState(value ?? '');
   const focused = useRef(false);
@@ -230,6 +235,7 @@ function RangeInput({
     <input
       type="number"
       inputMode="numeric"
+      aria-label={ariaLabel}
       value={draft}
       placeholder={placeholder}
       onFocus={() => {
@@ -245,5 +251,118 @@ function RangeInput({
       onChange={(e) => onType(e.target.value)}
       className="focus-ring tabular h-10 w-full min-w-0 rounded-btn border border-line-input bg-surface px-3 text-sub text-ink outline-none transition-colors placeholder:text-ink-3 focus-within:border-ink-3"
     />
+  );
+}
+
+/**
+ * Checkbox dropdown for picking several values (models within a make).
+ * Each toggle commits immediately, like the option pills. Escape is marked
+ * handled so the surrounding mobile sheet stays open.
+ */
+export function MultiSelectField({
+  label,
+  values,
+  options,
+  placeholder,
+  onChange,
+  disabled,
+  maxSelected,
+}: {
+  label: string;
+  values: string[];
+  options: SelectOption[];
+  placeholder: string;
+  onChange: (next: string[]) => void;
+  disabled?: boolean;
+  maxSelected?: number;
+}) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // A field disabled while open (make changed by keyboard) renders no list.
+    if (!open || disabled) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    // Capture phase: runs before the sheet's own document listener, so it
+    // sees the Escape as handled regardless of registration order.
+    document.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKey, true);
+    };
+  }, [open, disabled]);
+
+  const summary = values
+    .map((value) => options.find((o) => o.value === value)?.label ?? value)
+    .join(', ');
+  const isFull = maxSelected != null && values.length >= maxSelected;
+  const toggle = (value: string) =>
+    onChange(values.includes(value) ? values.filter((v) => v !== value) : [...values, value]);
+
+  return (
+    <div ref={rootRef} className="relative">
+      <button
+        type="button"
+        aria-haspopup="true"
+        aria-expanded={open}
+        aria-label={summary ? `${label}: ${summary}` : label}
+        disabled={disabled}
+        onClick={() => setOpen((wasOpen) => !wasOpen)}
+        className={cn(
+          'focus-ring flex h-10 w-full items-center rounded-btn border border-line-input bg-surface px-3 pr-8 text-left text-sub transition-colors',
+          summary ? 'text-ink' : 'text-ink-3',
+          disabled && 'cursor-not-allowed opacity-50',
+        )}
+      >
+        <span className="truncate">{summary || placeholder}</span>
+      </button>
+      <svg
+        aria-hidden
+        viewBox="0 0 12 8"
+        className="pointer-events-none absolute right-3 top-5 h-2 w-3 -translate-y-1/2 text-ink-3"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+      >
+        <path d="m1 1 5 5 5-5" />
+      </svg>
+      {open && !disabled && (
+        <div
+          role="group"
+          aria-label={label}
+          className="absolute inset-x-0 top-full z-20 mt-1 max-h-64 overflow-y-auto rounded-btn border border-line bg-surface p-1 shadow-lg"
+        >
+          {options.map((option) => {
+            const checked = values.includes(option.value);
+            return (
+              <label
+                key={option.value}
+                className={cn(
+                  'flex cursor-pointer items-center gap-2.5 rounded-btn px-2.5 py-2 text-sub text-ink hover:bg-bg',
+                  !checked && isFull && 'cursor-not-allowed opacity-50',
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  disabled={!checked && isFull}
+                  onChange={() => toggle(option.value)}
+                  className="h-4 w-4 accent-[rgb(var(--accent))]"
+                />
+                {option.label}
+              </label>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

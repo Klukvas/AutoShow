@@ -7,7 +7,15 @@ import { FilterChip } from '@/components/ui/filter-chip';
 import { Eyebrow } from '@/components/ui/eyebrow';
 import { ActiveChipsRow, type ActiveFilter } from '@/components/filters/active-chips';
 import { FilterSheet } from '@/components/filters/filter-sheet';
+import { CarSetsField } from '@/components/filters/car-sets-field';
 import { RangeField, SearchField, SelectField } from '@/components/filters/filter-fields';
+import {
+  carFiltersPatch,
+  readCarFilters,
+  type CarExclusion,
+  type CarFilters,
+  type CarSet,
+} from '@/lib/car-filter';
 import { formatMileage, formatMoney } from '@/lib/format';
 import type {
   CatalogMake,
@@ -87,6 +95,8 @@ export function FilterBar({
     next.delete('cursor');
     for (const [key, value] of Object.entries(patch)) {
       if (Array.isArray(value)) {
+        // Hand-written links may use the bare key (?car=bmw, ?tags=x); drop it too.
+        next.delete(key);
         next.delete(`${key}[]`);
         value.forEach((v) => next.append(`${key}[]`, v));
       } else if (value == null || value === '') {
@@ -116,14 +126,10 @@ export function FilterBar({
     startTransition(() => router.push('/cars', { scroll: false }));
   };
 
+  const carFilters = readCarFilters((key) => searchParams.getAll(key));
+  const updateCars = (next: CarFilters) => update(carFiltersPatch(next));
+
   // --- Derived option lists ------------------------------------------------
-  const makeSlug = current('make');
-  const selectedMake = makes.find((m) => m.slug === makeSlug);
-  const modelOptions = selectedMake
-    ? models
-        .filter((m) => m.makeId === selectedMake.id)
-        .map((m) => ({ label: m.nameUk, value: m.slug }))
-    : [];
   const conditionOptions = CONDITIONS.map((c) => ({ label: t(`condition.${c}`), value: c }));
 
   const nameOf = (refs: CatalogRef[], slug: string) =>
@@ -138,20 +144,35 @@ export function FilterBar({
       label: `${t('search.label')}: “${q}”`,
       onRemove: () => update({ q: undefined }),
     });
-  if (makeSlug)
+  const yearsLabel = (set: CarSet) => {
+    if (set.yearFrom != null && set.yearTo != null) return `${set.yearFrom}–${set.yearTo}`;
+    if (set.yearFrom != null) return `${t('from')} ${set.yearFrom}`;
+    if (set.yearTo != null) return `${t('to')} ${set.yearTo}`;
+    return null;
+  };
+  const vehicleLabel = (make: string | undefined, modelSlugs: string[]) =>
+    [make ? nameOf(makes, make) : null, modelSlugs.map((m) => nameOf(models, m)).join(', ')]
+      .filter(Boolean)
+      .join(' ');
+  carFilters.sets.forEach((set, idx) => {
     active.push({
-      id: 'make',
-      label: nameOf(makes, makeSlug),
-      // Dropping the make invalidates the model too.
-      onRemove: () => update({ make: undefined, model: undefined }),
+      id: `car:${idx}`,
+      label: [vehicleLabel(set.make, set.models), yearsLabel(set)].filter(Boolean).join(' · '),
+      onRemove: () =>
+        updateCars({ ...carFilters, sets: carFilters.sets.filter((_, i) => i !== idx) }),
     });
-  const modelSlug = current('model');
-  if (modelSlug)
+  });
+  carFilters.exclusions.forEach((exclusion: CarExclusion, idx) => {
     active.push({
-      id: 'model',
-      label: nameOf(models as CatalogRef[], modelSlug),
-      onRemove: () => update({ model: undefined }),
+      id: `exclude:${idx}`,
+      label: `${t('carSets.excludeChip')} ${vehicleLabel(exclusion.make, exclusion.models)}`,
+      onRemove: () =>
+        updateCars({
+          ...carFilters,
+          exclusions: carFilters.exclusions.filter((_, i) => i !== idx),
+        }),
     });
+  });
   const refFacets: Array<[string, CatalogRef[]]> = [
     ['bodyType', bodyTypes],
     ['fuelType', fuelTypes],
@@ -195,20 +216,6 @@ export function FilterBar({
         .join(' – '),
       onRemove: () => update({ priceMin: undefined, priceMax: undefined }),
     });
-  const yearMin = current('yearMin');
-  if (yearMin)
-    active.push({
-      id: 'yearMin',
-      label: `${yearMin}+`,
-      onRemove: () => update({ yearMin: undefined }),
-    });
-  const yearMax = current('yearMax');
-  if (yearMax)
-    active.push({
-      id: 'yearMax',
-      label: `${t('filter.yearMax')} ${yearMax}`,
-      onRemove: () => update({ yearMax: undefined }),
-    });
   const mileageMax = current('mileageMax');
   if (mileageMax)
     active.push({
@@ -245,21 +252,7 @@ export function FilterBar({
   // Shared field stack — rendered in the desktop rail AND the mobile sheet.
   const fields = (
     <>
-      <SelectField
-        label={t('filter.make')}
-        value={makeSlug}
-        options={refsToOptions(makes)}
-        placeholder={t('anyOption')}
-        onChange={(v) => update({ make: v, model: undefined })}
-      />
-      <SelectField
-        label={t('filter.model')}
-        value={current('model')}
-        options={modelOptions}
-        placeholder={t('anyOption')}
-        onChange={(v) => update({ model: v })}
-        disabled={!selectedMake || modelOptions.length === 0}
-      />
+      <CarSetsField makes={makes} models={models} filters={carFilters} onChange={updateCars} />
       <SelectField
         label={t('filter.bodyType')}
         value={current('bodyType')}
@@ -316,15 +309,6 @@ export function FilterBar({
         toPlaceholder={t('to')}
         onFromChange={(v) => update({ priceMin: v })}
         onToChange={(v) => update({ priceMax: v })}
-      />
-      <RangeField
-        label={t('filter.year')}
-        fromValue={yearMin}
-        toValue={yearMax}
-        fromPlaceholder={t('from')}
-        toPlaceholder={t('to')}
-        onFromChange={(v) => update({ yearMin: v })}
-        onToChange={(v) => update({ yearMax: v })}
       />
       <RangeField
         label={`${t('filter.mileageMax')}, км`}
