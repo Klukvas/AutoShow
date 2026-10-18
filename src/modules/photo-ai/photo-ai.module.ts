@@ -7,6 +7,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PHOTO_AI_QUEUE } from '../../workers/queue.tokens';
+import { AiCredentialsModule } from '../ai-credentials/ai-credentials.module';
 import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { ListingMedia } from '../listings/entities/listing-media.entity';
@@ -31,6 +32,7 @@ import { PhotoAiBalance } from './entities/photo-ai-balance.entity';
       AdminUser,
     ]),
     BullModule.registerQueue({ name: PHOTO_AI_QUEUE }),
+    AiCredentialsModule,
     AuthModule,
     AuditModule,
   ],

@@ -1,3 +1,4 @@
+import { AiCredentials } from '../modules/ai-credentials/entities/ai-credentials.entity';
 import { PhotoAiSettings } from '../modules/photo-ai/entities/photo-ai-settings.entity';
 import { PhotoAiGeneration } from '../modules/photo-ai/entities/photo-ai-generation.entity';
 import { PhotoAiPreset } from '../modules/photo-ai/entities/photo-ai-preset.entity';
@@ -31,6 +32,7 @@ import { Review } from '../modules/reviews/entities/review.entity';
 import { ListingTelegramPost } from '../modules/telegram/entities/listing-telegram-post.entity';
 
 export const ALL_ENTITIES = [
+  AiCredentials,
   PhotoAiSettings,
   PhotoAiGeneration,
   PhotoAiPreset,

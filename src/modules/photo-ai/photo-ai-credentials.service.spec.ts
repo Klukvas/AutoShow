@@ -5,7 +5,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { PhotoAiCredentialsService } from './photo-ai-credentials.service';
-import { decryptCredential, encryptCredential, encryptionKey } from './photo-ai-credential.crypto';
+import { fakeAiSettingsStore } from './photo-ai-settings.fixture';
 import { PhotoAiProvider } from './photo-ai.provider';
 import sharp from 'sharp';
 
@@ -18,77 +18,28 @@ const actor = {
   email: 'owner@example.test',
 };
 function setup(master: string | undefined = MASTER) {
-  let row = {
-    id: 1,
-    enabled: false,
-    encryptedKey: null as string | null,
-    revision: 0,
-    accessMode: 'all',
-    selectedEditorIds: [] as string[],
-  };
-  const query = {
-    addSelect: jest.fn().mockReturnThis(),
-    where: jest.fn().mockReturnThis(),
-    setLock: jest.fn().mockReturnThis(),
-    getOne: jest.fn(async () => ({ ...row })),
-  };
-  const em = {
-    createQueryBuilder: jest.fn(() => query),
-    update: jest.fn(async (_entity: unknown, _criteria: unknown, patch: Partial<typeof row>) => {
-      row = { ...row, ...patch };
-      return { affected: 1 };
-    }),
-  };
-  const repo = {
-    manager: { ...em, transaction: jest.fn(async (fn: (manager: typeof em) => unknown) => fn(em)) },
-  };
-  const audit = { record: jest.fn() };
   const config = {
     PHOTO_AI_ENCRYPTION_KEY: master as string | undefined,
     PHOTO_AI_MODEL: 'fixture-model',
     PHOTO_AI_TIMEOUT_SECONDS: 10,
   };
+  const store = fakeAiSettingsStore(config);
+  const audit = { record: jest.fn() };
   const access = {
     requireAdmin: jest.fn().mockResolvedValue(undefined),
     validateSelected: jest.fn().mockResolvedValue(undefined),
     requireAllowed: jest.fn().mockResolvedValue(undefined),
   };
   const service = new PhotoAiCredentialsService(
-    repo as never,
-    config as never,
+    store.repo as never,
+    store.credentials,
     audit as never,
     access as never,
   );
-  return {
-    service,
-    access,
-    row: () => row,
-    setRow: (patch: Partial<typeof row>) => {
-      row = { ...row, ...patch };
-    },
-    query,
-    em,
-    audit,
-    config,
-  };
+  return { service, access, row: store.row, setRow: store.setRow, em: store.em, audit, config };
 }
 describe('Owner photo AI credentials', () => {
   afterEach(() => jest.restoreAllMocks());
-  it('encrypts with fresh IV and authenticated envelope; wrong master or tamper never returns plaintext', () => {
-    const master = Buffer.alloc(32, 7);
-    const first = encryptCredential(KEY, master);
-    const second = encryptCredential(KEY, master);
-    expect(first).not.toContain(KEY);
-    expect(first).not.toBe(second);
-    expect(decryptCredential(first, master)).toBe(KEY);
-    expect(decryptCredential(first, Buffer.alloc(32, 8))).toBeNull();
-    const parts = first.split('.');
-    parts[2] = Buffer.alloc(16, 0).toString('base64');
-    expect(decryptCredential(parts.join('.'), master)).toBeNull();
-    expect(decryptCredential('v2.invalid', master)).toBeNull();
-    expect(encryptionKey('invalid')).toBeNull();
-    expect(encryptionKey(MASTER)).toEqual(master);
-  });
   it('saves only ciphertext and returns handcrafted safe metadata/audit', async () => {
     const { service, row, audit } = setup();
     const response = await service.update(

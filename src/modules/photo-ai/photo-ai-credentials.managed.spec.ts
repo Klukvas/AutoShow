@@ -3,35 +3,12 @@ import sharp from 'sharp';
 import { PhotoAiMode } from '../../config/env.validation';
 import { MANAGED_KEY_REJECTED, PhotoAiCredentialsService } from './photo-ai-credentials.service';
 import { PhotoAiProvider } from './photo-ai.provider';
+import { fakeAiSettingsStore } from './photo-ai-settings.fixture';
 
 const MANAGED_KEY = 'sk-managed-fixture-0123456789abcdef';
 const actor = { id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', role: 'admin' as const, email: 'o@x' };
 
 function setup() {
-  let row = {
-    id: 1,
-    enabled: false,
-    encryptedKey: null as string | null,
-    revision: 0,
-    accessMode: 'all',
-    selectedEditorIds: [] as string[],
-  };
-  const query = {
-    addSelect: jest.fn().mockReturnThis(),
-    where: jest.fn().mockReturnThis(),
-    setLock: jest.fn().mockReturnThis(),
-    getOne: jest.fn(async () => ({ ...row })),
-  };
-  const em = {
-    createQueryBuilder: jest.fn(() => query),
-    update: jest.fn(async (_entity: unknown, _criteria: unknown, patch: Partial<typeof row>) => {
-      row = { ...row, ...patch };
-      return { affected: 1 };
-    }),
-  };
-  const repo = {
-    manager: { ...em, transaction: jest.fn(async (fn: (m: typeof em) => unknown) => fn(em)) },
-  };
   const config = {
     PHOTO_AI_MODE: PhotoAiMode.Managed,
     PHOTO_AI_MANAGED_API_KEY: MANAGED_KEY,
@@ -39,6 +16,7 @@ function setup() {
     PHOTO_AI_MODEL: 'fixture-model',
     PHOTO_AI_TIMEOUT_SECONDS: 10,
   };
+  const store = fakeAiSettingsStore(config);
   const access = {
     requireAdmin: jest.fn().mockResolvedValue(undefined),
     validateSelected: jest.fn().mockResolvedValue(undefined),
@@ -46,13 +24,13 @@ function setup() {
   };
   const audit = { record: jest.fn() };
   const service = new PhotoAiCredentialsService(
-    repo as never,
-    config as never,
+    store.repo as never,
+    store.credentials,
     audit as never,
     access as never,
   );
   const provider = new PhotoAiProvider(config as never, service, access as never);
-  return { service, provider, row: () => row, audit };
+  return { service, provider, row: store.row, audit };
 }
 
 describe('Photo AI credentials in managed mode', () => {

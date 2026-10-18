@@ -1,5 +1,7 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
+// The AAD predates the shared module: stored ciphertexts are bound to it, so it
+// must not change without re-encrypting them.
 const AAD = Buffer.from('autoflow:photo-ai:site-owner-key:v1:1');
 export function encryptionKey(value: string | undefined): Buffer | null {
   if (!value || !/^[A-Za-z0-9+/]{43}=$/.test(value)) return null;
