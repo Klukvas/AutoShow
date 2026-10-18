@@ -12,6 +12,9 @@ import type { CreateLeadBody } from '@/lib/api/types';
 interface LeadFormProps {
   listingId?: string;
   variant?: LeadType;
+  /** Context the manager needs but the visitor shouldn't retype (e.g. the
+   *  compared cars); prepended to whatever the visitor writes. */
+  messagePrefix?: string;
 }
 
 type Status = 'idle' | 'sending' | 'success' | 'error-rate' | 'error-generic';
@@ -34,6 +37,17 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+/** Server-side cap on `message` (CreateLeadDto). */
+const MESSAGE_MAX = 5_000;
+const PREFIX_SEPARATOR = '\n\n';
+
+function composeMessage(prefix: string | undefined, text: string): string | undefined {
+  return (
+    [prefix?.trim(), text.replace(/\r\n/g, '\n').trim()].filter(Boolean).join(PREFIX_SEPARATOR) ||
+    undefined
+  );
+}
+
 /** utm_* params captured from the current URL at submit time. */
 function collectUtm(): Record<string, string> | undefined {
   const params = new URLSearchParams(window.location.search);
@@ -49,7 +63,7 @@ function collectUtm(): Record<string, string> | undefined {
  * lead. Submit is guarded against double-fire by the synchronous
  * status === 'sending' check (set before the request is dispatched).
  */
-export function LeadForm({ listingId, variant = 'callback' }: LeadFormProps) {
+export function LeadForm({ listingId, variant = 'callback', messagePrefix }: LeadFormProps) {
   const t = useTranslations('lead');
   const [leadType, setLeadType] = useState<LeadType>(variant);
   const [status, setStatus] = useState<Status>('idle');
@@ -92,7 +106,7 @@ export function LeadForm({ listingId, variant = 'callback' }: LeadFormProps) {
       name: String(form.get('name') ?? '').trim(),
       phone: String(form.get('phone') ?? '').trim(),
       email: String(form.get('email') ?? '').trim() || undefined,
-      message: String(form.get('message') ?? '').trim() || undefined,
+      message: composeMessage(messagePrefix, String(form.get('message') ?? '')),
       listingId,
       sourceUrl: window.location.href,
       utm: collectUtm(),
@@ -156,9 +170,7 @@ export function LeadForm({ listingId, variant = 'callback' }: LeadFormProps) {
             onClick={() => setLeadType(type)}
             className={cn(
               'focus-ring h-10 flex-1 whitespace-nowrap rounded-btn px-3 text-sub font-medium transition-colors',
-              leadType === type
-                ? 'bg-surface text-ink shadow-none'
-                : 'text-ink-2 hover:text-ink',
+              leadType === type ? 'bg-surface text-ink shadow-none' : 'text-ink-2 hover:text-ink',
             )}
           >
             {t(`types.${type}`)}
@@ -184,7 +196,14 @@ export function LeadForm({ listingId, variant = 'callback' }: LeadFormProps) {
           error={errors.email}
           autoComplete="email"
         />
-        <Field name="message" label={t('message')} as="textarea" />
+        <Field
+          name="message"
+          label={t('message')}
+          as="textarea"
+          maxLength={
+            MESSAGE_MAX - (messagePrefix ? messagePrefix.length + PREFIX_SEPARATOR.length : 0)
+          }
+        />
 
         {/* Honeypot — wrapped in role=presentation + aria-hidden so SRs that
             navigate form elements skip it. Bots that scrape the DOM still see
@@ -240,6 +259,7 @@ interface FieldProps {
   error?: string;
   autoComplete?: string;
   placeholder?: string;
+  maxLength?: number;
 }
 
 function Field({
@@ -251,6 +271,7 @@ function Field({
   error,
   autoComplete,
   placeholder,
+  maxLength,
 }: FieldProps) {
   // useId keeps error ids unique even if two LeadForm instances ever share a DOM.
   const uid = useId();
@@ -275,6 +296,7 @@ function Field({
           <textarea
             name={name}
             rows={3}
+            maxLength={maxLength}
             aria-invalid={Boolean(error)}
             aria-describedby={errorId}
             className={cn(base, 'resize-none py-2.5')}
