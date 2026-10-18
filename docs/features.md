@@ -131,7 +131,7 @@
 | Курсы валют | Система | `src/config/*`, `.env.example` | Статические курсы из переменных окружения `FX_STATIC_*` |
 | Monobank (эквайринг) | Система, admin | `src/modules/billing/monobank.client.ts` | Оплата хостинга и пакетов фото; входящий webhook `/api/billing/monobank/webhook` с проверкой подписи; токен `MONOBANK_TOKEN`. Для проверок есть тестовый токен Monobank |
 | OpenAI Images | Система | `src/modules/photo-ai/photo-ai.provider.ts` | ИИ-обработка фото (`images/edits`, модель `PHOTO_AI_MODEL`); ключ — свой у клиента или наш (managed) |
-| Переменные биллинга и ИИ | Разработчик / деплой | `.env.example`, `deploy/.env.production.example` | `BILLING_*`, `PHOTO_AI_*`, `MONOBANK_TOKEN`; в workflow деплоя не синхронизируются — задаются вручную на сервере. Полный список — README |
+| Переменные биллинга и ИИ | Разработчик / деплой | `.env.example`, `deploy/.env.production.example` | `BILLING_*`, `PHOTO_AI_*`, `MONOBANK_TOKEN`; в workflow деплоя не синхронизируются — задаются вручную на сервере (кроме `PHOTO_AI_ENCRYPTION_KEY`: деплой генерирует его один раз, если он отсутствует). Полный список — README |
 | Docker + Caddy | Разработчик / деплой | `docker-compose.yml`, `deploy/*` | Прод разворачивается через Compose, TLS и проксирование — на Caddy |
 | Swagger | Разработчик | `/api/docs` | Документация API бэкенда |
 

@@ -739,7 +739,8 @@ headers). Presigned PUT TTL — `S3_PRESIGNED_PUT_TTL`.
 `migration:run:prod` → `up -d` → `caddy reload` → `seed:prod` идемпотентно → smoke-test). Секреты
 генерируются один раз на сервере (`openssl rand`), deploy-переменные ресинкаются из GitHub Variables.
 Переменные `BILLING_*`, `PHOTO_AI_*`, `MONOBANK_TOKEN` в `deploy.yml` не синкаются — их нужно
-вручную задать в `.env` на сервере (шаблон — `deploy/.env.production.example`). Для webhook
+вручную задать в `.env` на сервере (кроме `PHOTO_AI_ENCRYPTION_KEY` — деплой генерирует его один раз,
+если он отсутствует или пуст) (шаблон — `deploy/.env.production.example`). Для webhook
 Monobank `PUBLIC_URL` должен быть публично доступен.
 
 ---
