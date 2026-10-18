@@ -145,6 +145,7 @@ async function fixture(
   lostResponse = false,
   settingsPage = false,
   delayStaff = false,
+  initialSettings: Partial<PhotoAiSettingsMetadata> = {},
 ) {
   const state: PhotoAiAllowedWorkspace = {
     permitted: true,
@@ -169,6 +170,7 @@ async function fixture(
     setupAvailable: true,
     revision: 0,
     status: 'not-configured',
+    ...initialSettings,
   };
   let credential: string | null = null;
   const identity = { id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb', role: 'editor' };
@@ -458,6 +460,73 @@ test('owner saves shared credential independently; blank preserves, disable/repl
   await page.getByRole('button', { name: 'Редагувати з ШІ', exact: true }).click();
   await page.getByRole('button', { name: 'Природне покращення', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Створити варіант', exact: true })).toBeDisabled();
+});
+
+test('first key ticks the switch by itself; a saved-but-disabled key shows a warning', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  const { settings, settingsCalls } = await fixture(page, false, false, true);
+  const key = page.getByLabel('API-ключ OpenAI', { exact: true });
+  const toggle = page.getByRole('checkbox', { name: 'Увімкнути обробку фото з ШІ' });
+  const warning = page.getByText(/^Обробку фото вимкнено — співробітники не можуть/);
+  await expect(toggle).not.toBeChecked();
+  await key.fill('fixture-owner-key-123456789');
+  await expect(toggle).toBeChecked();
+  await key.fill('');
+  await expect(toggle).not.toBeChecked();
+  await key.fill('fixture-owner-key-123456789');
+  await page.getByRole('button', { name: 'Зберегти налаштування ШІ', exact: true }).click();
+  await expect(page.getByText('Налаштування ШІ збережено.', { exact: true })).toBeVisible();
+  expect(settingsCalls[0]).toMatchObject({ enabled: true });
+  expect(settings.available).toBe(true);
+  await expect(warning).toBeHidden();
+
+  await toggle.uncheck();
+  await page.getByRole('button', { name: 'Зберегти налаштування ШІ', exact: true }).click();
+  await expect(warning).toBeVisible();
+  await page
+    .locator('section')
+    .filter({ has: page.getByRole('heading', { name: 'Обробка фото з ШІ', exact: true }) })
+    .screenshot({ path: test.info().outputPath('photo-ai-disabled-warning.png') });
+  await key.fill('fixture-replacement-key-987654321');
+  await expect(toggle).not.toBeChecked();
+});
+
+test('managed mode warns while processing is off and stays quiet once it is on', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  const managed = { mode: 'managed', configured: true } as const;
+  const warning = page.getByText(/^Обробку фото вимкнено — співробітники не можуть/);
+  await fixture(page, false, false, true, false, { ...managed, status: 'disabled' });
+  await expect(warning).toBeVisible();
+  await expect(page.getByRole('status').filter({ has: warning })).toHaveCount(1);
+  await page.unrouteAll({ behavior: 'ignoreErrors' });
+  await fixture(page, false, false, true, false, {
+    ...managed,
+    enabled: true,
+    available: true,
+    status: 'ready',
+  });
+  await expect(page.getByText('Обробку фото з ШІ увімкнено.', { exact: true })).toBeVisible();
+  await expect(warning).toBeHidden();
+});
+
+test('owner who unticks the switch before the first save keeps it off', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1100 });
+  const { settings, settingsCalls } = await fixture(page, false, false, true);
+  const key = page.getByLabel('API-ключ OpenAI', { exact: true });
+  const toggle = page.getByRole('checkbox', { name: 'Увімкнути обробку фото з ШІ' });
+  await key.fill('fixture-owner-key-123456789');
+  await toggle.uncheck();
+  await key.fill('fixture-owner-key-1234567890');
+  await expect(toggle).not.toBeChecked();
+  await key.press('Enter');
+  await expect(page.getByText('Налаштування ШІ збережено.', { exact: true })).toBeVisible();
+  expect(settingsCalls[0]).toMatchObject({ enabled: false });
+  expect(settings.configured).toBe(true);
+  await expect(page.getByText(/^Обробку фото вимкнено — співробітники не можуть/)).toBeVisible();
 });
 
 test('owner selects all three access modes; denied editors keep ordinary media actions; stale selections can be saved', async ({

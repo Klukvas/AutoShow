@@ -32,6 +32,7 @@ export function PhotoAiSettings() {
   const [selected, setSelected] = useState<string[]>([]);
   const [apiKey, setApiKey] = useState('');
   const [enabled, setEnabled] = useState(false);
+  const [enabledTouched, setEnabledTouched] = useState(false);
   const [busy, setBusy] = useState(false);
   const [removing, setRemoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +74,7 @@ export function PhotoAiSettings() {
       });
       setApiKey('');
       setEnabled(saved.enabled);
+      setEnabledTouched(false);
       setRemoving(false);
       client.setQueryData(queryKey, saved);
       await client.invalidateQueries({ queryKey: ['photo-ai'] });
@@ -83,6 +85,16 @@ export function PhotoAiSettings() {
       setBusy(false);
     }
   }
+
+  function changeApiKey(value: string) {
+    setApiKey(value);
+    // Saving a first key without ticking the switch left owners with a key that
+    // "did nothing". Tick it along with the first key, unless they chose otherwise.
+    if (metadata && !metadata.configured && !enabledTouched) setEnabled(value.trim().length > 0);
+  }
+  const isSavedButDisabled = Boolean(
+    metadata && metadata.setupAvailable && metadata.configured && !metadata.enabled,
+  );
 
   return (
     <SectionCard title={t('title')}>
@@ -106,11 +118,17 @@ export function PhotoAiSettings() {
       )}
       {metadata && (
         <div className="space-y-4">
-          <p className="text-sm text-ink-2" role="status">
-            {metadata.mode === 'managed'
-              ? t(`managed.status.${metadata.status === 'ready' ? 'ready' : 'disabled'}`)
-              : t(`status.${metadata.status}`)}
-          </p>
+          {isSavedButDisabled ? (
+            <Banner tone="warning" role="status">
+              {t('disabledWarning')}
+            </Banner>
+          ) : (
+            <p className="text-sm text-ink-2" role="status">
+              {metadata.mode === 'managed'
+                ? t(`managed.status.${metadata.status === 'ready' ? 'ready' : 'disabled'}`)
+                : t(`status.${metadata.status}`)}
+            </p>
+          )}
           {!metadata.setupAvailable && <Banner tone="info">{t('setupUnavailable')}</Banner>}
           {metadata.mode === 'managed' ? (
             <p className="text-sm text-ink-2">{t('managed.keyProvided')}</p>
@@ -125,7 +143,7 @@ export function PhotoAiSettings() {
               maxLength={512}
               value={apiKey}
               disabled={busy || !metadata.setupAvailable}
-              onChange={(e) => setApiKey(e.target.value)}
+              onChange={(e) => changeApiKey(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -139,7 +157,10 @@ export function PhotoAiSettings() {
               type="checkbox"
               checked={enabled}
               disabled={busy || (!metadata.setupAvailable && !metadata.enabled)}
-              onChange={(e) => setEnabled(e.target.checked)}
+              onChange={(e) => {
+                setEnabled(e.target.checked);
+                setEnabledTouched(true);
+              }}
               className="focus-ring mt-1 h-5 w-5 shrink-0"
             />
             {t('enabled')}

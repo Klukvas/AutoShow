@@ -16,15 +16,18 @@ export function Banner({
   children,
   action,
   className,
+  role,
 }: {
   tone: Tone;
   children: React.ReactNode;
   action?: React.ReactNode;
   className?: string;
+  /** Override for a standing state shown on load, which should not interrupt like an alert. */
+  role?: 'alert' | 'status';
 }) {
   return (
     <div
-      role={tone === 'error' || tone === 'warning' ? 'alert' : 'status'}
+      role={role ?? (tone === 'error' || tone === 'warning' ? 'alert' : 'status')}
       className={cn(
         'flex flex-wrap items-center gap-3 rounded-none border px-4 py-3 text-[0.8125rem] font-medium',
         TONE_CLS[tone],
