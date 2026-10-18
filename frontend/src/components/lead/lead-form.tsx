@@ -169,7 +169,7 @@ export function LeadForm({ listingId, variant = 'callback', messagePrefix }: Lea
             aria-checked={leadType === type}
             onClick={() => setLeadType(type)}
             className={cn(
-              'focus-ring h-10 flex-1 whitespace-nowrap rounded-btn px-3 text-sub font-medium transition-colors',
+              'focus-ring h-10 flex-auto whitespace-nowrap rounded-btn px-3 text-sub font-medium transition-colors',
               leadType === type ? 'bg-surface text-ink shadow-none' : 'text-ink-2 hover:text-ink',
             )}
           >
