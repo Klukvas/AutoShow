@@ -1,4 +1,8 @@
 import { AiCredentials } from '../modules/ai-credentials/entities/ai-credentials.entity';
+import { ListingAiBalance } from '../modules/listing-ai/entities/listing-ai-balance.entity';
+import { ListingAiGeneration } from '../modules/listing-ai/entities/listing-ai-generation.entity';
+import { ListingAiLedgerEntry } from '../modules/listing-ai/entities/listing-ai-ledger-entry.entity';
+import { ListingAiSettings } from '../modules/listing-ai/entities/listing-ai-settings.entity';
 import { PhotoAiSettings } from '../modules/photo-ai/entities/photo-ai-settings.entity';
 import { PhotoAiGeneration } from '../modules/photo-ai/entities/photo-ai-generation.entity';
 import { PhotoAiPreset } from '../modules/photo-ai/entities/photo-ai-preset.entity';
@@ -33,6 +37,10 @@ import { ListingTelegramPost } from '../modules/telegram/entities/listing-telegr
 
 export const ALL_ENTITIES = [
   AiCredentials,
+  ListingAiGeneration,
+  ListingAiSettings,
+  ListingAiBalance,
+  ListingAiLedgerEntry,
   PhotoAiSettings,
   PhotoAiGeneration,
   PhotoAiPreset,
