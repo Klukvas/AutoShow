@@ -1,7 +1,9 @@
 import { InjectQueue } from '@nestjs/bullmq';
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
+  NotFoundException,
   HttpException,
   Inject,
   Injectable,
@@ -10,20 +12,48 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { Queue } from 'bullmq';
-import { In, MoreThan, Repository } from 'typeorm';
+import { type EntityManager, In, IsNull, MoreThan, Not, Repository } from 'typeorm';
 import type { AppConfig } from '../../config/config.module';
 import type { AuthenticatedUser } from '../../common/decorators/current-user.decorator';
 import { LISTING_AI_QUEUE } from '../../workers/queue.tokens';
 import { AuditLogService } from '../audit/audit-log.service';
 import { lockWritableListing } from '../listings/writable-listing';
 import { ListingAiGeneration } from './entities/listing-ai-generation.entity';
-import { ListingAiAccessService, LISTING_AI_UNAVAILABLE } from './listing-ai-access.service';
+import {
+  LISTING_AI_ACCESS_DENIED,
+  LISTING_AI_UNAVAILABLE,
+  ListingAiAccessService,
+} from './listing-ai-access.service';
 import { ListingAiCreditsService } from './listing-ai-credits.service';
 import { ListingAiInputService } from './listing-ai-input.service';
 import { LISTING_AI_PROMPT_VERSION } from './listing-ai.prompts';
-import type { ListingAiPreset } from './listing-ai.types';
+import type { ListingAiField, ListingAiPreset, ListingAiResult } from './listing-ai.types';
+import { draftView, type ListingAiDraftView } from './listing-ai.views';
+
+/** The shared listing lock, with this feature's Ukrainian messages. */
+async function lockListing(em: EntityManager, listingId: string): Promise<void> {
+  await lockWritableListing(em, listingId).catch((error: unknown) => {
+    if (error instanceof ForbiddenException)
+      throw new ForbiddenException('Продане оголошення не можна змінювати.');
+    if (error instanceof NotFoundException) throw new NotFoundException('Оголошення не знайдено.');
+    throw error;
+  });
+}
 
 export type CreateListingAiDraft = { requestId: string; preset: ListingAiPreset };
+export type AcceptListingAiDraft = { fields: ListingAiField[]; confirmFlags: boolean };
+const HISTORY_LIMIT = 20;
+
+export type ListingAiWorkspace =
+  | { permitted: false; reason: string }
+  | {
+      permitted: true;
+      available: boolean;
+      reason: string | null;
+      drafts: ListingAiDraftView[];
+      /** Per field, the draft whose text was most recently taken into the form. */
+      accepted: Record<ListingAiField, ListingAiDraftView | null>;
+    };
 
 /** Creates drafts: one paid provider call each, queued for the worker. */
 @Injectable()
@@ -67,11 +97,7 @@ export class ListingAiService {
       if (!(await this.access.available()))
         throw new ServiceUnavailableException(LISTING_AI_UNAVAILABLE);
       // Listing lock: a sale or deletion cannot slip between this check and the insert.
-      await lockWritableListing(em, listingId).catch((error: unknown) => {
-        throw error instanceof ForbiddenException
-          ? new ForbiddenException('Продане оголошення не можна змінювати.')
-          : error;
-      });
+      await lockListing(em, listingId);
       const inFlight = await em.findOne(ListingAiGeneration, {
         where: {
           listingId,
@@ -133,6 +159,145 @@ export class ListingAiService {
     });
     if (row.status === 'queued') await this.enqueueQuietly(row.id);
     return row;
+  }
+
+  /** History and availability for one listing; drafts are marked stale against the current data. */
+  async workspace(listingId: string, actor: AuthenticatedUser): Promise<ListingAiWorkspace> {
+    if (!(await this.access.permitted(actor.id)))
+      return { permitted: false, reason: LISTING_AI_ACCESS_DENIED };
+    const { inputHash } = await this.inputs.snapshot(listingId);
+    const [rows, acceptedRows] = await Promise.all([
+      this.generations.find({
+        where: { listingId },
+        order: { createdAt: 'DESC' },
+        take: HISTORY_LIMIT,
+      }),
+      // Each field is owned by at most one draft, so this is three rows at most.
+      this.generations.find({ where: { listingId, acceptedAt: Not(IsNull()) } }),
+    ]);
+    const acceptedFor = (field: ListingAiField) => {
+      const row = acceptedRows.find((r) => r.acceptedFields?.includes(field));
+      return row ? draftView(row, inputHash) : null;
+    };
+    const available = await this.access.available();
+    const hasCredit = available && (await this.credits.hasCredit());
+    return {
+      permitted: true,
+      available: hasCredit,
+      reason: !available
+        ? LISTING_AI_UNAVAILABLE
+        : hasCredit
+          ? null
+          : this.credits.exhaustedReason(actor.role),
+      drafts: rows.map((row) => draftView(row, inputHash)),
+      accepted: {
+        description: acceptedFor('description'),
+        metaTitle: acceptedFor('metaTitle'),
+        metaDescription: acceptedFor('metaDescription'),
+      },
+    };
+  }
+
+  /**
+   * One draft, for cheap polling while it runs. `isStale` is not computed
+   * here (it needs the full listing); refetch the workspace once the draft
+   * reaches a final status.
+   */
+  async draft(
+    listingId: string,
+    id: string,
+    actor: AuthenticatedUser,
+  ): Promise<ListingAiDraftView> {
+    await this.access.requireAllowed(actor.id);
+    const row = await this.generations.findOne({ where: { id, listingId } });
+    if (!row) throw new NotFoundException('Чернетку не знайдено.');
+    return draftView(row, null);
+  }
+
+  /**
+   * Records which fields the owner takes into the form; the listing itself
+   * changes only through the normal save. Flags must be confirmed explicitly.
+   */
+  async accept(
+    listingId: string,
+    id: string,
+    dto: AcceptListingAiDraft,
+    actor: AuthenticatedUser,
+  ): Promise<Partial<Omit<ListingAiResult, 'facts'>>> {
+    await this.access.requireAllowed(actor.id);
+    const fields = [...new Set(dto.fields)];
+    return this.generations.manager.transaction(async (em) => {
+      // Listing first, then the draft: the same lock order as the worker.
+      await lockListing(em, listingId);
+      const row = await em.findOne(ListingAiGeneration, {
+        where: { id, listingId },
+        lock: { mode: 'pessimistic_write' },
+      });
+      if (!row) throw new NotFoundException('Чернетку не знайдено.');
+      if (row.status !== 'ready' || !row.result)
+        throw new BadRequestException('Чернетка ще не готова.');
+      // A flag without a field concerns the whole draft; others only their own text.
+      const flags = (row.validation?.flags ?? []).filter(
+        (flag) => flag.field === null || fields.includes(flag.field),
+      );
+      if (flags.length > 0 && !dto.confirmFlags)
+        // The flags are already in the draft view; the error code lets the UI tell this case apart.
+        throw new ConflictException({
+          error: 'ListingAiFlagsUnconfirmed',
+          message: 'Перевірте позначені твердження перед тим, як брати текст.',
+        });
+      await this.releaseFields(em, listingId, id, fields);
+      await em.update(
+        ListingAiGeneration,
+        { id },
+        {
+          acceptedAt: new Date(),
+          acceptedBy: actor.id,
+          // Taking more fields from the same draft later adds to what was taken.
+          acceptedFields: [...new Set([...(row.acceptedFields ?? []), ...fields])],
+        },
+      );
+      await this.audit.record(
+        {
+          action: 'listing_ai.accept',
+          entityType: 'listing',
+          entityId: listingId,
+          actorId: actor.id,
+          actorRole: actor.role,
+          diff: { generationId: id, fields, confirmedFlags: flags.length },
+        },
+        em,
+      );
+      const result = row.result;
+      return Object.fromEntries(fields.map((field) => [field, result[field]]));
+    });
+  }
+
+  /**
+   * A field's text in the form comes from one draft at a time: taking it from
+   * this draft releases it from every other one. A draft left with nothing is
+   * no longer accepted (the CHECK requires 1–3 fields while accepted).
+   */
+  private async releaseFields(
+    em: EntityManager,
+    listingId: string,
+    keepId: string,
+    fields: readonly ListingAiField[],
+  ): Promise<void> {
+    const owners = await em.find(ListingAiGeneration, {
+      where: { listingId, id: Not(keepId), acceptedAt: Not(IsNull()) },
+    });
+    for (const owner of owners) {
+      const left = (owner.acceptedFields ?? []).filter((field) => !fields.includes(field));
+      if (left.length === (owner.acceptedFields ?? []).length) continue;
+      await em.update(
+        ListingAiGeneration,
+        { id: owner.id },
+        left.length > 0
+          ? { acceptedFields: left }
+          : { acceptedAt: null, acceptedBy: null, acceptedFields: null },
+      );
+    }
   }
 
   private repeatOf(

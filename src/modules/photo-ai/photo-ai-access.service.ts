@@ -1,7 +1,8 @@
 import { isAiAccessPermitted } from '../ai-credentials/ai-access.policy';
-import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { requireActiveAdmin, validateSelectedEditors } from '../ai-credentials/ai-access.staff';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, IsNull, Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { AdminUser } from '../admin-users/entities/admin-user.entity';
 import { PhotoAiSettings } from './entities/photo-ai-settings.entity';
 
@@ -22,8 +23,7 @@ export class PhotoAiAccessService {
     });
   }
   async requireAdmin(actorId: string): Promise<void> {
-    if ((await this.liveUser(actorId))?.role !== 'admin')
-      throw new ForbiddenException('Налаштування ШІ доступні лише активним адміністраторам.');
+    await requireActiveAdmin(this.users, actorId);
   }
   async permission(actorId: string): Promise<PhotoAiPermission> {
     const actor = await this.liveUser(actorId);
@@ -51,15 +51,6 @@ export class PhotoAiAccessService {
     return users.map(({ id, email }) => ({ id, email }));
   }
   async validateSelected(ids: string[]): Promise<void> {
-    if (ids.length > 200 || new Set(ids).size !== ids.length)
-      throw new BadRequestException('Оберіть до 200 різних активних редакторів.');
-    if (!ids.length) return;
-    const eligible = await this.users.count({
-      where: { id: In(ids), role: 'editor', isActive: true, deletedAt: IsNull() },
-    });
-    if (eligible !== ids.length)
-      throw new BadRequestException(
-        'Список містить недоступного співробітника. Оновіть список редакторів.',
-      );
+    await validateSelectedEditors(this.users, ids);
   }
 }

@@ -168,5 +168,8 @@ export function listingAiInputHash(
   input: ListingAiInput,
   photos: readonly ListingAiPhoto[],
 ): string {
-  return createHash('sha256').update(canonicalJson({ input, photos })).digest('hex');
+  // Which photos, not which rendition file or order: re-rendering or reordering
+  // the gallery does not change what the text should say.
+  const photoIds = photos.map((photo) => photo.mediaId).sort(byCodeUnit);
+  return createHash('sha256').update(canonicalJson({ input, photoIds })).digest('hex');
 }

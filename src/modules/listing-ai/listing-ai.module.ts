@@ -6,6 +6,7 @@ import { AdminUser } from '../admin-users/entities/admin-user.entity';
 import { AiCredentialsModule } from '../ai-credentials/ai-credentials.module';
 import { AiTextModule } from '../ai-text/ai-text.module';
 import { AuditModule } from '../audit/audit.module';
+import { AuthModule } from '../auth/auth.module';
 import { Listing } from '../listings/entities/listing.entity';
 import { ListingAiBalance } from './entities/listing-ai-balance.entity';
 import { ListingAiGeneration } from './entities/listing-ai-generation.entity';
@@ -14,8 +15,11 @@ import { ListingAiAccessService } from './listing-ai-access.service';
 import { ListingAiCreditsService } from './listing-ai-credits.service';
 import { ListingAiInputService } from './listing-ai-input.service';
 import { ListingAiService } from './listing-ai.service';
+import { ListingAiController } from './listing-ai.controller';
+import { ListingAiSettingsController } from './listing-ai-settings.controller';
+import { ListingAiSettingsService } from './listing-ai-settings.service';
 
-/** AI listing descriptions: input, drafts, access, credits. The HTTP API comes next. */
+/** AI listing descriptions: input, drafts, access, credits, settings and the admin API. */
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -29,8 +33,11 @@ import { ListingAiService } from './listing-ai.service';
     AiCredentialsModule,
     AiTextModule,
     AuditModule,
+    AuthModule,
   ],
+  controllers: [ListingAiController, ListingAiSettingsController],
   providers: [
+    ListingAiSettingsService,
     ListingAiInputService,
     ListingAiAccessService,
     ListingAiCreditsService,

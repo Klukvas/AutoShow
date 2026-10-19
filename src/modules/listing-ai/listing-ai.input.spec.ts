@@ -251,6 +251,19 @@ describe('listingAiInputHash', () => {
     expect(listingAiInputHash(buildListingAiInput(unseen), photos)).toBe(base);
   });
 
+  it('ignores which rendition file or gallery order the photos have', () => {
+    const input = buildListingAiInput(listing());
+    const two = [
+      { mediaId: 'a', s3Key: 'a/gallery.jpg' },
+      { mediaId: 'b', s3Key: 'b/gallery.jpg' },
+    ];
+    const reordered = [
+      { mediaId: 'b', s3Key: 'b/full.webp' },
+      { mediaId: 'a', s3Key: 'a/new.jpg' },
+    ];
+    expect(listingAiInputHash(input, reordered)).toBe(listingAiInputHash(input, two));
+  });
+
   it('changes when a fact or the photo set changes', () => {
     expect(listingAiInputHash(buildListingAiInput(listing({ mileageKm: 46000 })), photos)).not.toBe(
       base,
