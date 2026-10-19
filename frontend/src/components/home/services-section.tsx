@@ -18,14 +18,20 @@ const SERVICES = [
   { key: 'promo', href: '#sell' },
 ] as const;
 
-export async function ServicesSection() {
+export async function ServicesSection({ hasPackages }: { hasPackages: boolean }) {
   const t = await getTranslations('home');
+  // With tariffs on the page, "promo" opens them instead of the bare intake form.
+  const services = SERVICES.map((service) =>
+    service.key === 'promo' && hasPackages ? { ...service, href: '#packages' } : service,
+  );
+  const ctaOf = (key: (typeof SERVICES)[number]['key']) =>
+    key === 'promo' && hasPackages ? t('services.promo.ctaPackages') : t(`services.${key}.cta`);
 
   return (
     <section className="home-container home-section">
       <HomeSectionHeading title={t('servicesTitle')} />
       <div className="home-services-grid">
-        {SERVICES.map((service, idx) => (
+        {services.map((service, idx) => (
           <ScrollReveal key={service.key} delay={idx * 0.06}>
             <Link
               href={service.href}
@@ -38,7 +44,7 @@ export async function ServicesSection() {
                 {t(`services.${service.key}.body`)}
               </p>
               <span className="mt-4 text-sub font-semibold text-ink transition-colors group-hover:text-lot-gold">
-                {t(`services.${service.key}.cta`)} →
+                {ctaOf(service.key)} →
               </span>
             </Link>
           </ScrollReveal>

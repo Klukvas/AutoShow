@@ -18,7 +18,7 @@ import { readBillingStatus } from '@/lib/admin/billing-server';
  * sidebar stays dark by design in either).
  *
  * Role gate: editors only ever SEE Об'яви/Заявки (hidden, not disabled);
- * everything else (dashboard, reviews, team, branding, audit) is admin-only
+ * everything else (dashboard, reviews, packages, team, branding, audit) is admin-only
  * and additionally redirects on the page level.
  *
  * Billing gate: while the hosting subscription is blocked an editor gets only
@@ -75,6 +75,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     ...(isAdmin
       ? ([
           { href: '/admin/reviews', key: 'reviews' },
+          { href: '/admin/packages', key: 'packages' },
           { href: '/admin/collections', key: 'collections' },
           { href: '/admin/tags', key: 'tags' },
           { href: '/admin/team', key: 'team' },

@@ -1,5 +1,12 @@
 import { apiFetch } from './client';
-import type { CatalogRef, CatalogTag, Collection, CursorPage, VehicleOption } from './types';
+import type {
+  CatalogRef,
+  CatalogTag,
+  Collection,
+  CursorPage,
+  PublicPlacementPackage,
+  VehicleOption,
+} from './types';
 
 export type AdminRole = 'admin' | 'editor';
 
@@ -58,6 +65,12 @@ export interface AdminReview {
   city: string | null;
   text: string;
   rating: number;
+  isPublished: boolean;
+  position: number;
+  createdAt: string;
+}
+
+export interface AdminPlacementPackage extends PublicPlacementPackage {
   isPublished: boolean;
   position: number;
   createdAt: string;
@@ -389,6 +402,33 @@ export const adminApi = {
   },
   deleteReview(id: string, opts: AdminCallOpts) {
     return apiFetch<void>(`/admin/reviews/${id}`, {
+      method: 'DELETE',
+      accessToken: opts.accessToken,
+    });
+  },
+
+  // Placement packages (paid tariffs on the homepage)
+  listPlacementPackages(opts: AdminCallOpts) {
+    return apiFetch<AdminPlacementPackage[]>('/admin/placement-packages', {
+      accessToken: opts.accessToken,
+    });
+  },
+  createPlacementPackage(body: Record<string, unknown>, opts: AdminCallOpts) {
+    return apiFetch<AdminPlacementPackage>('/admin/placement-packages', {
+      method: 'POST',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  updatePlacementPackage(id: string, body: Record<string, unknown>, opts: AdminCallOpts) {
+    return apiFetch<AdminPlacementPackage>(`/admin/placement-packages/${id}`, {
+      method: 'PATCH',
+      body,
+      accessToken: opts.accessToken,
+    });
+  },
+  deletePlacementPackage(id: string, opts: AdminCallOpts) {
+    return apiFetch<void>(`/admin/placement-packages/${id}`, {
       method: 'DELETE',
       accessToken: opts.accessToken,
     });

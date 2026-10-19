@@ -187,6 +187,8 @@ export interface CreateLeadBody {
   carModel?: string;
   carYear?: number;
   carMileageKm?: number;
+  /** sell_request: the placement package picked on the homepage. */
+  packageId?: string;
   // credit: calculator inputs
   creditDownPayment?: number;
   creditTermMonths?: number;
@@ -201,6 +203,27 @@ export interface PublicReview {
   text: string;
   rating: number;
   createdAt: string;
+}
+
+/** Mirrors PLACEMENT_CHANNELS in the backend placement-packages module. */
+export const PLACEMENT_CHANNELS = [
+  'site',
+  'instagram_post',
+  'instagram_story',
+  'telegram',
+  'tiktok',
+] as const;
+
+export type PlacementChannel = (typeof PLACEMENT_CHANNELS)[number];
+
+export interface PublicPlacementPackage {
+  id: string;
+  title: string;
+  description: string | null;
+  priceUah: number;
+  channels: PlacementChannel[];
+  features: string[];
+  isFeatured: boolean;
 }
 
 export interface PublicStats {

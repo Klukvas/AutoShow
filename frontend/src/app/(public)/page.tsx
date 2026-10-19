@@ -8,6 +8,7 @@ import { SellCarSection } from '@/components/home/sell-car-section';
 import { StatsBand } from '@/components/home/stats-band';
 import { ListingCard } from '@/components/listing/listing-card';
 import { HomeSectionHeading } from '@/components/home/home-section-heading';
+import { PackagesSection } from '@/components/home/packages-section';
 import { ScrollReveal } from '@/components/motion/scroll-reveal';
 import { publicApi } from '@/lib/api/public';
 import { getSiteBranding } from '@/lib/branding/resolve';
@@ -15,7 +16,7 @@ import { getSiteBranding } from '@/lib/branding/resolve';
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [t, branding, listings, collections, reviews] = await Promise.all([
+  const [t, branding, listings, collections, reviews, packages] = await Promise.all([
     getTranslations('home'),
     getSiteBranding(),
     publicApi
@@ -24,6 +25,7 @@ export default async function HomePage() {
       .catch(() => []),
     publicApi.listCollections().catch(() => []),
     publicApi.listReviews({ revalidate: 300 }).catch(() => []),
+    publicApi.listPlacementPackages({ revalidate: 60 }).catch(() => []),
   ]);
   const hero = listings[0] ?? null;
   const inventory = listings.slice(0, 6);
@@ -91,9 +93,11 @@ export default async function HomePage() {
 
       <ReviewsSection reviews={reviews} />
 
-      <ServicesSection />
+      <ServicesSection hasPackages={packages.length > 0} />
 
-      <SellCarSection />
+      <PackagesSection packages={packages} />
+
+      <SellCarSection packages={packages} />
     </>
   );
 }

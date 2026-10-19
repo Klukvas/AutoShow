@@ -9,6 +9,7 @@ import type {
   CreateLeadBody,
   ListingsQuery,
   PublicListing,
+  PublicPlacementPackage,
   PublicReview,
   PublicStats,
   VehicleOption,
@@ -98,6 +99,13 @@ export const publicApi = {
     return apiFetch<PublicReview[]>('/reviews', {
       method: 'GET',
       next: { revalidate: opts.revalidate ?? 300, tags: ['reviews'] },
+    });
+  },
+
+  listPlacementPackages(opts: PublicOpts = {}) {
+    return apiFetch<PublicPlacementPackage[]>('/placement-packages', {
+      method: 'GET',
+      next: { revalidate: opts.revalidate ?? 60, tags: ['placement-packages'] },
     });
   },
 

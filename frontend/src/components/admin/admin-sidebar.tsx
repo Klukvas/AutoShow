@@ -20,6 +20,7 @@ export interface AdminNavLink {
     | 'listings'
     | 'leads'
     | 'reviews'
+    | 'packages'
     | 'collections'
     | 'catalog'
     | 'tags'
@@ -85,6 +86,18 @@ const ICONS: Record<AdminNavLink['key'], React.ReactNode> = {
       strokeWidth="1.5"
     >
       <path d="M8 1.8l1.9 3.8 4.2.6-3 3 .7 4.2L8 11.4l-3.8 2 .7-4.2-3-3 4.2-.6L8 1.8Z" />
+    </svg>
+  ),
+  packages: (
+    <svg
+      viewBox="0 0 16 16"
+      className="h-4 w-4"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+    >
+      <path d="M2 6.2v3.6h2.6L10 13.2V2.8L4.6 6.2H2Z" />
+      <path d="M12.4 5.6c.9.8.9 4 0 4.8" />
     </svg>
   ),
   collections: (

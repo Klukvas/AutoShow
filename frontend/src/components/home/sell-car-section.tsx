@@ -1,11 +1,12 @@
 import { getTranslations } from 'next-intl/server';
 import { SellCarForm } from '@/components/lead/sell-car-form';
+import type { PublicPlacementPackage } from '@/lib/api/types';
 
 /**
  * Consignment funnel: the showroom's second lead source — owners bringing
  * their cars to sell. Copy sells the service, the form captures the car.
  */
-export async function SellCarSection() {
+export async function SellCarSection({ packages }: { packages: PublicPlacementPackage[] }) {
   const t = await getTranslations('sell');
   const steps = [
     { title: t('step1Title'), body: t('step1Body') },
@@ -41,7 +42,7 @@ export async function SellCarSection() {
         <div className="home-sell-form">
           <h3 className="font-heading text-section font-bold text-ink">{t('formTitle')}</h3>
           <p className="mb-5 mt-1 text-sub text-ink-2">{t('formSubtitle')}</p>
-          <SellCarForm />
+          <SellCarForm packages={packages} />
         </div>
       </div>
     </section>
