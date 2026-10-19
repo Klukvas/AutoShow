@@ -121,3 +121,27 @@ describe('listing form schema', () => {
     expect(ownBody.feeFixedAmount).toBeUndefined();
   });
 });
+
+describe('SEO overrides', () => {
+  it('sends trimmed texts, and null to clear an override', () => {
+    const filled = parseListingForm({
+      ...VALID,
+      metaTitle: '  Porsche 911  ',
+      metaDescription: '',
+    });
+    if (!filled.values) throw new Error('expected valid form values');
+    const body = listingBodyFromValues(filled.values);
+    expect(body).toMatchObject({ metaTitle: 'Porsche 911', metaDescription: null });
+  });
+
+  it('caps the lengths at the database limits', () => {
+    const tooLong = parseListingForm({
+      ...VALID,
+      metaTitle: 'x'.repeat(256),
+      metaDescription: 'y'.repeat(321),
+    });
+    expect(Object.keys(tooLong.errors)).toEqual(
+      expect.arrayContaining(['metaTitle', 'metaDescription']),
+    );
+  });
+});

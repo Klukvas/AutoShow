@@ -146,6 +146,9 @@ export interface AdminListing {
   vin?: string | null;
   vinVisible?: boolean;
   description?: string;
+  /** SEO overrides; null falls back to the generated title/description. */
+  metaTitle?: string | null;
+  metaDescription?: string | null;
   locationCity?: string;
   options?: Array<{ optionId: string }>;
   tags?: Array<{ tagId: string }>;

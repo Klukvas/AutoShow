@@ -93,6 +93,9 @@ export const listingFormSchema = z.object({
     .trim()
     .min(20, { message: issue('vMinLength', { min: 20 }) })
     .max(10000, { message: issue('vMaxLength', { max: 10000 }) }),
+  // Optional SEO overrides; empty means "use the generated defaults".
+  metaTitle: optionalTrimmed(255),
+  metaDescription: optionalTrimmed(320),
   locationCity: z
     .string()
     .trim()
@@ -206,6 +209,9 @@ export function listingBodyFromValues(values: ListingFormValues): Record<string,
     isNegotiable: values.isNegotiable,
     title: values.title,
     description: values.description,
+    // null clears a saved override; the server stores it as NULL.
+    metaTitle: values.metaTitle || null,
+    metaDescription: values.metaDescription || null,
     locationCity: values.locationCity,
     optionIds: values.optionIds,
     tagIds: values.tagIds,

@@ -38,6 +38,7 @@ import { useToast } from '@/components/admin/ui/toast';
 import { MakeEditor, ModelEditor } from '@/components/admin/catalog/catalog-editor';
 import { CatalogCombobox } from './catalog-combobox';
 import { ColorField } from './color-field';
+import { ListingAiPanel } from './listing-ai-panel';
 import { TransitionMenu } from './transition-menu';
 
 export interface ListingCatalog {
@@ -241,6 +242,8 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
       isNegotiable: data.get('isNegotiable') === 'on',
       title: data.get('title') ?? '',
       description: data.get('description') ?? '',
+      metaTitle: data.get('metaTitle') ?? '',
+      metaDescription: data.get('metaDescription') ?? '',
       locationCity: data.get('locationCity') ?? '',
       optionIds: data.getAll('optionIds').map(String),
       tagIds: data.getAll('tagIds').map(String),
@@ -274,6 +277,19 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
     else if (e instanceof ApiClientError && e.status === 404) setError(t('form.notFoundBanner'));
     else if (e instanceof ApiClientError) setError(e.message);
     else setError(t('common.errorTitle'));
+  };
+
+  /** Puts AI texts into the (uncontrolled) fields; they reach the listing on the normal save. */
+  const applyAiTexts = (
+    values: Partial<Record<'description' | 'metaTitle' | 'metaDescription', string>>,
+  ) => {
+    const form = formRef.current;
+    if (!form) return;
+    for (const [name, value] of Object.entries(values)) {
+      const field = form.elements.namedItem(name);
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement)
+        field.value = value ?? '';
+    }
   };
 
   /** save → optionally publish → land on the edit screen with fresh state. */
@@ -846,8 +862,37 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
               defaultValue={initial?.description ?? ''}
               error={err('description')}
             />
+            <TextField
+              label={t('form.metaTitle')}
+              name="metaTitle"
+              maxLength={255}
+              hint={t('form.metaTitleHint')}
+              defaultValue={initial?.metaTitle ?? ''}
+              error={err('metaTitle')}
+            />
+            <TextareaField
+              label={t('form.metaDescription')}
+              name="metaDescription"
+              maxLength={320}
+              rows={2}
+              hint={t('form.metaDescriptionHint')}
+              defaultValue={initial?.metaDescription ?? ''}
+              error={err('metaDescription')}
+            />
           </div>
         </SectionCard>
+
+        {initial && (
+          <ListingAiPanel
+            listingId={initial.id}
+            saved={{
+              description: initial.description ?? '',
+              metaTitle: initial.metaTitle ?? '',
+              metaDescription: initial.metaDescription ?? '',
+            }}
+            onApply={applyAiTexts}
+          />
+        )}
       </div>
 
       {/* Publish confirmation (status transitions always confirm) */}
