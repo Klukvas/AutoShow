@@ -8,6 +8,7 @@ import {
   IsString,
   Max,
   Min,
+  MinLength,
   validateSync,
 } from 'class-validator';
 
@@ -66,6 +67,22 @@ export class EnvSchema {
   @Max(1_000_000)
   @IsOptional()
   PHOTO_AI_PACK_PRICE_UAH?: number;
+
+  /** Text model for AI listing descriptions (Responses API, vision + structured output). */
+  @IsString()
+  @MinLength(1)
+  LISTING_AI_MODEL: string = 'gpt-6.1-sol';
+
+  @IsInt()
+  @Min(10)
+  @Max(300)
+  LISTING_AI_TIMEOUT_SECONDS: number = 90;
+
+  /** Upper bound per draft; reasoning tokens count towards it. */
+  @IsInt()
+  @Min(1000)
+  @Max(32_000)
+  LISTING_AI_MAX_OUTPUT_TOKENS: number = 8000;
 
   /** One-time starter photos granted on first use (managed mode). */
   @IsInt()

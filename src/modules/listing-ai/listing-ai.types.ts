@@ -29,10 +29,27 @@ export type ListingAiResult = {
   facts: ListingAiFact[];
 };
 
-/** A fact the server could not confirm against the listing. */
+export type ListingAiFlagReason =
+  /** The model cited a field that does not exist. */
+  | 'unknown_field'
+  /** The cited value differs from the listing. */
+  | 'mismatch'
+  /** A claim in the text has no backing in the listing data. */
+  | 'unsupported'
+  /** Price, contacts, VIN or a brand-banned word in the text. */
+  | 'forbidden_content'
+  /** An accident, customs or damage fact the text must state but does not. */
+  | 'missing_disclosure'
+  /** Longer than the preset or SEO target allows. */
+  | 'too_long';
+
+/** Something the owner must confirm or fix before the draft can be accepted. */
 export type ListingAiFlag = {
+  reason: ListingAiFlagReason;
+  /** The words in question as written by the model, or a short explanation (too_long). */
   claim: string;
-  sourceField: string;
-  reason: 'unknown_field' | 'mismatch' | 'unsupported';
+  sourceField: string | null;
+  /** Which generated text it was found in, when known. */
+  field: ListingAiField | null;
 };
 export type ListingAiValidation = { flags: ListingAiFlag[] };
