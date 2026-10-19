@@ -25,6 +25,7 @@ import { LeadsModule } from './modules/leads/leads.module';
 import { ListingsModule } from './modules/listings/listings.module';
 import { MediaModule } from './modules/media/media.module';
 import { NotificationModule } from './modules/notifications/notification.module';
+import { PlacementPackagesModule } from './modules/placement-packages/placement-packages.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SitemapModule } from './modules/sitemap/sitemap.module';
 import { SlugModule } from './modules/slug/slug.module';
@@ -64,6 +65,7 @@ import { ViewsModule } from './modules/views/views.module';
     LeadsModule,
     AnalyticsModule,
     ReviewsModule,
+    PlacementPackagesModule,
     SitemapModule,
     BillingModule,
     ListingAiModule,

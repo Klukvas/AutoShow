@@ -31,6 +31,7 @@ import { ListingTag } from '../modules/listings/entities/listing-tag.entity';
 import { ListingPriceHistory } from '../modules/listings/entities/listing-price-history.entity';
 import { Listing } from '../modules/listings/entities/listing.entity';
 import { MediaRendition } from '../modules/listings/entities/media-rendition.entity';
+import { PlacementPackage } from '../modules/placement-packages/entities/placement-package.entity';
 import { Reservation } from '../modules/reservations/entities/reservation.entity';
 import { Review } from '../modules/reviews/entities/review.entity';
 import { ListingTelegramPost } from '../modules/telegram/entities/listing-telegram-post.entity';
@@ -66,6 +67,7 @@ export const ALL_ENTITIES = [
   LeadNote,
   Reservation,
   Review,
+  PlacementPackage,
   AuditLog,
   Collection,
   BillingAccount,
