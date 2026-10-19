@@ -90,6 +90,12 @@ export class CreateLeadDto {
   @Max(2_000_000)
   carMileageKm?: number;
 
+  /** sell_request: the placement package picked on the homepage, if any. */
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsUUID()
+  packageId?: string;
+
   /* credit: calculator inputs at the moment of the request. */
 
   @ApiPropertyOptional()

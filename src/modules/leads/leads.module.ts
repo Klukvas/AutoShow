@@ -5,6 +5,7 @@ import { AuditModule } from '../audit/audit.module';
 import { AuthModule } from '../auth/auth.module';
 import { NotificationModule } from '../notifications/notification.module';
 import { Listing } from '../listings/entities/listing.entity';
+import { PlacementPackagesModule } from '../placement-packages/placement-packages.module';
 import { Lead } from './entities/lead.entity';
 import { LeadNote } from './entities/lead-note.entity';
 import { LeadsAdminController } from './leads-admin.controller';
@@ -15,6 +16,7 @@ import { LeadsService } from './leads.service';
   imports: [
     TypeOrmModule.forFeature([Lead, LeadNote, AdminUser, Listing]),
     NotificationModule,
+    PlacementPackagesModule,
     AuditModule,
     AuthModule,
   ],

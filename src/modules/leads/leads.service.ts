@@ -10,6 +10,8 @@ import { AdminUser } from '../admin-users/entities/admin-user.entity';
 import { AuditLogService } from '../audit/audit-log.service';
 import { NotificationService } from '../notifications/notification.service';
 import { Listing } from '../listings/entities/listing.entity';
+import type { PlacementPackage } from '../placement-packages/entities/placement-package.entity';
+import { PlacementPackagesService } from '../placement-packages/placement-packages.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { Lead, type LeadDetails, type LeadStatus } from './entities/lead.entity';
 import { LeadNote } from './entities/lead-note.entity';
@@ -27,6 +29,7 @@ export class LeadsService {
     @InjectRepository(Listing) private readonly listings: Repository<Listing>,
     private readonly redis: RedisService,
     private readonly notifications: NotificationService,
+    private readonly placementPackages: PlacementPackagesService,
     private readonly audit: AuditLogService,
     @Inject('APP_CONFIG') private readonly config: AppConfig,
   ) {}
@@ -56,14 +59,15 @@ export class LeadsService {
       });
       if (!listing) throw new NotFoundException('Listing not found');
     }
+    const placementPackage = await this.resolvePackage(dto);
 
     const lead = this.leads.create({
       type: dto.type,
       name: dto.name,
       phone: dto.phone,
       email: dto.email ?? null,
-      message: this.composeMessage(dto),
-      details: this.detailsFrom(dto),
+      message: this.composeMessage(dto, placementPackage),
+      details: this.detailsFrom(dto, placementPackage),
       sourceUrl: dto.sourceUrl ?? null,
       utm: dto.utm ?? null,
       status: 'new',
@@ -257,17 +261,43 @@ export class LeadsService {
   }
 
   /**
+   * The placement package a sell_request picked, if it can still be picked.
+   * A package unpublished or deleted while the visitor filled the form is
+   * dropped, not rejected: losing the lead costs more than the manager asking
+   * which tariff they meant.
+   */
+  private async resolvePackage(dto: CreateLeadDto): Promise<PlacementPackage | null> {
+    if (dto.type !== 'sell_request' || !dto.packageId) return null;
+    const placementPackage = await this.placementPackages.findPublished(dto.packageId);
+    if (!placementPackage) {
+      this.logger.warn(
+        { packageId: dto.packageId },
+        'Lead picked an unavailable package — saved without it',
+      );
+    }
+    return placementPackage;
+  }
+
+  /**
    * Structured sell/credit payload for `details` (jsonb). Only the fields
    * relevant to the lead type are kept — a stray carYear on a callback lead
    * is dropped, not stored.
    */
-  private detailsFrom(dto: CreateLeadDto): LeadDetails | null {
+  private detailsFrom(
+    dto: CreateLeadDto,
+    placementPackage: PlacementPackage | null,
+  ): LeadDetails | null {
     const details: LeadDetails = {};
     if (dto.type === 'sell_request') {
       if (dto.carMake) details.carMake = dto.carMake;
       if (dto.carModel) details.carModel = dto.carModel;
       if (dto.carYear != null) details.carYear = dto.carYear;
       if (dto.carMileageKm != null) details.carMileageKm = dto.carMileageKm;
+      if (placementPackage) {
+        details.packageId = placementPackage.id;
+        details.packageTitle = placementPackage.title;
+        details.packagePriceUah = placementPackage.priceUah;
+      }
     }
     if (dto.type === 'credit') {
       if (dto.creditDownPayment != null) details.creditDownPayment = dto.creditDownPayment;
@@ -281,9 +311,16 @@ export class LeadsService {
    * inbox and the Telegram alert. The machine-readable copy lives in
    * `details` (see detailsFrom) — this string is display-only.
    */
-  private composeMessage(dto: CreateLeadDto): string | null {
+  private composeMessage(
+    dto: CreateLeadDto,
+    placementPackage: PlacementPackage | null,
+  ): string | null {
     const details: string[] = [];
     if (dto.type === 'sell_request') {
+      if (placementPackage) {
+        const price = placementPackage.priceUah.toLocaleString('uk-UA');
+        details.push(`Тариф: ${placementPackage.title} (${price} грн)`);
+      }
       if (dto.carMake || dto.carModel) {
         details.push(`Авто: ${[dto.carMake, dto.carModel].filter(Boolean).join(' ')}`);
       }

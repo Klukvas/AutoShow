@@ -23,6 +23,13 @@ export interface LeadDetails {
   carModel?: string;
   carYear?: number;
   carMileageKm?: number;
+  /**
+   * Placement package snapshot: title and price at the moment of the request,
+   * so a later price change or deletion does not rewrite what the lead asked for.
+   */
+  packageId?: string;
+  packageTitle?: string;
+  packagePriceUah?: number;
   creditDownPayment?: number;
   creditTermMonths?: number;
 }
