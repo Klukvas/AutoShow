@@ -14,4 +14,18 @@ export class ListingAiSettings {
   accessMode!: ListingAiAccessMode;
   @Column({ name: 'selected_editor_ids', type: 'uuid', array: true, default: () => "'{}'::uuid[]" })
   selectedEditorIds!: string[];
+  /** Brand voice: the prompt treats these as style data, never as instructions. */
+  @Column({ name: 'brand_tone', type: 'varchar', length: 500, nullable: true }) brandTone!:
+    | string
+    | null;
+  @Column({
+    name: 'brand_banned_words',
+    type: 'varchar',
+    length: 40,
+    array: true,
+    default: () => "'{}'::varchar(40)[]",
+  })
+  brandBannedWords!: string[];
+  @Column({ name: 'brand_example', type: 'varchar', length: 2000, nullable: true })
+  brandExample!: string | null;
 }

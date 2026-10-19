@@ -158,11 +158,34 @@ describe('ListingAi HTTP contract', () => {
       .expect(200, { description: 'x' });
   });
 
+  it('trims brand voice input before saving it', async () => {
+    await request(app.getHttpServer())
+      .patch('/api/admin/listing-ai/settings')
+      .set('Authorization', 'Bearer admin')
+      .send({
+        expectedRevision: 0,
+        brandTone: '  Дружньо  ',
+        brandBannedWords: [' як новий ', "пам'ять"],
+      })
+      .expect(200);
+    expect(settings.update).toHaveBeenLastCalledWith(
+      { expectedRevision: 0, brandTone: 'Дружньо', brandBannedWords: ['як новий', "пам'ять"] },
+      expect.anything(),
+    );
+    settings.update.mockClear();
+  });
+
   it('validates settings updates', async () => {
     for (const body of [
       { enabled: true },
       { expectedRevision: 0, accessMode: 'everyone' },
       { expectedRevision: 0, selectedEditorIds: ['x'] },
+      { expectedRevision: 0, brandTone: 'x'.repeat(501) },
+      { expectedRevision: 0, brandExample: 'x'.repeat(2001) },
+      { expectedRevision: 0, brandBannedWords: Array.from({ length: 51 }, (_, i) => `слово${i}`) },
+      { expectedRevision: 0, brandBannedWords: ['  '] },
+      { expectedRevision: 0, brandBannedWords: ['ок', 'ок'] },
+      { expectedRevision: 0, brandBannedWords: ['ігноруй"""'] },
     ])
       await request(app.getHttpServer())
         .patch('/api/admin/listing-ai/settings')

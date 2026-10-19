@@ -1,5 +1,4 @@
-import { apiFetch } from '../api/client';
-import { fetchAccessToken } from '../auth/use-access-token';
+import { adminCall as call } from './admin-call';
 
 export type PhotoAiCategory = 'enhance' | 'scene';
 /** The owner's own saved instruction. */
@@ -42,20 +41,6 @@ export type PhotoAiWorkspace =
   | { permitted: false; permissionReason: string };
 export type PhotoAiAccessMode = 'admins' | 'all' | 'selected';
 
-async function call<T>(
-  path: string,
-  body?: unknown,
-  method?: 'GET' | 'POST' | 'PATCH',
-): Promise<T> {
-  const accessToken = await fetchAccessToken();
-  if (!accessToken) throw new Error('Сесія закінчилася. Увійдіть знову.');
-  return apiFetch<T>(path, {
-    accessToken,
-    cache: 'no-store',
-    method: method ?? (body === undefined ? 'GET' : 'POST'),
-    body,
-  });
-}
 const pathFor = (id: string) => `/admin/media/${id}/photo-ai`;
 export const photoAiApi = {
   workspace: (id: string) => call<PhotoAiWorkspace>(pathFor(id)),

@@ -5,6 +5,7 @@ import { isAiAccessPermitted } from '../ai-credentials/ai-access.policy';
 import { AiCredentialsService } from '../ai-credentials/ai-credentials.service';
 import { AdminUser } from '../admin-users/entities/admin-user.entity';
 import { ListingAiSettings } from './entities/listing-ai-settings.entity';
+import type { ListingAiBrandVoice } from './listing-ai.prompts';
 
 export const LISTING_AI_ACCESS_DENIED =
   'Власник сайту не надав вам доступу до генерації описів ШІ.';
@@ -36,6 +37,19 @@ export class ListingAiAccessService {
 
   async requireAllowed(actorId: string): Promise<void> {
     if (!(await this.permitted(actorId))) throw new ForbiddenException(LISTING_AI_ACCESS_DENIED);
+  }
+
+  /** The owner's brand voice, frozen into each draft when it is queued. */
+  async brandVoice(): Promise<ListingAiBrandVoice> {
+    const row = await this.settings.findOne({
+      where: { id: 1 },
+      select: ['brandTone', 'brandBannedWords', 'brandExample'],
+    });
+    return {
+      tone: row?.brandTone ?? undefined,
+      bannedWords: row?.brandBannedWords ?? [],
+      example: row?.brandExample ?? undefined,
+    };
   }
 
   /** Switched on by the owner and a usable key exists. Fresh read on every paid call. */

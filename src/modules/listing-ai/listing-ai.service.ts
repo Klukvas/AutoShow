@@ -87,7 +87,10 @@ export class ListingAiService {
       where: { actorId: actor.id, requestId: dto.requestId },
     });
     if (earlier) return this.repeatOf(earlier, listingId, dto);
-    const snapshot = await this.inputs.snapshot(listingId);
+    const [snapshot, voice] = await Promise.all([
+      this.inputs.snapshot(listingId),
+      this.access.brandVoice(),
+    ]);
     const row = await this.generations.manager.transaction(async (em) => {
       await em.query('SELECT pg_advisory_xact_lock(hashtext($1))', [`listing-ai:${actor.id}`]);
       const repeated = await em.findOne(ListingAiGeneration, {
@@ -135,7 +138,7 @@ export class ListingAiService {
           requestId: dto.requestId,
           preset: dto.preset,
           inputHash: snapshot.inputHash,
-          inputSnapshot: { input: snapshot.input, photos: snapshot.photos },
+          inputSnapshot: { input: snapshot.input, photos: snapshot.photos, voice },
           photoMediaIds: snapshot.photos.map((photo) => photo.mediaId),
           promptVersion: LISTING_AI_PROMPT_VERSION,
           model: this.config.LISTING_AI_MODEL,

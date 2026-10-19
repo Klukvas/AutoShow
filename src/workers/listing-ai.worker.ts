@@ -109,7 +109,7 @@ export class ListingAiWorker extends WorkerHost implements OnModuleInit {
       if (!(await this.markProviderStarted(row.id, row.listingId))) return;
       const response = await this.provider.generate({
         model: row.model,
-        instructions: listingAiInstructions(row.preset),
+        instructions: listingAiInstructions(row.preset, row.inputSnapshot.voice),
         text: listingAiUserText(row.inputSnapshot.input, images.length),
         images,
         schemaName: 'listing_description',
@@ -125,7 +125,12 @@ export class ListingAiWorker extends WorkerHost implements OnModuleInit {
         await this.fail(row.id, error, response);
         return;
       }
-      const validation = validateListingAiResult(result, row.inputSnapshot.input, row.preset);
+      const validation = validateListingAiResult(
+        result,
+        row.inputSnapshot.input,
+        row.preset,
+        row.inputSnapshot.voice,
+      );
       await this.generations.update(
         { id: row.id, status: 'processing' },
         { status: 'ready', result, validation, failureReason: null, ...this.metrics(response) },

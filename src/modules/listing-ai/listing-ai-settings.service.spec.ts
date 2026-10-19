@@ -25,7 +25,10 @@ function setup({ role = 'admin', usable = true } = {}) {
     findOne: jest.fn().mockResolvedValue({ id: 'admin', role }),
     count: jest.fn().mockResolvedValue(1),
   };
-  const credentials = { state: jest.fn().mockResolvedValue({ usable }) };
+  const credentials = {
+    state: jest.fn().mockResolvedValue({ usable, mode: 'own_key' }),
+    mode: 'own_key',
+  };
   const audit = { record: jest.fn() };
   const service = new ListingAiSettingsService(
     settings as never,
@@ -33,7 +36,7 @@ function setup({ role = 'admin', usable = true } = {}) {
     credentials as never,
     audit as never,
   );
-  return { service, row: () => row, audit, users };
+  return { service, row: () => row, audit, users, credentials };
 }
 
 describe('ListingAiSettingsService', () => {
@@ -80,6 +83,43 @@ describe('ListingAiSettingsService', () => {
         admin,
       ),
     ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('saves the brand voice, clears blank parts and reports it back', async () => {
+    const { service, row } = setup();
+    const view = await service.update(
+      {
+        expectedRevision: 0,
+        brandTone: 'Дружньо, без пафосу',
+        brandBannedWords: ['ідеальний'],
+        brandExample: 'Приклад.',
+      },
+      admin,
+    );
+    expect(view.brandVoice).toEqual({
+      tone: 'Дружньо, без пафосу',
+      bannedWords: ['ідеальний'],
+      example: 'Приклад.',
+    });
+    await service.update({ expectedRevision: 1, brandTone: '', brandExample: '' }, admin);
+    expect(row()).toMatchObject({
+      brandTone: null,
+      brandExample: null,
+      brandBannedWords: ['ідеальний'],
+    });
+  });
+
+  it('reports where the key comes from, even when it cannot be read', async () => {
+    const managed = setup();
+    managed.credentials.state.mockResolvedValue({ usable: true, mode: 'managed' });
+    expect(await managed.service.get(admin)).toMatchObject({ keyMode: 'managed', keyUsable: true });
+    const broken = setup();
+    broken.credentials.state.mockRejectedValue(new Error('db'));
+    expect(await broken.service.get(admin)).toMatchObject({
+      keyMode: 'own_key',
+      keyUsable: false,
+      available: false,
+    });
   });
 
   it('switching off needs no key', async () => {

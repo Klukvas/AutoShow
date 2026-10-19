@@ -192,6 +192,20 @@ async function fixture(
         }
         return route.fulfill({ json: settings });
       }
+      // The branding page also shows the AI descriptions card; keep it quiet here.
+      if (url.pathname === '/api/admin/listing-ai/settings')
+        return route.fulfill({
+          json: {
+            enabled: false,
+            accessMode: 'all',
+            selectedEditorIds: [],
+            revision: 0,
+            keyUsable: false,
+            keyMode: 'own_key',
+            available: false,
+            brandVoice: { tone: '', bannedWords: [], example: '' },
+          },
+        });
       if (url.pathname === '/api/admin/branding') {
         brandingCalls.push(body);
         return route.fulfill({ json: body });

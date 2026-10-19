@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import type { Listing } from '../listings/entities/listing.entity';
 import type { ListingMedia } from '../listings/entities/listing-media.entity';
 import type { MediaRendition } from '../listings/entities/media-rendition.entity';
+import type { ListingAiBrandVoice } from './listing-ai.prompts';
 
 export const LISTING_AI_MAX_PHOTOS = 5;
 
@@ -42,7 +43,12 @@ export type ListingAiInput = {
 export type ListingAiPhoto = { mediaId: string; s3Key: string };
 
 /** What a draft row stores: the model input as it was when the draft was queued. */
-export type ListingAiSnapshot = { input: ListingAiInput; photos: ListingAiPhoto[] };
+export type ListingAiSnapshot = {
+  input: ListingAiInput;
+  photos: ListingAiPhoto[];
+  /** Brand voice as it was when the draft was queued; absent on older drafts. */
+  voice?: ListingAiBrandVoice;
+};
 
 /**
  * UTF-16 code-unit order. The hash is compared with a recomputed one over months,

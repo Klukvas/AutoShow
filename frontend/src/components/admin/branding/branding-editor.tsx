@@ -16,6 +16,7 @@ import { SectionCard } from '@/components/admin/ui/section-card';
 import { TextField, inputCls } from '@/components/admin/ui/field';
 import { useToast } from '@/components/admin/ui/toast';
 import { BrandPreview } from './brand-preview';
+import { ListingAiSettings } from './listing-ai-settings';
 import { PhotoAiSettings } from './photo-ai-settings';
 
 /** Handoff swatch set; «+» opens the custom picker. */
@@ -379,6 +380,8 @@ export function BrandingEditor({ initial }: BrandingEditorProps) {
           </SectionCard>
 
           <PhotoAiSettings />
+
+          <ListingAiSettings />
 
           <SectionCard title={t('branding.telegramTitle')}>
             <div className="flex flex-col gap-3.5">

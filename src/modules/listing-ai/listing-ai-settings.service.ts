@@ -23,8 +23,11 @@ export type ListingAiSettingsView = {
   revision: number;
   /** A usable AI key exists (it is managed in the photo AI settings for now). */
   keyUsable: boolean;
+  /** own_key: the owner saves the key; managed: the platform provides it. */
+  keyMode: 'own_key' | 'managed';
   /** Switched on and a key is usable. */
   available: boolean;
+  brandVoice: { tone: string; bannedWords: string[]; example: string };
 };
 
 export type UpdateListingAiSettings = {
@@ -32,6 +35,9 @@ export type UpdateListingAiSettings = {
   enabled?: boolean;
   accessMode?: ListingAiAccessMode;
   selectedEditorIds?: string[];
+  brandTone?: string;
+  brandBannedWords?: string[];
+  brandExample?: string;
 };
 
 const unavailable = () => new ServiceUnavailableException('Налаштування ШІ поки недоступні.');
@@ -58,14 +64,21 @@ export class ListingAiSettingsService {
   }
 
   private async view(row: ListingAiSettings): Promise<ListingAiSettingsView> {
-    const keyUsable = (await this.credentials.state().catch(() => null))?.usable ?? false;
+    const key = await this.credentials.state().catch(() => null);
+    const keyUsable = key?.usable ?? false;
     return {
       enabled: row.enabled,
       accessMode: row.accessMode,
       selectedEditorIds: row.selectedEditorIds,
       revision: row.revision,
       keyUsable,
+      keyMode: key?.mode ?? this.credentials.mode,
       available: row.enabled && keyUsable,
+      brandVoice: {
+        tone: row.brandTone ?? '',
+        bannedWords: row.brandBannedWords ?? [],
+        example: row.brandExample ?? '',
+      },
     };
   }
 
@@ -94,6 +107,10 @@ export class ListingAiSettingsService {
           enabled: dto.enabled ?? row.enabled,
           accessMode: dto.accessMode ?? row.accessMode,
           selectedEditorIds: dto.selectedEditorIds ?? row.selectedEditorIds,
+          brandTone: dto.brandTone === undefined ? row.brandTone : dto.brandTone || null,
+          brandBannedWords: dto.brandBannedWords ?? row.brandBannedWords ?? [],
+          brandExample:
+            dto.brandExample === undefined ? row.brandExample : dto.brandExample || null,
           revision: row.revision + 1,
         };
         await em.update(ListingAiSettings, { id: 1 }, patch);
@@ -107,6 +124,11 @@ export class ListingAiSettingsService {
               enabled: patch.enabled,
               accessMode: patch.accessMode,
               selectedEditorIds: patch.selectedEditorIds,
+              brandVoiceChanged:
+                patch.brandTone !== row.brandTone ||
+                patch.brandExample !== row.brandExample ||
+                patch.brandBannedWords.join('\u0000') !==
+                  (row.brandBannedWords ?? []).join('\u0000'),
             },
           },
           em,

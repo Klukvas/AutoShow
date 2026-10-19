@@ -35,6 +35,7 @@ function setup(
   const access = {
     requireAllowed: jest.fn().mockResolvedValue(undefined),
     available: jest.fn().mockResolvedValue(true),
+    brandVoice: jest.fn().mockResolvedValue({ tone: 'Дружньо', bannedWords: ['ідеальний'] }),
   };
   const credits = { reserve: jest.fn().mockResolvedValue(undefined) };
   const audit = { record: jest.fn() };
@@ -76,7 +77,11 @@ describe('ListingAiService.create', () => {
         listingId: 'listing',
         preset: 'standard',
         inputHash: snapshot.inputHash,
-        inputSnapshot: { input: snapshot.input, photos: snapshot.photos },
+        inputSnapshot: {
+          input: snapshot.input,
+          photos: snapshot.photos,
+          voice: { tone: 'Дружньо', bannedWords: ['ідеальний'] },
+        },
         photoMediaIds: ['m1'],
         model: 'gpt-fixture',
         status: 'queued',

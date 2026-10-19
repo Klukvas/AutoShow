@@ -156,6 +156,27 @@ describe('ListingAiWorker', () => {
     expect(credits.settle).toHaveBeenCalledWith('g1', 'ready');
   });
 
+  it('writes and checks with the brand voice frozen into the draft', async () => {
+    const voice = { tone: 'Стримано', bannedWords: ['ідеальний'] };
+    const { worker, job, provider, last } = setup({
+      inputSnapshot: { input, photos: [], voice },
+    });
+    provider.generate.mockResolvedValue({
+      output: { ...answer, description: `${answer.description} Ідеальний вибір.` },
+      model: 'm',
+      inputTokens: 1,
+      outputTokens: 1,
+      latencyMs: 1,
+    });
+    await worker.process(job);
+    expect(provider.generate.mock.calls[0][0].instructions).toContain('"""\nСтримано\n"""');
+    expect(last().validation).toEqual({
+      flags: expect.arrayContaining([
+        expect.objectContaining({ reason: 'forbidden_content', claim: 'ідеальний' }),
+      ]),
+    });
+  });
+
   it('does nothing when another worker already claimed the draft', async () => {
     const { worker, job, repo, provider } = setup();
     repo.update.mockResolvedValueOnce({ affected: 0 });
