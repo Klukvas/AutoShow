@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { adminApi, type AdminListing, type FeeType, type SellerType } from '@/lib/api/admin';
+import { adminApi, type AdminListing } from '@/lib/api/admin';
 import { ApiClientError } from '@/lib/api/client';
 import { fetchAccessToken } from '@/lib/auth/use-access-token';
 import type {
@@ -16,29 +16,26 @@ import type {
 import {
   listingBodyFromValues,
   parseListingForm,
-  YEAR_MAX,
-  YEAR_MIN,
   type FieldIssue,
 } from '@/lib/admin/listing-form-schema';
-import { cityOptions } from '@/lib/admin/cities';
-import { slugify } from '@/lib/admin/slugify';
+import { tabsWithErrors } from '@/lib/admin/listing-form-tabs';
 import { Banner } from '@/components/admin/ui/banner';
 import { ListingStatusBadge } from '@/components/admin/ui/badges';
-import {
-  CheckboxField,
-  ChipCheckbox,
-  SelectField,
-  TextField,
-  TextareaField,
-  ToggleField,
-} from '@/components/admin/ui/field';
-import { SectionCard } from '@/components/admin/ui/section-card';
 import { Dialog } from '@/components/admin/ui/dialog';
 import { useToast } from '@/components/admin/ui/toast';
-import { MakeEditor, ModelEditor } from '@/components/admin/catalog/catalog-editor';
-import { CatalogCombobox } from './catalog-combobox';
-import { ColorField } from './color-field';
-import { ListingAiPanel } from './listing-ai-panel';
+import { ListingDescriptionSection, type AiTexts } from './listing-form-description';
+import { ListingEquipmentSection } from './listing-form-equipment';
+import { ListingPriceSection, ListingSellerSection } from './listing-form-deal';
+import { ListingSpecsSection } from './listing-form-specs';
+import { ListingVehicleSection } from './listing-form-vehicle';
+import { primaryBtn, secondaryBtn } from './listing-form-ui';
+import {
+  ListingTabList,
+  ListingTabPanel,
+  ListingTabsBoundary,
+  listingPanelId,
+  useListingTabs,
+} from './listing-tabs';
 import { TransitionMenu } from './transition-menu';
 
 export interface ListingCatalog {
@@ -61,151 +58,33 @@ interface ListingFormProps {
   canManageCatalog?: boolean;
 }
 
-const CATEGORY_ORDER = ['comfort', 'safety', 'multimedia', 'interior', 'exterior', 'other'];
-
 /**
- * Handoff 1d: grouped form (Автомобіль / Характеристики / Ціна та локація /
- * Опції / Опис), dependent model select, field-level validation and the 409
- * conflict banner with «Перезавантажити».
+ * The listing form split over the «Основне / Комплектація / Опис» tabs. All
+ * tabs stay mounted inside one <form>, so a save reads every field; media
+ * and Telegram panels are rendered by the page next to it.
  */
-export function ListingForm({ catalog, initial, canManageCatalog = false }: ListingFormProps) {
+export function ListingForm(props: ListingFormProps) {
+  return (
+    <ListingTabsBoundary isSaved={Boolean(props.initial)}>
+      <ListingFormBody {...props} />
+    </ListingTabsBoundary>
+  );
+}
+
+function ListingFormBody({ catalog, initial, canManageCatalog = false }: ListingFormProps) {
   const t = useTranslations('admin');
-  const tc = useTranslations('listing.optionCategories');
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const isEdit = Boolean(initial);
+  const tabs = useListingTabs();
 
   const { toast } = useToast();
   const [pending, setPending] = useState<null | 'save' | 'publish'>(null);
   const [conflict, setConflict] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, FieldIssue>>({});
-  const [makeId, setMakeId] = useState(initial?.makeId ?? '');
-  const [modelId, setModelId] = useState(initial?.modelId ?? '');
-  // Makes/models created inline from the combobox this session.
-  const [extraMakes, setExtraMakes] = useState<CatalogMake[]>([]);
-  const [extraModels, setExtraModels] = useState<CatalogModel[]>([]);
   const [confirmPublish, setConfirmPublish] = useState(false);
-  // Consignment section: seller/fee kind drive which detail fields render.
-  const [sellerType, setSellerType] = useState<SellerType>(initial?.sellerType ?? 'own');
-  const [feeType, setFeeType] = useState<FeeType>(initial?.feeType ?? 'none');
-  // Options created inline from this form (admin-only); pre-checked chips.
-  const [extraOptions, setExtraOptions] = useState<VehicleOption[]>([]);
-  const [optDialog, setOptDialog] = useState(false);
-  const [optName, setOptName] = useState('');
-  const [optCategory, setOptCategory] = useState<VehicleOption['category']>('other');
-  const [optSaving, setOptSaving] = useState(false);
-  const [optError, setOptError] = useState<string | null>(null);
-
-  const [catalogDialog, setCatalogDialog] = useState<{
-    kind: 'make' | 'model';
-    name: string;
-  } | null>(null);
-  const [freshMakes, setFreshMakes] = useState<CatalogMake[] | null>(null);
-  const [freshModels, setFreshModels] = useState<CatalogModel[] | null>(null);
-  const catalogMutationVersion = useRef(0);
-  const catalogRequestVersion = useRef(0);
-  // Pickers use the authenticated uncached view, including updates made in the dictionary.
-  useEffect(() => {
-    let active = true;
-    const refresh = async () => {
-      const requestVersion = ++catalogRequestVersion.current;
-      const mutationVersion = catalogMutationVersion.current;
-      try {
-        const accessToken = await fetchAccessToken();
-        if (!accessToken) return;
-        const [nextMakes, nextModels] = await Promise.all([
-          adminApi.listCatalogMakes({ accessToken }),
-          adminApi.listCatalogModels(undefined, { accessToken }),
-        ]);
-        if (
-          active &&
-          requestVersion === catalogRequestVersion.current &&
-          mutationVersion === catalogMutationVersion.current
-        ) {
-          setFreshMakes(nextMakes);
-          setFreshModels(nextModels);
-          // A later server read supersedes the inline creation cache. A read
-          // started before a create completed must not discard that new item.
-          setExtraMakes([]);
-          setExtraModels([]);
-          setMakeId((current) => (nextMakes.some((make) => make.id === current) ? current : ''));
-          setModelId((current) =>
-            nextModels.some((model) => model.id === current) ? current : '',
-          );
-        }
-      } catch (cause) {
-        if (active)
-          setError(cause instanceof Error ? cause.message : t('form.catalogCreateFailed'));
-      }
-    };
-    void refresh();
-    window.addEventListener('focus', refresh);
-    return () => {
-      active = false;
-      window.removeEventListener('focus', refresh);
-    };
-  }, [t]);
-  const makes = useMemo(() => {
-    const all = new Map((freshMakes ?? catalog.makes).map((make) => [make.id, make]));
-    extraMakes.forEach((make) => all.set(make.id, make));
-    return [...all.values()];
-  }, [freshMakes, catalog.makes, extraMakes]);
-  const models = useMemo(() => {
-    const all = new Map((freshModels ?? catalog.models).map((model) => [model.id, model]));
-    extraModels.forEach((model) => all.set(model.id, model));
-    return [...all.values()].filter((model) => model.makeId === makeId);
-  }, [freshModels, catalog.models, extraModels, makeId]);
-  const createMake = (name: string) => setCatalogDialog({ kind: 'make', name });
-  const createModel = (name: string) => setCatalogDialog({ kind: 'model', name });
-  const optionGroups = useMemo(() => {
-    const normalized = (c: string) => (CATEGORY_ORDER.includes(c) ? c : 'other');
-    const all = [...catalog.options, ...extraOptions];
-    return CATEGORY_ORDER.map((cat) => ({
-      cat,
-      items: all.filter((o) => normalized(o.category) === cat),
-    })).filter((g) => g.items.length > 0);
-  }, [catalog.options, extraOptions]);
-  const selectedOptionIds = useMemo(
-    () => new Set((initial?.options ?? []).map((o) => o.optionId)),
-    [initial],
-  );
-  const extraOptionIds = useMemo(() => new Set(extraOptions.map((o) => o.id)), [extraOptions]);
-  const selectedTagIds = useMemo(
-    () => new Set((initial?.tags ?? []).map((tag) => tag.tagId)),
-    [initial],
-  );
-
-  const createOption = async () => {
-    const nameUk = optName.trim();
-    if (nameUk.length < 2) {
-      setOptError(t('form.vMinLength', { min: 2 }));
-      return;
-    }
-    setOptSaving(true);
-    setOptError(null);
-    try {
-      const token = await fetchAccessToken();
-      if (!token) {
-        setOptError(t('common.sessionExpired'));
-        return;
-      }
-      const created = await adminApi.createCatalogOption(
-        { nameUk, slug: slugify(nameUk), category: optCategory },
-        { accessToken: token },
-      );
-      setExtraOptions((prev) => [...prev, created]);
-      setOptDialog(false);
-      setOptName('');
-      setOptCategory('other');
-    } catch (e) {
-      if (e instanceof ApiClientError && e.status === 409) setOptError(t('form.optionExists'));
-      else if (e instanceof ApiClientError) setOptError(e.message);
-      else setOptError(t('form.optionCreateFailed'));
-    } finally {
-      setOptSaving(false);
-    }
-  };
+  const errorTabs = tabsWithErrors(Object.keys(fieldErrors));
 
   const err = (field: string): string | null => {
     const issue = fieldErrors[field];
@@ -258,9 +137,16 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
     setFieldErrors(parsed.errors);
     if (!parsed.values) {
       setError(t('form.formInvalid'));
-      // Move focus to the first invalid control for keyboard/AT users.
+      // Stay on the current tab when it has errors, otherwise open the first
+      // tab that does; then focus its first invalid control for keyboard/AT users.
+      const invalidTabs = tabsWithErrors(Object.keys(parsed.errors));
+      const target = invalidTabs.includes(tabs.active) ? tabs.active : invalidTabs[0];
+      if (target) tabs.select(target);
       requestAnimationFrame(() => {
-        formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+        document
+          .getElementById(listingPanelId(target ?? tabs.active))
+          ?.querySelector<HTMLElement>('[aria-invalid="true"]')
+          ?.focus();
       });
       return null;
     }
@@ -280,9 +166,7 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
   };
 
   /** Puts AI texts into the (uncontrolled) fields; they reach the listing on the normal save. */
-  const applyAiTexts = (
-    values: Partial<Record<'description' | 'metaTitle' | 'metaDescription', string>>,
-  ) => {
+  const applyAiTexts = (values: AiTexts) => {
     const form = formRef.current;
     if (!form) return;
     for (const [name, value] of Object.entries(values)) {
@@ -296,7 +180,11 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
   const submit = async (publish: boolean) => {
     if (pending) return;
     const values = collect();
-    if (!values) return;
+    if (!values) {
+      // Close the publish dialog so the error banner and the focused field are reachable.
+      setConfirmPublish(false);
+      return;
+    }
     setPending(publish ? 'publish' : 'save');
     setError(null);
     try {
@@ -337,12 +225,6 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
       setConfirmPublish(false);
     }
   };
-
-  const gridCls = 'grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3';
-  const secondaryBtn =
-    'focus-ring inline-flex h-10 items-center rounded-none border border-line-input bg-surface px-4 text-[0.8125rem] font-medium text-ink transition-none hover:border-line-hover disabled:opacity-50';
-  const primaryBtn =
-    'focus-ring inline-flex h-10 items-center rounded-none bg-accent px-[18px] text-[0.8125rem] font-medium text-on-accent transition-colors hover:bg-accent-hover disabled:opacity-50';
 
   // Publish requires at least one processed photo (backend 422s otherwise) and
   // photos are uploaded on the edit screen — so a brand-new listing is always
@@ -435,465 +317,35 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
         </div>
       </div>
 
-      <div className="flex flex-col gap-[22px]">
-        {/* Автомобіль */}
-        <SectionCard title={t('form.groupVehicle')}>
-          <div className={gridCls}>
-            <CatalogCombobox
-              label={t('form.make')}
-              name="makeId"
-              required
-              items={makes}
-              value={makeId}
-              onSelect={(id) => {
-                setMakeId(id);
-                // Models belong to a make — a make switch invalidates the pick.
-                setModelId('');
-              }}
-              error={err('makeId')}
-              placeholder={t('form.selectPlaceholder')}
-              showLogos
-              onCreate={createMake}
-              addLabel={t('catalog.addMake')}
-              unknownHint={(name) => t('form.makeUnknown', { name })}
-              createLabel={(name) => t('form.makeCreate', { name })}
-              creatingLabel={t('common.saving')}
-              emptyLabel={t('form.comboNoMatch')}
-            />
-            <CatalogCombobox
-              label={
-                <>
-                  {t('form.model')}{' '}
-                  <span className="font-normal text-ink-3">{t('form.modelHint')}</span>
-                </>
-              }
-              name="modelId"
-              required
-              items={models}
-              value={modelId}
-              onSelect={setModelId}
-              error={err('modelId')}
-              placeholder={makeId ? t('form.selectPlaceholder') : t('form.modelPickMakeFirst')}
-              onCreate={makeId ? createModel : undefined}
-              addLabel={t('catalog.addModel')}
-              unknownHint={(name) => t('form.modelUnknown', { name })}
-              createLabel={(name) => t('form.modelCreate', { name })}
-              creatingLabel={t('common.saving')}
-              emptyLabel={makeId ? t('form.comboNoMatch') : t('form.modelPickMakeFirst')}
-            />
-            <TextField
-              label={t('form.year')}
-              name="year"
-              type="number"
-              inputMode="numeric"
-              min={YEAR_MIN}
-              max={YEAR_MAX}
-              required
-              defaultValue={initial?.year ?? ''}
-              error={err('year')}
-            />
-            <TextField
-              label={t('form.generation')}
-              name="generation"
-              defaultValue={initial?.generation ?? ''}
-              error={err('generation')}
-            />
-            <TextField
-              label={t('form.modification')}
-              name="modification"
-              defaultValue={initial?.modification ?? ''}
-              error={err('modification')}
-            />
-            <TextField
-              label={t('form.vin')}
-              name="vin"
-              maxLength={17}
-              autoCapitalize="characters"
-              defaultValue={initial?.vin ?? ''}
-              error={err('vin')}
-            />
-          </div>
-          <ToggleField
-            label={t('form.vinVisible')}
-            name="vinVisible"
-            className="mt-2.5"
-            defaultChecked={initial?.vinVisible ?? false}
-          />
-        </SectionCard>
+      <ListingTabList errorTabs={errorTabs} />
 
-        {/* Характеристики + Ціна та локація */}
+      <ListingTabPanel tab="main" className="flex flex-col gap-[22px]">
+        <ListingVehicleSection
+          makes={catalog.makes}
+          models={catalog.models}
+          initial={initial}
+          err={err}
+          onError={setError}
+        />
         <div className="grid grid-cols-1 items-start gap-[22px] lg:grid-cols-[1.6fr_1fr]">
-          <SectionCard title={t('form.groupSpecs')}>
-            <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-              <TextField
-                label={t('form.mileage')}
-                name="mileageKm"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                required
-                defaultValue={initial?.mileageKm ?? ''}
-                error={err('mileageKm')}
-              />
-              <SelectField
-                label={t('form.body')}
-                name="bodyTypeId"
-                required
-                defaultValue={initial?.bodyTypeId ?? ''}
-                error={err('bodyTypeId')}
-              >
-                <option value="">{t('form.selectPlaceholder')}</option>
-                {catalog.bodyTypes.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.nameUk}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                label={t('form.fuel')}
-                name="fuelTypeId"
-                required
-                defaultValue={initial?.fuelTypeId ?? ''}
-                error={err('fuelTypeId')}
-              >
-                <option value="">{t('form.selectPlaceholder')}</option>
-                {catalog.fuelTypes.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.nameUk}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                label={t('form.transmission')}
-                name="transmissionId"
-                required
-                defaultValue={initial?.transmissionId ?? ''}
-                error={err('transmissionId')}
-              >
-                <option value="">{t('form.selectPlaceholder')}</option>
-                {catalog.transmissions.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.nameUk}
-                  </option>
-                ))}
-              </SelectField>
-              <SelectField
-                label={t('form.drive')}
-                name="driveTypeId"
-                required
-                defaultValue={initial?.driveTypeId ?? ''}
-                error={err('driveTypeId')}
-              >
-                <option value="">{t('form.selectPlaceholder')}</option>
-                {catalog.driveTypes.map((i) => (
-                  <option key={i.id} value={i.id}>
-                    {i.nameUk}
-                  </option>
-                ))}
-              </SelectField>
-              <ColorField
-                colors={catalog.colors}
-                defaultValue={initial?.colorId ?? ''}
-                error={err('colorId')}
-              />
-              <TextField
-                label={t('form.engineVolume')}
-                name="engineVolumeL"
-                type="number"
-                inputMode="decimal"
-                step="0.1"
-                min={0.1}
-                max={99.9}
-                required
-                defaultValue={initial?.engineVolumeL ?? ''}
-                error={err('engineVolumeL')}
-              />
-              <TextField
-                label={t('form.power')}
-                name="powerHp"
-                type="number"
-                inputMode="numeric"
-                min={1}
-                max={2500}
-                required
-                defaultValue={initial?.powerHp ?? ''}
-                error={err('powerHp')}
-              />
-              <SelectField
-                label={t('form.condition')}
-                name="condition"
-                required
-                defaultValue={initial?.condition ?? 'used'}
-                error={err('condition')}
-              >
-                <option value="used">{t('form.conditionUsed')}</option>
-                <option value="new">{t('form.conditionNew')}</option>
-                <option value="damaged">{t('form.conditionDamaged')}</option>
-              </SelectField>
-              <TextField
-                label={t('form.owners')}
-                name="ownersCount"
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={30}
-                defaultValue={initial?.ownersCount ?? 1}
-                error={err('ownersCount')}
-              />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-x-5">
-              <CheckboxField
-                label={t('form.crashed')}
-                name="isCrashed"
-                defaultChecked={initial?.isCrashed ?? false}
-              />
-              <CheckboxField
-                label={t('form.customs')}
-                name="customsCleared"
-                defaultChecked={initial?.customsCleared ?? true}
-              />
-            </div>
-          </SectionCard>
-
-          <SectionCard title={t('form.groupPrice')}>
-            <div className="flex gap-2">
-              <TextField
-                label={t('form.price')}
-                name="priceAmount"
-                type="number"
-                inputMode="decimal"
-                min={1}
-                step="0.01"
-                required
-                defaultValue={initial?.priceAmount ?? ''}
-                error={err('priceAmount')}
-                className="flex-1"
-              />
-              <SelectField
-                label={t('form.currency')}
-                name="priceCurrency"
-                defaultValue={initial?.priceCurrency ?? 'USD'}
-                className="w-[92px] flex-none"
-              >
-                <option value="USD">USD</option>
-                <option value="EUR">EUR</option>
-                <option value="UAH">UAH</option>
-              </SelectField>
-            </div>
-            <CheckboxField
-              label={t('form.negotiable')}
-              name="isNegotiable"
-              defaultChecked={initial?.isNegotiable ?? false}
-            />
-            <SelectField
-              label={t('form.city')}
-              name="locationCity"
-              required
-              defaultValue={initial?.locationCity ?? ''}
-              error={err('locationCity')}
-            >
-              <option value="">{t('form.selectPlaceholder')}</option>
-              {cityOptions(initial?.locationCity).map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </SelectField>
-          </SectionCard>
-
-          <SectionCard title={t('form.groupSeller')}>
-            <div className="flex flex-col gap-3.5">
-              <SelectField
-                label={t('form.sellerType')}
-                name="sellerType"
-                value={sellerType}
-                onChange={(e) => setSellerType(e.target.value as SellerType)}
-              >
-                <option value="own">{t('form.sellerOwn')}</option>
-                <option value="client">{t('form.sellerClient')}</option>
-              </SelectField>
-              {sellerType === 'client' && (
-                <>
-                  <TextField
-                    label={t('form.sellerName')}
-                    name="sellerName"
-                    maxLength={128}
-                    defaultValue={initial?.sellerName ?? ''}
-                    error={err('sellerName')}
-                  />
-                  <TextField
-                    label={t('form.sellerPhone')}
-                    name="sellerPhone"
-                    maxLength={32}
-                    defaultValue={initial?.sellerPhone ?? ''}
-                    error={err('sellerPhone')}
-                  />
-                </>
-              )}
-              <SelectField
-                label={t('form.feeType')}
-                name="feeType"
-                value={feeType}
-                onChange={(e) => setFeeType(e.target.value as FeeType)}
-                hint={t('form.feeHint')}
-              >
-                <option value="none">{t('form.feeNone')}</option>
-                <option value="fixed">{t('form.feeFixed')}</option>
-                <option value="percent">{t('form.feePercentOption')}</option>
-              </SelectField>
-              {feeType === 'percent' && (
-                <TextField
-                  label={t('form.feePercentLabel')}
-                  name="feePercent"
-                  type="number"
-                  inputMode="decimal"
-                  min={0.1}
-                  max={100}
-                  step="0.1"
-                  required
-                  defaultValue={initial?.feePercent ? String(Number(initial.feePercent)) : ''}
-                  error={err('feePercent')}
-                />
-              )}
-              {feeType === 'fixed' && (
-                <TextField
-                  label={t('form.feeFixedLabel')}
-                  name="feeFixedAmount"
-                  type="number"
-                  inputMode="decimal"
-                  min={1}
-                  step="0.01"
-                  required
-                  defaultValue={
-                    initial?.feeFixedAmount ? String(Number(initial.feeFixedAmount)) : ''
-                  }
-                  error={err('feeFixedAmount')}
-                />
-              )}
-              {initial?.status === 'sold' && initial.salePriceAmount && (
-                <p className="rounded-none bg-ok-bg px-3 py-2 text-[0.8125rem] font-medium text-ok">
-                  {t('form.saleResult', {
-                    price: `${Number(initial.salePriceAmount).toLocaleString('uk-UA')} ${initial.priceCurrency}`,
-                    commission: `${Number(initial.commissionAmount ?? 0).toLocaleString('uk-UA')} ${initial.priceCurrency}`,
-                  })}
-                </p>
-              )}
-            </div>
-          </SectionCard>
+          <ListingSpecsSection catalog={catalog} initial={initial} err={err} />
+          <ListingPriceSection initial={initial} err={err} />
+          <ListingSellerSection initial={initial} err={err} />
         </div>
+      </ListingTabPanel>
 
-        {/* Опції */}
-        {(optionGroups.length > 0 || canManageCatalog) && (
-          <SectionCard title={t('form.groupOptions')}>
-            <div className="flex flex-col gap-4">
-              {optionGroups.map((g) => (
-                <div key={g.cat}>
-                  <div className="mb-2 text-[0.6875rem] font-medium uppercase tracking-[0.06em] text-ink-3">
-                    {tc(g.cat as never)}
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {g.items.map((opt) => (
-                      <ChipCheckbox
-                        key={opt.id}
-                        name="optionIds"
-                        value={opt.id}
-                        defaultChecked={selectedOptionIds.has(opt.id) || extraOptionIds.has(opt.id)}
-                        label={opt.nameUk}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {canManageCatalog && (
-                <div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOptError(null);
-                      setOptDialog(true);
-                    }}
-                    className="focus-ring inline-flex items-center gap-1.5 rounded-none border border-dashed border-line-strong px-3 py-1.5 text-[0.78125rem] font-medium text-ink-2 hover:border-accent hover:text-accent"
-                  >
-                    <span aria-hidden>+</span>
-                    {t('form.addOption')}
-                  </button>
-                </div>
-              )}
-            </div>
-          </SectionCard>
-        )}
+      <ListingTabPanel tab="equipment" className="flex flex-col gap-[22px]">
+        <ListingEquipmentSection
+          options={catalog.options}
+          tags={catalog.tags}
+          initial={initial}
+          canManageCatalog={canManageCatalog}
+        />
+      </ListingTabPanel>
 
-        {/* Ярлики */}
-        {catalog.tags.length > 0 && (
-          <SectionCard title={t('form.groupTags')}>
-            <div className="flex flex-wrap gap-2">
-              {catalog.tags.map((tag) => (
-                <ChipCheckbox
-                  key={tag.id}
-                  name="tagIds"
-                  value={tag.id}
-                  defaultChecked={selectedTagIds.has(tag.id)}
-                  label={tag.nameUk}
-                />
-              ))}
-            </div>
-          </SectionCard>
-        )}
-
-        {/* Опис */}
-        <SectionCard title={t('form.groupDescription')}>
-          <div className="flex flex-col gap-3.5">
-            <TextField
-              label={t('form.titleField')}
-              name="title"
-              minLength={8}
-              maxLength={255}
-              required
-              defaultValue={initial?.title ?? ''}
-              error={err('title')}
-            />
-            <TextareaField
-              label={t('form.description')}
-              name="description"
-              required
-              minLength={20}
-              maxLength={10000}
-              rows={5}
-              defaultValue={initial?.description ?? ''}
-              error={err('description')}
-            />
-            <TextField
-              label={t('form.metaTitle')}
-              name="metaTitle"
-              maxLength={255}
-              hint={t('form.metaTitleHint')}
-              defaultValue={initial?.metaTitle ?? ''}
-              error={err('metaTitle')}
-            />
-            <TextareaField
-              label={t('form.metaDescription')}
-              name="metaDescription"
-              maxLength={320}
-              rows={2}
-              hint={t('form.metaDescriptionHint')}
-              defaultValue={initial?.metaDescription ?? ''}
-              error={err('metaDescription')}
-            />
-          </div>
-        </SectionCard>
-
-        {initial && (
-          <ListingAiPanel
-            listingId={initial.id}
-            saved={{
-              description: initial.description ?? '',
-              metaTitle: initial.metaTitle ?? '',
-              metaDescription: initial.metaDescription ?? '',
-            }}
-            onApply={applyAiTexts}
-          />
-        )}
-      </div>
+      <ListingTabPanel tab="description" className="flex flex-col gap-[22px]">
+        <ListingDescriptionSection initial={initial} err={err} onApplyAi={applyAiTexts} />
+      </ListingTabPanel>
 
       {/* Publish confirmation (status transitions always confirm) */}
       <Dialog
@@ -928,92 +380,6 @@ export function ListingForm({ catalog, initial, canManageCatalog = false }: List
           })}
         </p>
       </Dialog>
-
-      {/* Inline "new option" (admin-only). Fields carry no `name` so they never
-          leak into the listing FormData; Enter is intercepted so it can't
-          submit the outer form. */}
-      <Dialog
-        open={optDialog}
-        onClose={() => (optSaving ? null : setOptDialog(false))}
-        title={t('form.addOptionTitle')}
-        footer={
-          <>
-            <button
-              type="button"
-              onClick={() => setOptDialog(false)}
-              disabled={optSaving}
-              className={secondaryBtn}
-            >
-              {t('common.cancel')}
-            </button>
-            <button
-              type="button"
-              onClick={() => void createOption()}
-              disabled={optSaving}
-              className={primaryBtn}
-            >
-              {optSaving ? t('common.saving') : t('form.optionCreate')}
-            </button>
-          </>
-        }
-      >
-        <div className="flex flex-col gap-3.5">
-          {optError && <Banner tone="error">{optError}</Banner>}
-          <TextField
-            label={t('form.optionName')}
-            required
-            minLength={2}
-            maxLength={128}
-            value={optName}
-            onChange={(e) => setOptName(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                void createOption();
-              }
-            }}
-          />
-          <SelectField
-            label={t('form.optionCategory')}
-            value={optCategory}
-            onChange={(e) => setOptCategory(e.target.value as VehicleOption['category'])}
-          >
-            {CATEGORY_ORDER.map((cat) => (
-              <option key={cat} value={cat}>
-                {tc(cat as never)}
-              </option>
-            ))}
-          </SelectField>
-        </div>
-      </Dialog>
-      {catalogDialog?.kind === 'make' && (
-        <MakeEditor
-          initialName={catalogDialog.name}
-          onClose={() => setCatalogDialog(null)}
-          onSaved={(make) => {
-            catalogMutationVersion.current++;
-            setExtraMakes((current) => [...current.filter((item) => item.id !== make.id), make]);
-            setMakeId(make.id);
-            setModelId('');
-            setCatalogDialog(null);
-            toast(t('form.makeCreated', { name: make.nameUk }));
-          }}
-        />
-      )}
-      {catalogDialog?.kind === 'model' && makes.find((make) => make.id === makeId) && (
-        <ModelEditor
-          make={makes.find((make) => make.id === makeId) as CatalogMake}
-          initialName={catalogDialog.name}
-          onClose={() => setCatalogDialog(null)}
-          onSaved={(model) => {
-            catalogMutationVersion.current++;
-            setExtraModels((current) => [...current.filter((item) => item.id !== model.id), model]);
-            setModelId(model.id);
-            setCatalogDialog(null);
-            toast(t('form.modelCreated', { name: model.nameUk }));
-          }}
-        />
-      )}
     </form>
   );
 }

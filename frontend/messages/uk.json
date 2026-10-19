@@ -472,6 +472,17 @@
       "groupOptions": "Опції (мультивибір)",
       "groupTags": "Ярлики (мультивибір)",
       "groupDescription": "Опис",
+      "tabs": {
+        "label": "Розділи оголошення",
+        "main": "Основне",
+        "equipment": "Комплектація",
+        "description": "Опис",
+        "media": "Медіа",
+        "telegram": "Telegram",
+        "hasErrors": "(є помилки)",
+        "savedOnlyHint": "Медіа та Telegram стануть доступні після першого збереження.",
+        "equipmentEmpty": "У довіднику ще немає опцій і ярликів."
+      },
       "make": "Марка",
       "model": "Модель",
       "modelHint": "(залежить від марки)",
@@ -927,7 +938,11 @@
         "failed": "Не вдалося створити",
         "interrupted": "Генерацію перервано"
       },
-      "field": { "description": "Опис", "metaTitle": "SEO-заголовок", "metaDescription": "SEO-опис" },
+      "field": {
+        "description": "Опис",
+        "metaTitle": "SEO-заголовок",
+        "metaDescription": "SEO-опис"
+      },
       "now": "Зараз в оголошенні",
       "draft": "Чернетка ШІ",
       "empty": "— порожньо —",

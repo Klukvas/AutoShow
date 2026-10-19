@@ -5,6 +5,7 @@ import { ApiClientError } from '@/lib/api/client';
 import { requireServerToken } from '@/lib/auth/refresh';
 import { publicApi } from '@/lib/api/public';
 import { ListingForm } from '@/components/admin/listings/listing-form';
+import { ListingTabPanel, ListingTabsProvider } from '@/components/admin/listings/listing-tabs';
 import { TelegramPostPanel } from '@/components/admin/listings/telegram-post-panel';
 import { MediaManager } from '@/components/admin/media/media-manager';
 import { SectionCard } from '@/components/admin/ui/section-card';
@@ -18,15 +19,16 @@ import type {
 
 interface PageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string | string[] }>;
 }
 
 export const dynamic = 'force-dynamic';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** Handoff 1d + 1e: the single edit surface (form + media manager). */
-export default async function EditListingPage({ params }: PageProps) {
-  const { id } = await params;
+/** Handoff 1d + 1e: the single edit surface, split into tabs (`?tab=`). */
+export default async function EditListingPage({ params, searchParams }: PageProps) {
+  const [{ id }, { tab }] = await Promise.all([params, searchParams]);
   if (!UUID_RE.test(id)) notFound();
   const auth = await requireServerToken(`/admin/listings/${id}/edit`);
   const [t, tTelegram] = await Promise.all([
@@ -77,39 +79,50 @@ export default async function EditListingPage({ params }: PageProps) {
   );
 
   return (
-    <div className="mx-auto flex max-w-[900px] flex-col gap-[22px]">
-      {/* key: a 409 reload or transition bumps version → the form remounts
+    <ListingTabsProvider initialTab={typeof tab === 'string' ? tab : undefined} isSaved>
+      <div className="mx-auto flex max-w-[900px] flex-col">
+        {/* key: a 409 reload or transition bumps version → the form remounts
           with fresh values instead of keeping stale uncontrolled inputs. */}
-      <ListingForm
-        key={`${listing.id}-v${listing.version}`}
-        catalog={{
-          makes,
-          models,
-          bodyTypes,
-          fuelTypes,
-          transmissions,
-          driveTypes,
-          colors,
-          options,
-          tags,
-        }}
-        initial={listing}
-        canManageCatalog={auth.session.user.role === 'admin'}
-      />
-      <SectionCard
-        title={`${t('title')} · ${t('count', { count: media.length })}`}
-        contentClassName=""
-      >
-        <MediaManager listingId={listing.id} initial={media} readOnly={listing.status === 'sold'} />
-      </SectionCard>
-      <SectionCard title={tTelegram('title')}>
-        <TelegramPostPanel
-          listingId={listing.id}
-          status={listing.status}
-          posts={telegramPosts}
-          configured={telegramConfigured}
+        <ListingForm
+          key={`${listing.id}-v${listing.version}`}
+          catalog={{
+            makes,
+            models,
+            bodyTypes,
+            fuelTypes,
+            transmissions,
+            driveTypes,
+            colors,
+            options,
+            tags,
+          }}
+          initial={listing}
+          canManageCatalog={auth.session.user.role === 'admin'}
         />
-      </SectionCard>
-    </div>
+        {/* Outside the form: media and Telegram save on their own. */}
+        <ListingTabPanel tab="media">
+          <SectionCard
+            title={`${t('title')} · ${t('count', { count: media.length })}`}
+            contentClassName=""
+          >
+            <MediaManager
+              listingId={listing.id}
+              initial={media}
+              readOnly={listing.status === 'sold'}
+            />
+          </SectionCard>
+        </ListingTabPanel>
+        <ListingTabPanel tab="telegram">
+          <SectionCard title={tTelegram('title')}>
+            <TelegramPostPanel
+              listingId={listing.id}
+              status={listing.status}
+              posts={telegramPosts}
+              configured={telegramConfigured}
+            />
+          </SectionCard>
+        </ListingTabPanel>
+      </div>
+    </ListingTabsProvider>
   );
 }
