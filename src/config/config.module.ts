@@ -46,6 +46,8 @@ export type AppConfig = EnvSchema;
               'PHOTO_AI_MANAGED_API_KEY',
               'PHOTO_AI_PACK_SIZE',
               'PHOTO_AI_PACK_PRICE_UAH',
+              'LISTING_AI_INPUT_USD_PER_MTOK',
+              'LISTING_AI_OUTPUT_USD_PER_MTOK',
             ])
             .map((k) => [k, config.get(k as keyof EnvSchema, { infer: true })]),
         ) as AppConfig;

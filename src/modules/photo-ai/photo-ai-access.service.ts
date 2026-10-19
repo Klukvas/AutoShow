@@ -1,4 +1,4 @@
-import { isUUID } from 'class-validator';
+import { isAiAccessPermitted } from '../ai-credentials/ai-access.policy';
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, IsNull, Repository } from 'typeorm';
@@ -27,7 +27,6 @@ export class PhotoAiAccessService {
   }
   async permission(actorId: string): Promise<PhotoAiPermission> {
     const actor = await this.liveUser(actorId);
-    if (actor?.role === 'admin') return { permitted: true, permissionReason: null };
     const policy =
       actor?.role === 'editor'
         ? await this.settings.findOne({
@@ -35,19 +34,7 @@ export class PhotoAiAccessService {
             select: ['accessMode', 'selectedEditorIds'],
           })
         : null;
-    const valid =
-      policy &&
-      ['admins', 'all', 'selected'].includes(policy.accessMode) &&
-      Array.isArray(policy.selectedEditorIds) &&
-      policy.selectedEditorIds.length <= 200 &&
-      new Set(policy.selectedEditorIds).size === policy.selectedEditorIds.length &&
-      policy.selectedEditorIds.every((id) => typeof id === 'string' && isUUID(id, 'all'));
-    const permitted = Boolean(
-      valid &&
-      policy &&
-      (policy.accessMode === 'all' ||
-        (policy.accessMode === 'selected' && policy.selectedEditorIds.includes(actorId))),
-    );
+    const permitted = isAiAccessPermitted(actor, policy);
     return { permitted, permissionReason: permitted ? null : PHOTO_AI_ACCESS_DENIED };
   }
   async requireAllowed(actorId: string): Promise<void> {

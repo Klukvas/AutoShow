@@ -1,6 +1,7 @@
 import { Column, Entity, Index, JoinColumn, ManyToOne } from 'typeorm';
 import { BaseEntity } from '../../../database/base/base.entity';
 import { Listing } from '../../listings/entities/listing.entity';
+import type { ListingAiSnapshot } from '../listing-ai.input';
 import type {
   ListingAiField,
   ListingAiPreset,
@@ -26,8 +27,12 @@ export class ListingAiGeneration extends BaseEntity {
   @Column({ type: 'varchar', length: 16 }) preset!: ListingAiPreset;
   /** sha256 of the whitelisted input; drives idempotency and the "stale" mark. */
   @Column({ name: 'input_hash', type: 'varchar', length: 64 }) inputHash!: string;
-  /** The whitelisted listing data sent to the model (no VIN, contacts or commission). */
-  @Column({ name: 'input_snapshot', type: 'jsonb' }) inputSnapshot!: Record<string, unknown>;
+  /**
+   * Exactly what the model gets: the whitelisted listing data (no VIN, contacts
+   * or commission) and the photo keys. Frozen at enqueue so the result matches
+   * input_hash even if the listing changes while the draft is queued.
+   */
+  @Column({ name: 'input_snapshot', type: 'jsonb' }) inputSnapshot!: ListingAiSnapshot;
   @Column({ name: 'photo_media_ids', type: 'uuid', array: true, default: () => "'{}'::uuid[]" })
   photoMediaIds!: string[];
   @Column({ name: 'prompt_version', type: 'varchar', length: 32 }) promptVersion!: string;

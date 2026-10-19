@@ -1,4 +1,6 @@
 import { PhotoAiModule } from '../modules/photo-ai/photo-ai.module';
+import { ListingAiModule } from '../modules/listing-ai/listing-ai.module';
+import { ListingAiWorker } from './listing-ai.worker';
 import { PhotoAiWorker } from './photo-ai.worker';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
@@ -15,6 +17,7 @@ import { NotificationWorker } from './notification.worker';
 import {
   MAINTENANCE_QUEUE,
   MEDIA_QUEUE,
+  LISTING_AI_QUEUE,
   NOTIFICATION_QUEUE,
   PHOTO_AI_QUEUE,
   VIEWS_QUEUE,
@@ -25,12 +28,14 @@ import { ViewsFlushWorker } from './views-flush.worker';
 @Module({
   imports: [
     PhotoAiModule,
+    ListingAiModule,
     TypeOrmModule.forFeature([ListingMedia, MediaRendition, Listing]),
     CatalogModule,
     NotificationModule,
     TelegramModule,
     BullModule.registerQueue(
       { name: PHOTO_AI_QUEUE },
+      { name: LISTING_AI_QUEUE },
       { name: MEDIA_QUEUE },
       { name: NOTIFICATION_QUEUE },
       { name: VIEWS_QUEUE },
@@ -39,6 +44,7 @@ import { ViewsFlushWorker } from './views-flush.worker';
   ],
   providers: [
     PhotoAiWorker,
+    ListingAiWorker,
     MediaProcessorWorker,
     NotificationWorker,
     ViewsFlushWorker,

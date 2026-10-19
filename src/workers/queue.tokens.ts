@@ -4,3 +4,4 @@ export const VIEWS_QUEUE = 'views';
 export const MAINTENANCE_QUEUE = 'maintenance';
 export const TELEGRAM_QUEUE = 'telegram';
 export const PHOTO_AI_QUEUE = 'photo-ai';
+export const LISTING_AI_QUEUE = 'listing-ai';

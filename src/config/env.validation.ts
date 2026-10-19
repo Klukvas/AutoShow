@@ -3,6 +3,7 @@ import {
   IsBoolean,
   IsEnum,
   IsInt,
+  IsNumber,
   IsISO8601,
   IsOptional,
   IsString,
@@ -77,6 +78,31 @@ export class EnvSchema {
   @Min(10)
   @Max(300)
   LISTING_AI_TIMEOUT_SECONDS: number = 90;
+
+  /** Drafts one user may start per hour (each is a paid call). */
+  @IsInt()
+  @Min(1)
+  @Max(500)
+  LISTING_AI_JOBS_PER_HOUR: number = 30;
+
+  /** One-time starter descriptions granted on first use (managed mode). */
+  @IsInt()
+  @Min(0)
+  @Max(100_000)
+  LISTING_AI_FREE_DESCRIPTIONS: number = 0;
+
+  /** Optional USD price per 1M tokens, only to record a cost estimate per draft. */
+  @IsNumber()
+  @Min(0)
+  @Max(10_000)
+  @IsOptional()
+  LISTING_AI_INPUT_USD_PER_MTOK?: number;
+
+  @IsNumber()
+  @Min(0)
+  @Max(10_000)
+  @IsOptional()
+  LISTING_AI_OUTPUT_USD_PER_MTOK?: number;
 
   /** Upper bound per draft; reasoning tokens count towards it. */
   @IsInt()

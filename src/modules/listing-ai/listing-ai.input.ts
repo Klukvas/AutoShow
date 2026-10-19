@@ -41,6 +41,9 @@ export type ListingAiInput = {
 
 export type ListingAiPhoto = { mediaId: string; s3Key: string };
 
+/** What a draft row stores: the model input as it was when the draft was queued. */
+export type ListingAiSnapshot = { input: ListingAiInput; photos: ListingAiPhoto[] };
+
 /**
  * UTF-16 code-unit order. The hash is compared with a recomputed one over months,
  * so ordering must not depend on the runtime's ICU collation.
