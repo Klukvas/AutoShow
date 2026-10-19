@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { PACKAGE_PICK_EVENT } from '@/components/home/package-pick-link';
+import { PACKAGE_PICK_EVENT } from '@/components/home/package-pick';
 import { HoneypotField, LeadField } from '@/components/lead/field';
 import { PackageSelect } from '@/components/lead/package-select';
 import { ApiClientError } from '@/lib/api/client';

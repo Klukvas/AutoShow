@@ -648,7 +648,7 @@ html.lenis body {
 .home-sell-grid { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 80px; }
 .home-sell-title { margin-top: 16px; font-size: clamp(36px,3.3vw,52px); font-weight: 300; line-height: 1.12; letter-spacing: -.045em; }
 .home-step-number { flex-shrink: 0; width: 32px; padding-top: 2px; color: rgb(var(--lot-gold)); font-size: 20px; font-weight: 300; }
-.home-sell-form { border-left: 1px solid rgb(var(--line-strong)); padding-left: 40px; }
+.home-sell-form { border-left: 1px solid rgb(var(--line-strong)); padding-left: 40px; scroll-margin-top: 30px; }
 .homepage-cinematic .af-cta { letter-spacing: 0; box-shadow: none; }
 .home-sell-form .af-cta, .home-mobile-menu .af-cta { background: #f3f3ef; border-color: #f3f3ef; color: #111b23; font-weight: 500; }
 .home-sell-form .af-cta:hover, .home-mobile-menu .af-cta:hover { background: #dce4e7; border-color: #dce4e7; }

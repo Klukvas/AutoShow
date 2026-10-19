@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server';
+import { SELL_FORM_ID } from '@/components/home/package-pick';
 import { SellCarForm } from '@/components/lead/sell-car-form';
 import type { PublicPlacementPackage } from '@/lib/api/types';
 
@@ -39,7 +40,7 @@ export async function SellCarSection({ packages }: { packages: PublicPlacementPa
             ))}
           </ol>
         </div>
-        <div className="home-sell-form">
+        <div id={SELL_FORM_ID} className="home-sell-form">
           <h3 className="font-heading text-section font-bold text-ink">{t('formTitle')}</h3>
           <p className="mb-5 mt-1 text-sub text-ink-2">{t('formSubtitle')}</p>
           <SellCarForm packages={packages} />

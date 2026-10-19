@@ -99,7 +99,7 @@ export function PackagesManager({ initial }: PackagesManagerProps) {
         <button
           type="button"
           onClick={() => setDraft({ ...EMPTY_PACKAGE_DRAFT })}
-          className={PRIMARY_BTN}
+          className={`${PRIMARY_BTN} shrink-0 whitespace-nowrap`}
         >
           + {t('add')}
         </button>
