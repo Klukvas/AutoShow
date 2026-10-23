@@ -15,7 +15,11 @@ RUNNING = ("app", "worker", "frontend", "caddy", "postgres", "redis", "minio")
 INFRA = ("postgres", "redis", "minio")
 
 
-def execute(arguments: list[str], environment: dict[str, str] | None = None) -> str:
+def execute(
+    arguments: list[str],
+    environment: dict[str, str] | None = None,
+    input_text: str | None = None,
+) -> str:
     try:
         return subprocess.run(
             arguments,
@@ -24,6 +28,7 @@ def execute(arguments: list[str], environment: dict[str, str] | None = None) -> 
             capture_output=True,
             text=True,
             timeout=15,
+            input=input_text,
         ).stdout.strip()
     except (subprocess.SubprocessError, OSError) as error:
         raise ValueError("Docker/Compose check failed") from error
@@ -72,17 +77,30 @@ def compose_command(root: Path, release: str) -> tuple[list[str], dict[str, str]
     return command, environment
 
 
+def configuration_hashes(
+    command: list[str],
+    environment: dict[str, str],
+    configuration: dict[str, Any],
+) -> dict[str, str]:
+    # Compose versions affected by docker/compose#14001 hash unresolved env_file
+    # values differently from `up`. Hash the resolved model through stdin instead;
+    # operator secrets stay in memory and never enter argv or a temporary file.
+    return dict(
+        line.split()
+        for line in execute(
+            command[:-1] + ["-", "config", "--hash", "*"],
+            environment,
+            json.dumps(configuration),
+        ).splitlines()
+    )
+
+
 def runtime(root: Path, release: str) -> dict[str, dict[str, Any]]:
     command, environment = compose_command(root, release)
     configuration = json.loads(
         execute(command + ["config", "--format", "json"], environment)
     )
-    hashes = dict(
-        line.split()
-        for line in execute(
-            command + ["config", "--hash", "*"], environment
-        ).splitlines()
-    )
+    hashes = configuration_hashes(command, environment, configuration)
     result = {}
     for service in (*RUNNING, "minio-init"):
         identifier = execute(command + ["ps", "-aq", service], environment)

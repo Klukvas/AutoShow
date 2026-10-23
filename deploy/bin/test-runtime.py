@@ -17,6 +17,26 @@ import runtime
 
 
 class RuntimeTest(unittest.TestCase):
+    def test_resolved_hash_input_stays_off_argv_and_errors_are_sanitized(self) -> None:
+        literal = "synthetic-operator-value-never-log"
+        command = ["docker", "compose", "-f", "fixture.yml"]
+        with patch.object(
+            runtime.subprocess,
+            "run",
+            side_effect=subprocess.CalledProcessError(1, command, stderr=literal),
+        ) as process:
+            with self.assertRaisesRegex(ValueError, "^Docker/Compose check failed$"):
+                runtime.configuration_hashes(
+                    command,
+                    {},
+                    {"services": {"app": {"environment": {"SYNTHETIC": literal}}}},
+                )
+        arguments, options = process.call_args
+        self.assertNotIn(literal, " ".join(arguments[0]))
+        self.assertIn(literal, options["input"])
+        self.assertTrue(options["capture_output"])
+        self.assertEqual(options["timeout"], 15)
+
     def setUp(self) -> None:
         self.states: dict[str, dict[str, Any]] = {
             name: {
@@ -37,13 +57,18 @@ class RuntimeTest(unittest.TestCase):
         }
 
     def execute(
-        self, arguments: list[str], environment: dict[str, str] | None = None
+        self,
+        arguments: list[str],
+        environment: dict[str, str] | None = None,
+        input_text: str | None = None,
     ) -> str:
         if "--format" in arguments:
             return json.dumps(
                 {"services": {name: {"image": name + "-pin"} for name in self.states}}
             )
         if "--hash" in arguments:
+            self.assertIsNotNone(input_text)
+            self.assertEqual(arguments[-5:], ["-f", "-", "config", "--hash", "*"])
             return "\n".join(name + " " + name + "-hash" for name in self.states)
         if "ps" in arguments:
             return arguments[-1] + "-id"
@@ -53,7 +78,9 @@ class RuntimeTest(unittest.TestCase):
 
     def test_runtime_requires_actual_image_id_and_config_hash(self) -> None:
         with patch.object(
-            runtime, "compose_command", return_value=(["docker", "compose"], {})
+            runtime,
+            "compose_command",
+            return_value=(["docker", "compose", "-f", "fixture.yml"], {}),
         ), patch.object(runtime, "execute", side_effect=self.execute), patch.object(
             runtime,
             "inspect_container",
@@ -105,7 +132,9 @@ class RuntimeTest(unittest.TestCase):
     def test_init_failure_blocks_dependency_gate(self) -> None:
         self.states["minio-init"]["State"]["ExitCode"] = 1
         with patch.object(
-            runtime, "compose_command", return_value=(["docker", "compose"], {})
+            runtime,
+            "compose_command",
+            return_value=(["docker", "compose", "-f", "fixture.yml"], {}),
         ), patch.object(runtime, "execute", side_effect=self.execute), patch.object(
             runtime,
             "inspect_container",
@@ -116,7 +145,9 @@ class RuntimeTest(unittest.TestCase):
 
     def test_ingress_failure_or_restarting_service_never_passes(self) -> None:
         with patch.object(
-            runtime, "compose_command", return_value=(["docker", "compose"], {})
+            runtime,
+            "compose_command",
+            return_value=(["docker", "compose", "-f", "fixture.yml"], {}),
         ), patch.object(
             runtime,
             "read_env",
@@ -135,7 +166,9 @@ class RuntimeTest(unittest.TestCase):
                 runtime.wait_ready(Path("/fixture"), "release", seconds=0)
         self.states["frontend"]["State"]["Restarting"] = True
         with patch.object(
-            runtime, "compose_command", return_value=(["docker", "compose"], {})
+            runtime,
+            "compose_command",
+            return_value=(["docker", "compose", "-f", "fixture.yml"], {}),
         ), patch.object(runtime, "execute", side_effect=self.execute), patch.object(
             runtime,
             "inspect_container",

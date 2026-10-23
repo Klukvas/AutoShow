@@ -12,10 +12,72 @@ from pathlib import Path
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 from operator_config import read_env
+from runtime import configuration_hashes, execute, inspect_container
 
 
 @unittest.skipUnless(shutil.which("docker"), "Docker CLI required")
 class ComposeTest(unittest.TestCase):
+    def test_resolved_env_file_hash_matches_container_and_detects_drift(self) -> None:
+        image = subprocess.run(
+            ["docker", "image", "inspect", "alpine:3.21", "--format", "{{.Id}}"],
+            capture_output=True,
+            text=True,
+        )
+        if image.returncode:
+            self.skipTest("Preloaded local alpine required; no pull performed")
+        with tempfile.TemporaryDirectory(
+            prefix=".compose-hash-test-", dir=HERE.parent
+        ) as directory:
+            root = Path(directory).resolve()
+            operator = root / "operator.env"
+            literal = "literal spaces * [glob] $dollar ${UNSET_SYNTHETIC} #hash"
+            operator.write_text("SYNTHETIC_HASH_TEST='" + literal + "'\n")
+            configuration = root / "compose.json"
+            configuration.write_text(
+                json.dumps(
+                    {
+                        "services": {
+                            "probe": {
+                                "image": image.stdout.strip(),
+                                "env_file": [str(operator)],
+                                "command": ["sleep", "60"],
+                            }
+                        }
+                    }
+                )
+            )
+            command = [
+                "docker",
+                "compose",
+                "--project-name",
+                "autoflow-hash-" + str(os.getpid()),
+                "--env-file",
+                str(operator),
+                "-f",
+                str(configuration),
+            ]
+            try:
+                execute(command + ["up", "-d", "--pull", "never"])
+                current = inspect_container(execute(command + ["ps", "-q", "probe"]))
+                actual_environment = dict(
+                    value.split("=", 1) for value in current["Config"]["Env"]
+                )
+                self.assertEqual(actual_environment["SYNTHETIC_HASH_TEST"], literal)
+                actual = current["Config"]["Labels"]["com.docker.compose.config-hash"]
+                resolved = json.loads(execute(command + ["config", "--format", "json"]))
+                self.assertEqual(
+                    configuration_hashes(command, dict(os.environ), resolved)["probe"],
+                    actual,
+                )
+                operator.write_text("SYNTHETIC_HASH_TEST=changed\n")
+                changed = json.loads(execute(command + ["config", "--format", "json"]))
+                self.assertNotEqual(
+                    configuration_hashes(command, dict(os.environ), changed)["probe"],
+                    actual,
+                )
+            finally:
+                execute(command + ["down", "--remove-orphans"])
+
     def test_trailing_backslash_is_rejected_before_compose_parser(self) -> None:
         with tempfile.TemporaryDirectory(
             prefix=".compose-parser-test-", dir=HERE.parent
