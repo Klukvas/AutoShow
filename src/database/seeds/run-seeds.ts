@@ -20,7 +20,7 @@ import { ListingOption } from '../../modules/listings/entities/listing-option.en
 import { ListingTag } from '../../modules/listings/entities/listing-tag.entity';
 import { Collection } from '../../modules/collections/entities/collection.entity';
 
-loadDotenv();
+loadDotenv({ path: process.env.ENV_FILE ?? '.env' });
 
 const makes = [
   { slug: 'bmw', nameUk: 'BMW', nameEn: 'BMW' },

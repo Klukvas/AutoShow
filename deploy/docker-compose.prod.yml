@@ -1,11 +1,10 @@
-# Production compose for a single Hetzner server.
-# Copied to /opt/autoflow/docker-compose.yml by the deploy workflow.
-# Interpolation values (DOCKERHUB_USER, IMAGE_TAG, SITE_ADDRESS, MEDIA_ADDRESS)
-# and service env come from /opt/autoflow/.env — see .env.production.example.
+# One independent stack per installation; images must be immutable digests.
+# Operator values: INSTALLATION_ROOT/.env; artifact values: release.env.
+name: ${COMPOSE_PROJECT_NAME:?set stable COMPOSE_PROJECT_NAME}
 
 services:
   caddy:
-    image: caddy:2-alpine
+    image: ${CADDY_IMAGE:?set approved CADDY_IMAGE digest}
     restart: unless-stopped
     ports:
       - "80:80"
@@ -25,13 +24,14 @@ services:
       - app
 
   frontend:
-    image: ${DOCKERHUB_USER}/autoflow-frontend:${IMAGE_TAG:-latest}
+    image: ${FRONTEND_IMAGE:?set pinned FRONTEND_IMAGE}
     restart: unless-stopped
     # No env_file on purpose: the shared .env holds JWT/DB/S3 secrets the
     # Next.js process has no business seeing — an RCE there must not hand
     # over the whole stack. Only what the frontend actually reads:
     environment:
       NODE_ENV: production
+      FRONTEND_VERSION: ${FRONTEND_VERSION:?set FRONTEND_VERSION}
       BACKEND_INTERNAL_URL: http://app:3000/api
       ADMIN_COOKIE_NAME: ${ADMIN_COOKIE_NAME}
       ADMIN_COOKIE_DOMAIN: ${ADMIN_COOKIE_DOMAIN:-}
@@ -43,10 +43,11 @@ services:
       - app
 
   app:
-    image: ${DOCKERHUB_USER}/autoflow-backend:${IMAGE_TAG:-latest}
+    image: ${BACKEND_IMAGE:?set pinned BACKEND_IMAGE}
     restart: unless-stopped
-    env_file: .env
+    env_file: ${INSTALLATION_ROOT:?set INSTALLATION_ROOT}/.env
     environment:
+      APP_VERSION: ${APP_VERSION:?set APP_VERSION}
       DB_HOST: postgres
       REDIS_HOST: redis
       REDIS_PORT: "6379"
@@ -60,10 +61,11 @@ services:
         condition: service_healthy
 
   worker:
-    image: ${DOCKERHUB_USER}/autoflow-backend:${IMAGE_TAG:-latest}
+    image: ${BACKEND_IMAGE:?set pinned BACKEND_IMAGE}
     restart: unless-stopped
-    env_file: .env
+    env_file: ${INSTALLATION_ROOT:?set INSTALLATION_ROOT}/.env
     environment:
+      APP_VERSION: ${APP_VERSION:?set APP_VERSION}
       DB_HOST: postgres
       REDIS_HOST: redis
       REDIS_PORT: "6379"
@@ -78,7 +80,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:16-alpine
+    image: ${POSTGRES_IMAGE:?set approved POSTGRES_IMAGE digest}
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_ADMIN_USER}
@@ -96,7 +98,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:7-alpine
+    image: ${REDIS_IMAGE:?set approved REDIS_IMAGE digest}
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
@@ -110,7 +112,9 @@ services:
   minio:
     # Pinned: `latest` would silently roll on every deploy's compose pull.
     # curl for the healthcheck is verified present in this release.
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    image: ${MINIO_IMAGE:?set approved MINIO_IMAGE digest}
+    user: root
+    entrypoint: ["minio"]
     restart: unless-stopped
     command: ["server", "/data", "--console-address", ":9001"]
     environment:
@@ -125,20 +129,25 @@ services:
       retries: 5
 
   minio-init:
-    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    image: ${MINIO_CLIENT_IMAGE:?set approved MINIO_CLIENT_IMAGE digest}
     # One-shot, but retry on failure: a transient minio hiccup must not leave
     # the bucket missing (all commands inside are idempotent).
     restart: on-failure
     depends_on:
       minio:
         condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 ${S3_ACCESS_KEY} ${S3_SECRET_KEY};
-      mc mb --ignore-existing local/${S3_BUCKET};
-      mc anonymous set download local/${S3_BUCKET};
-      exit 0;
-      "
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY}
+      S3_BUCKET: ${S3_BUCKET}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -eu
+        mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null
+        mc mb --ignore-existing "local/$$S3_BUCKET" >/dev/null
+        mc anonymous set download "local/$$S3_BUCKET" >/dev/null
 
 volumes:
   caddy_data:

@@ -1,296 +1,98 @@
-name: Deploy
+name: Deploy selected installation
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
-      image_tag:
-        description: 'Existing image tag to (re)deploy — e.g. a previous SHA for rollback. Leave empty to build from this commit.'
-        required: false
+      installation:
+        description: 'Existing installation ID (GitHub Environment installation-ID)'
+        required: true
+      release_run_id:
+        description: 'Successful Release workflow run containing the immutable bundle'
+        required: true
+      release_sha:
+        description: 'Full source SHA of that release'
+        required: true
+      operation:
+        type: choice
+        options: [update, bootstrap, rollback]
+        default: update
 
-# Never two deploys at once; a queued deploy waits for the running one.
+permissions:
+  contents: read
+  actions: read
 concurrency:
-  group: deploy-production
+  group: deploy-${{ inputs.installation }}
   cancel-in-progress: false
 
-env:
-  BACKEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/autoflow-backend
-  FRONTEND_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/autoflow-frontend
-
 jobs:
-  test:
-    name: Gate — backend checks
-    runs-on: ubuntu-latest
-    # Rollback path redeploys an already-tested image; skip the gate.
-    if: ${{ github.event.inputs.image_tag == '' || github.event.inputs.image_tag == null }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: package-lock.json
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run typecheck
-      - run: npm test
-
-  test-frontend:
-    name: Gate — frontend checks
-    runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.image_tag == '' || github.event.inputs.image_tag == null }}
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
-
-  build-push:
-    name: Build & push images
-    runs-on: ubuntu-latest
-    needs: [test, test-frontend]
-    if: ${{ github.event.inputs.image_tag == '' || github.event.inputs.image_tag == null }}
-    steps:
-      - uses: actions/checkout@v4
-
-      # Fail fast with a readable message instead of baking localhost defaults
-      # into a production image when repo Variables were never configured.
-      - name: Validate repo variables
-        run: |
-          missing=""
-          [ -z "${{ vars.SITE_URL }}" ] && missing="$missing SITE_URL"
-          [ -z "${{ vars.NEXT_PUBLIC_BACKEND_URL }}" ] && missing="$missing NEXT_PUBLIC_BACKEND_URL"
-          if [ -n "$missing" ]; then
-            echo "::error::Missing GitHub repo VARIABLES (Settings → Secrets and variables → Actions → Variables):$missing"
-            echo "::error::Domain mode: SITE_URL=https://autoflow.example.com, NEXT_PUBLIC_BACKEND_URL=https://autoflow.example.com/api, NEXT_PUBLIC_MEDIA_HOSTS=media.autoflow.example.com"
-            echo "::error::IP-only mode: SITE_URL=http://157.90.x.y, NEXT_PUBLIC_BACKEND_URL=http://157.90.x.y/api, NEXT_PUBLIC_MEDIA_HOSTS=http://157.90.x.y:8081"
-            exit 1
-          fi
-
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build & push backend
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ env.BACKEND_IMAGE }}:latest
-            ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,scope=backend,mode=max
-
-      - name: Build & push frontend
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          push: true
-          build-args: |
-            NEXT_PUBLIC_BACKEND_URL=${{ vars.NEXT_PUBLIC_BACKEND_URL }}
-            NEXT_PUBLIC_MEDIA_HOSTS=${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
-          tags: |
-            ${{ env.FRONTEND_IMAGE }}:latest
-            ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,scope=frontend,mode=max
-
   deploy:
-    name: Deploy to Hetzner
     runs-on: ubuntu-latest
-    needs: [test, test-frontend, build-push]
-    # needs are skipped on rollback runs; always() lets deploy proceed then.
-    if: >-
-      ${{ always() &&
-          (needs.build-push.result == 'success' || needs.build-push.result == 'skipped') &&
-          (needs.test.result == 'success' || needs.test.result == 'skipped') &&
-          (needs.test-frontend.result == 'success' || needs.test-frontend.result == 'skipped') }}
-    environment: production
+    environment: installation-${{ inputs.installation }}
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Validate rollback tag
-        if: ${{ github.event.inputs.image_tag != '' && github.event.inputs.image_tag != null }}
+      - name: Validate explicit target
+        env:
+          INSTALLATION: ${{ inputs.installation }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          RELEASE_RUN_ID: ${{ inputs.release_run_id }}
         run: |
-          echo "${{ github.event.inputs.image_tag }}" | grep -qE '^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$' \
-            || { echo "image_tag contains characters that are invalid in a docker tag"; exit 1; }
-
-      - name: Prepare server bundle
+          [[ "$INSTALLATION" =~ ^[a-z0-9][a-z0-9-]{0,62}$ ]]
+          [[ "$RELEASE_SHA" =~ ^[a-f0-9]{40}$ ]]
+          [[ "$RELEASE_RUN_ID" =~ ^[0-9]+$ ]]
+      - name: Verify successful Release run and source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_RUN_ID: ${{ inputs.release_run_id }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
         run: |
-          mkdir -p bundle/postgres-init
-          cp deploy/docker-compose.prod.yml bundle/docker-compose.yml
-          cp deploy/Caddyfile bundle/Caddyfile
-          cp docker/postgres/init/* bundle/postgres-init/
-
-      # appleboy/* actions receive live production secrets — pinned by commit
-      # SHA so a re-pointed tag upstream cannot exfiltrate them.
-      - name: Copy compose bundle to server
-        uses: appleboy/scp-action@917f8b81dfc1ccd331fef9e2d61bdc6c8be94634 # v0.1.7
+          EXPECTED_WORKFLOW_ID=$(gh api "repos/$GH_REPO/actions/workflows/release.yml" --jq .id)
+          export EXPECTED_WORKFLOW_ID
+          gh api "repos/$GH_REPO/actions/runs/$RELEASE_RUN_ID" > run.json
+          node -e 'const r=require("./run.json"); if(r.conclusion!=="success"||r.head_sha!==process.env.RELEASE_SHA||String(r.workflow_id)!==process.env.EXPECTED_WORKFLOW_ID) process.exit(1)'
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-${{ inputs.installation }}-${{ inputs.release_sha }}-${{ inputs.release_run_id }}
+          path: bundle
+          run-id: ${{ inputs.release_run_id }}
+          github-token: ${{ github.token }}
+      - name: Validate bundle target and checksums
+        env:
+          INSTALLATION: ${{ inputs.installation }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+        run: |
+          test "$(cat bundle/installation-id)" = "$INSTALLATION"
+          test "$(cat bundle/source-sha)" = "$RELEASE_SHA"
+          cd bundle
+          sha256sum --check SHA256SUMS
+      - name: Copy immutable bundle to selected server
+        uses: appleboy/scp-action@917f8b81dfc1ccd331fef9e2d61bdc6c8be94634
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT || 22 }}
           source: 'bundle/*'
-          target: /opt/autoflow
+          target: /opt/autoflow/releases/${{ inputs.release_sha }}-${{ inputs.installation }}-${{ inputs.release_run_id }}
           strip_components: 1
-          overwrite: true
-
-      - name: Bootstrap (first run), pull, migrate, restart
-        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
+          overwrite: false
+      - name: Apply selected bundle
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262
         env:
-          IMAGE_TAG: ${{ github.event.inputs.image_tag || github.sha }}
-          SITE_URL: ${{ vars.SITE_URL }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          INSTALLATION: ${{ inputs.installation }}
+          RELEASE_SHA: ${{ inputs.release_sha }}
+          OPERATION: ${{ inputs.operation }}
+          RELEASE_RUN_ID: ${{ inputs.release_run_id }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT || 22 }}
-          envs: IMAGE_TAG,SITE_URL,DOCKERHUB_USERNAME
-          # Managed .env: deploy-owned keys are re-synced from GitHub vars on
-          # EVERY deploy; secrets are generated once and never rotated here;
-          # tunables get defaults once and manual server-side edits survive.
+          envs: INSTALLATION,RELEASE_SHA,OPERATION,RELEASE_RUN_ID
           script: |
-            set -e
-            command -v docker >/dev/null 2>&1 || curl -fsSL https://get.docker.com | sh
-            mkdir -p /opt/autoflow
+            set -eu
             cd /opt/autoflow
-
-            BOOTSTRAPPED=0
-            [ -f .env ] || BOOTSTRAPPED=1
-            touch .env && chmod 600 .env
-
-            # upsert — deploy is the source of truth for these keys
-            set_env() {
-              if grep -q "^$1=" .env; then sed -i "s|^$1=.*|$1=$2|" .env; else echo "$1=$2" >> .env; fi
-            }
-            # add-if-missing — generated/defaulted once, then left alone
-            ensure_env() { grep -q "^$1=" .env || echo "$1=$2" >> .env; }
-
-            # Derive addresses from SITE_URL: explicit http:// → plain-IP mode
-            # (media on :8081); bare/https domain → media.<domain> + TLS.
-            case "$SITE_URL" in
-              http://*) MEDIA_URL="${SITE_URL}:8081"; COOKIE_SECURE=false ;;
-              *) MEDIA_URL="https://media.${SITE_URL#https://}"; COOKIE_SECURE=true ;;
-            esac
-
-            # --- managed by deploy (GitHub vars propagate here) ---
-            set_env DOCKERHUB_USER "$DOCKERHUB_USERNAME"
-            set_env SITE_ADDRESS "$SITE_URL"
-            set_env MEDIA_ADDRESS "$MEDIA_URL"
-            set_env PUBLIC_URL "$SITE_URL"
-            set_env PUBLIC_SITE_URL "$SITE_URL"
-            set_env CORS_ORIGINS "$SITE_URL"
-            set_env S3_ENDPOINT "$MEDIA_URL"
-            set_env S3_PUBLIC_URL "$MEDIA_URL/autoflow"
-            set_env ADMIN_COOKIE_SECURE "$COOKIE_SECURE"
-            set_env NODE_ENV production
-            set_env TRUST_PROXY 1
-
-            # --- secrets: generated on first run only ---
-            ensure_env DB_NAME autoflow
-            ensure_env DB_ADMIN_USER autoflow_owner
-            ensure_env DB_ADMIN_PASSWORD "$(openssl rand -hex 24)"
-            ensure_env DB_APP_USER app_user
-            ensure_env DB_APP_PASSWORD "$(openssl rand -hex 24)"
-            ensure_env JWT_ACCESS_SECRET "$(openssl rand -hex 32)"
-            ensure_env JWT_REFRESH_SECRET "$(openssl rand -hex 32)"
-            ensure_env S3_ACCESS_KEY "autoflow-$(openssl rand -hex 6)"
-            ensure_env S3_SECRET_KEY "$(openssl rand -hex 24)"
-            ensure_env ADMIN_COOKIE_SIGNING_KEY "$(openssl rand -hex 32)"
-            # Master key for the stored AI provider key. Generated only when
-            # absent or blank (also `""` or spaces) on every line: replacing a set
-            # one makes the saved key unreadable.
-            CURRENT_AI_MASTER_KEY=$(sed -n 's/^PHOTO_AI_ENCRYPTION_KEY=//p' .env | tr -d "\"' [:space:]")
-            if [ -z "$CURRENT_AI_MASTER_KEY" ]; then
-              # Assigned first so `set -e` stops the deploy if openssl fails,
-              # instead of writing a blank key.
-              AI_MASTER_KEY="$(openssl rand -base64 32)"
-              sed -i '/^PHOTO_AI_ENCRYPTION_KEY=/d' .env
-              echo "PHOTO_AI_ENCRYPTION_KEY=$AI_MASTER_KEY" >> .env
-            fi
-            if ! grep -q '^SEED_ADMIN_PASSWORD=' .env; then
-              SEED_PASS="Adm!$(openssl rand -hex 8)"
-              echo "SEED_ADMIN_PASSWORD=$SEED_PASS" >> .env
-              printf 'Admin login: admin@autoflow.example\nAdmin password: %s\n' "$SEED_PASS" > CREDENTIALS.txt
-              chmod 600 CREDENTIALS.txt
-            fi
-            ensure_env SEED_ADMIN_EMAIL admin@autoflow.example
-
-            # --- tunables: defaults once, server-side edits survive deploys ---
-            ensure_env PORT 3000
-            ensure_env API_PREFIX api
-            ensure_env LOG_LEVEL info
-            ensure_env REDIS_PASSWORD ""
-            ensure_env REDIS_DB 0
-            ensure_env JWT_ACCESS_TTL 900
-            ensure_env JWT_REFRESH_TTL 2592000
-            ensure_env AUTH_MAX_FAILED_ATTEMPTS 5
-            ensure_env AUTH_LOCKOUT_SECONDS 900
-            ensure_env AUTH_LOGIN_RATE_PER_MIN 10
-            ensure_env S3_REGION us-east-1
-            ensure_env S3_BUCKET autoflow
-            ensure_env S3_FORCE_PATH_STYLE true
-            ensure_env S3_PRESIGNED_PUT_TTL 600
-            ensure_env MEDIA_MAX_BYTES 20971520
-            ensure_env MEDIA_ORPHAN_TTL_HOURS 24
-            ensure_env FX_PROVIDER static
-            ensure_env FX_STATIC_USD_UAH 41.5
-            ensure_env FX_STATIC_USD_EUR 0.92
-            ensure_env FX_STATIC_EUR_UAH 45.0
-            ensure_env FX_CACHE_TTL 3600
-            ensure_env LEAD_RATE_PER_HOUR 5
-            ensure_env PUBLIC_API_RATE_PER_MIN 120
-            ensure_env VIEW_DEDUP_TTL_SECONDS 600
-            ensure_env VIEW_FLUSH_INTERVAL_SECONDS 60
-            ensure_env ADMIN_COOKIE_NAME autoflow_admin
-            ensure_env ADMIN_COOKIE_DOMAIN ""
-
-            export IMAGE_TAG
-            docker compose pull app worker frontend
-            # Migrations run against the NEW image before the app flips over.
-            # They must stay backward-compatible with the still-running old
-            # app (expand-only) — see deploy/README.md.
-            docker compose run --rm app npm run migration:run:prod
-            docker compose up -d --remove-orphans
-            # Compose won't recreate caddy for a changed bind-mounted
-            # Caddyfile — reload gracefully (zero downtime) so routing/header
-            # changes actually apply.
-            docker compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile
-            # Idempotent: creates catalog/admin on first run, no-ops after —
-            # and heals a half-bootstrapped server from a failed first deploy.
-            docker compose run --rm app npm run seed:prod
-            docker image prune -f
-            # Persist the deployed tag for manual compose commands on the box.
-            # `|` delimiter: tags never contain it, unlike `/`.
-            grep -q '^IMAGE_TAG=' .env && sed -i "s|^IMAGE_TAG=.*|IMAGE_TAG=$IMAGE_TAG|" .env || echo "IMAGE_TAG=$IMAGE_TAG" >> .env
-
-      - name: Smoke check
-        run: |
-          # First HTTPS deploy includes Let's Encrypt issuance — retry instead
-          # of a fixed sleep. SITE_URL carries the scheme (http:// for IP-only).
-          for i in $(seq 1 12); do
-            if curl -sSf --max-time 10 "${{ vars.SITE_URL }}/api/listings?limit=1" > /dev/null \
-               && curl -sSf --max-time 10 "${{ vars.SITE_URL }}/" > /dev/null; then
-              echo "Smoke check passed (attempt $i)"
-              exit 0
-            fi
-            echo "Attempt $i failed, retrying in 10s..."
-            sleep 10
-          done
-          echo "Smoke check FAILED after 12 attempts"
-          exit 1
+            test "$(sed -n 's/^INSTALLATION_ID=//p' .env)" = "$INSTALLATION"
+            BUNDLE="$RELEASE_SHA-$INSTALLATION-$RELEASE_RUN_ID"
+            cd "releases/$BUNDLE"
+            sha256sum --check SHA256SUMS
+            bash bin/installation.sh "$OPERATION" /opt/autoflow "$BUNDLE"

@@ -1,4 +1,5 @@
-import { redirect } from 'next/navigation';
+import { getInstallation } from '@/lib/installation/server';
+import { notFound, redirect } from 'next/navigation';
 import { adminApi } from '@/lib/api/admin';
 import { requireServerToken } from '@/lib/auth/refresh';
 import { ReviewsManager } from '@/components/admin/reviews/reviews-manager';
@@ -10,6 +11,7 @@ export default async function AdminReviewsPage() {
   const auth = await requireServerToken('/admin/reviews');
   if (auth.session.user.role !== 'admin') redirect('/admin/listings');
 
+  if (!(await getInstallation()).features.reviews) notFound();
   const reviews = await adminApi.listReviews({ accessToken: auth.accessToken });
 
   return (

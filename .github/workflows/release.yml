@@ -1,0 +1,112 @@
+name: Release installation images
+
+on:
+  workflow_dispatch:
+    inputs:
+      installation:
+        description: 'Installation ID with configured media hosts in its GitHub Environment'
+        required: true
+
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ inputs.installation }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: installation-${{ inputs.installation }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate installation build config
+        env:
+          INSTALLATION: ${{ inputs.installation }}
+          MEDIA_HOSTS: ${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
+          REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          CADDY_IMAGE: ${{ vars.CADDY_IMAGE }}
+          POSTGRES_IMAGE: ${{ vars.POSTGRES_IMAGE }}
+          REDIS_IMAGE: ${{ vars.REDIS_IMAGE }}
+          MINIO_IMAGE: ${{ vars.MINIO_IMAGE }}
+          MINIO_CLIENT_IMAGE: ${{ vars.MINIO_CLIENT_IMAGE }}
+          BACKUP_HELPER_IMAGE: ${{ vars.BACKUP_HELPER_IMAGE }}
+        run: |
+          [[ "$INSTALLATION" =~ ^[a-z0-9][a-z0-9-]{0,62}$ ]]
+          test -n "$MEDIA_HOSTS"
+          test -n "$REGISTRY_USER"
+          for name in CADDY_IMAGE POSTGRES_IMAGE REDIS_IMAGE MINIO_IMAGE MINIO_CLIENT_IMAGE BACKUP_HELPER_IMAGE; do
+            [[ "${!name}" =~ ^[A-Za-z0-9][A-Za-z0-9./:_-]*@sha256:[a-f0-9]{64}$ ]]
+          done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package-lock.json
+      - run: npm ci && npm run lint && npm run typecheck && npm test -- --runInBand && npm run build
+      - run: npm ci && npm run lint && npm run typecheck && npm test && npm run build
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_MEDIA_HOSTS: ${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
+          NEXT_TELEMETRY_DISABLED: 1
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Backend image
+        id: backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoflow-backend:${{ github.sha }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+      - name: Frontend image (shared source, selected media allowlist)
+        id: frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          push: true
+          build-args: |
+            NEXT_PUBLIC_MEDIA_HOSTS=${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoflow-frontend:${{ github.sha }}-${{ inputs.installation }}-${{ github.run_id }}
+          cache-from: type=gha,scope=frontend-${{ inputs.installation }}
+          cache-to: type=gha,scope=frontend-${{ inputs.installation }},mode=max
+      - name: Prepare version-matched bundle
+        env:
+          INSTALLATION: ${{ inputs.installation }}
+          SOURCE_SHA: ${{ github.sha }}
+          RELEASE_RUN_ID: ${{ github.run_id }}
+          REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+          CADDY_IMAGE: ${{ vars.CADDY_IMAGE }}
+          POSTGRES_IMAGE: ${{ vars.POSTGRES_IMAGE }}
+          REDIS_IMAGE: ${{ vars.REDIS_IMAGE }}
+          MINIO_IMAGE: ${{ vars.MINIO_IMAGE }}
+          MINIO_CLIENT_IMAGE: ${{ vars.MINIO_CLIENT_IMAGE }}
+          BACKUP_HELPER_IMAGE: ${{ vars.BACKUP_HELPER_IMAGE }}
+          BACKEND_DIGEST: ${{ steps.backend.outputs.digest }}
+          FRONTEND_DIGEST: ${{ steps.frontend.outputs.digest }}
+          MEDIA_HOSTS: ${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
+        run: |
+          mkdir -p bundle/postgres-init bundle/bin
+          cp deploy/docker-compose.prod.yml bundle/docker-compose.yml
+          cp deploy/Caddyfile bundle/Caddyfile
+          cp deploy/bin/* bundle/bin/
+          cp docker/postgres/init/* bundle/postgres-init/
+          printf '%s\n' "$INSTALLATION" > bundle/installation-id
+          printf '%s\n' "$SOURCE_SHA" > bundle/source-sha
+          printf '%s\n' "$MEDIA_HOSTS" > bundle/media-hosts
+          printf 'APP_VERSION=%s\nFRONTEND_VERSION=%s-%s-%s\nBACKEND_IMAGE=%s/autoflow-backend@%s\nFRONTEND_IMAGE=%s/autoflow-frontend@%s\n' "$SOURCE_SHA" "$SOURCE_SHA" "$INSTALLATION" "$RELEASE_RUN_ID" "$REGISTRY_USER" "$BACKEND_DIGEST" "$REGISTRY_USER" "$FRONTEND_DIGEST" > bundle/release.env
+          for name in CADDY_IMAGE POSTGRES_IMAGE REDIS_IMAGE MINIO_IMAGE MINIO_CLIENT_IMAGE BACKUP_HELPER_IMAGE; do
+            printf '%s=%s\n' "$name" "${!name}" >> bundle/dependencies.env
+          done
+          cd bundle
+          find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ inputs.installation }}-${{ github.sha }}-${{ github.run_id }}
+          path: bundle
+          retention-days: 90

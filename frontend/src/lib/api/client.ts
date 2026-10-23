@@ -1,7 +1,7 @@
 import type { ApiError } from './types';
 
 const BACKEND_INTERNAL = process.env.BACKEND_INTERNAL_URL ?? 'http://localhost:3000/api';
-const BACKEND_PUBLIC = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000/api';
+export const browserApiBase = (): string => `${window.location.origin}/api`;
 
 export class ApiClientError extends Error {
   constructor(
@@ -25,10 +25,10 @@ interface FetchOptions extends Omit<RequestInit, 'body'> {
 /**
  * Server-side requests reach the backend through `BACKEND_INTERNAL_URL` (the
  * docker-network hostname in prod). Client-side requests use
- * `NEXT_PUBLIC_BACKEND_URL`.
+ * the installation's same-origin `/api` route.
  */
 function buildUrl(path: string, query?: FetchOptions['query']): string {
-  const base = typeof window === 'undefined' ? BACKEND_INTERNAL : BACKEND_PUBLIC;
+  const base = typeof window === 'undefined' ? BACKEND_INTERNAL : browserApiBase();
   const url = new URL(path.startsWith('/') ? path.slice(1) : path, ensureSlash(base));
   if (query) {
     for (const [key, value] of Object.entries(query)) {

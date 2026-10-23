@@ -188,11 +188,16 @@ LCP — героїчне фото (priority + sized + preload через next/im
 
 ## Deploy
 
-- Окремий сервіс поряд із бекендом, той самий хостинг.
-- На проді обовʼязково:
-  - `ADMIN_COOKIE_SECURE=true`
-  - `ADMIN_COOKIE_SIGNING_KEY` (без нього прод-збірка падає fail-fast)
-  - `NEXT_PUBLIC_BACKEND_URL` указує на публічний API
-  - `BACKEND_INTERNAL_URL` указує на бекенд-сервіс у внутрішній мережі
-  - `NEXT_PUBLIC_MEDIA_HOSTS` містить CDN/Bucket-хости для allow-list
-    `next/image`.
+Порядок незалежного розгортання кожного автосалону, image pins і секрети описані
+в [канонічній інструкції деплою](../deploy/README.md).
+
+- Браузер звертається до same-origin `/api`; `NEXT_PUBLIC_BACKEND_URL` не потрібна.
+  У production цей шлях маршрутизує Caddy, у Next dev — локальний rewrite.
+- `BACKEND_INTERNAL_URL` задає внутрішню адресу для серверних API-запитів під час
+  виконання (у compose — `http://app:3000/api`). SEO rewrites Next фіксують цю
+  адресу під час збірки; у production SEO-файли маршрутизує Caddy.
+- `NEXT_PUBLIC_MEDIA_HOSTS` задається **під час збірки** та формує точні allowlists
+  для `next/image` і CSP, зокрема presigned uploads. Зміна media origin потребує
+  нового frontend image/bundle із того самого спільного коду.
+- `ADMIN_COOKIE_SIGNING_KEY` — окремий секрет frontend runtime. Для HTTPS
+  `ADMIN_COOKIE_SECURE=true`; явний HTTP-режим потребує `false`.

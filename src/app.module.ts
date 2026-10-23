@@ -1,3 +1,5 @@
+import { InstallationModule } from './modules/installation/installation.module';
+import { FeatureGuard } from './modules/installation/feature.guard';
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
@@ -37,6 +39,7 @@ import { ViewsModule } from './modules/views/views.module';
   imports: [
     ConfigModule,
     CommonModule,
+    InstallationModule,
     BullRootModule,
     DatabaseModule,
     // Limit comes from PUBLIC_API_RATE_PER_MIN — a hardcoded number here would
@@ -88,6 +91,7 @@ import { ViewsModule } from './modules/views/views.module';
     // except @AllowWhenBillingBlocked ones; public routes are untouched.
     { provide: APP_GUARD, useClass: BillingGuard },
     { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: FeatureGuard },
   ],
 })
 export class AppModule {}

@@ -314,7 +314,7 @@ export const adminApi = {
   ): Promise<{ logoUrl: string }> {
     const body = new FormData();
     body.append('file', file);
-    const base = process.env.NEXT_PUBLIC_BACKEND_URL ?? 'http://localhost:3000/api';
+    const base = `${window.location.origin}/api`;
     const response = await fetch(`${base.replace(/\/$/, '')}/admin/catalog/makes/${id}/logo`, {
       method: 'POST',
       headers: { authorization: `Bearer ${opts.accessToken}` },

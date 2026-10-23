@@ -3,7 +3,7 @@ import 'reflect-metadata';
 import { DataSource, type DataSourceOptions } from 'typeorm';
 import { ALL_ENTITIES } from './entities';
 
-loadDotenv();
+loadDotenv({ path: process.env.ENV_FILE ?? '.env' });
 
 export const adminDataSourceOptions: DataSourceOptions = {
   type: 'postgres',

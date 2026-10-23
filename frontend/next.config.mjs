@@ -3,10 +3,6 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const isDev = process.env.NODE_ENV !== 'production';
-// Backend origin (API + presigned upload target) for CSP connect-src.
-// `||` (not `??`): an empty build-arg arrives as '' and must also fall back.
-const backendOrigin = new URL(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3000/api')
-  .origin;
 /**
  * NEXT_PUBLIC_MEDIA_HOSTS entries: bare hostname (`media.example.com` → https)
  * or a full origin (`http://157.90.1.2:8081` — the no-domain deploy mode).
@@ -33,7 +29,7 @@ const csp = [
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' data: blob: ${mediaOrigins.join(' ')}`.trim(),
   // XHR: API calls + direct presigned PUT uploads to object storage.
-  `connect-src 'self' ${backendOrigin} ${mediaOrigins.join(' ')}`.trim(),
+  `connect-src 'self' ${mediaOrigins.join(' ')}`.trim(),
   `font-src 'self' data:`,
   `object-src 'none'`,
   `base-uri 'self'`,
@@ -89,6 +85,7 @@ const nextConfig = {
     // proxy them through the storefront domain.
     const backend = process.env.BACKEND_INTERNAL_URL ?? 'http://localhost:3000/api';
     return [
+      ...(isDev ? [{ source: '/api/:path*', destination: `${backend}/:path*` }] : []),
       { source: '/robots.txt', destination: `${backend}/robots.txt` },
       { source: '/sitemap.xml', destination: `${backend}/sitemap.xml` },
     ];

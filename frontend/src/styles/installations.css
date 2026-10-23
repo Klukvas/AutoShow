@@ -1,0 +1,14 @@
+/* The current/default selectors deliberately add no overrides. The compact
+   variant is a small proof of the presentation seam, using the same car logic. */
+[data-storefront-theme='compact'] .home-section {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+[data-storefront-theme='compact'] .home-inventory-grid {
+  gap: 16px;
+}
+[data-storefront-font='system'] {
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+}

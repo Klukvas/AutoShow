@@ -1,3 +1,4 @@
+import { getInstallation } from '@/lib/installation/server';
 import { redirect } from 'next/navigation';
 import { adminApi, type AdminRole } from '@/lib/api/admin';
 import { readSession } from '@/lib/auth/session';
@@ -40,6 +41,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const user = auth?.session.user ?? session.user;
   const isAdmin = user.role === 'admin';
 
+  const installation = await getInstallation();
   const branding = await getSiteBranding().catch(() => null);
   const brandName = branding?.displayName ?? 'AutoFlow';
 
@@ -74,7 +76,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { href: '/admin/catalog', key: 'catalog' },
     ...(isAdmin
       ? ([
-          { href: '/admin/reviews', key: 'reviews' },
+          ...(installation.features.reviews
+            ? [{ href: '/admin/reviews', key: 'reviews' } as const]
+            : []),
           { href: '/admin/packages', key: 'packages' },
           { href: '/admin/collections', key: 'collections' },
           { href: '/admin/tags', key: 'tags' },

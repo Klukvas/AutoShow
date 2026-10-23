@@ -45,3 +45,22 @@ describe('BrandingPublicController', () => {
     expect(settings.telegram?.leadChatId).toBe('-100999');
   });
 });
+
+it('public branding uses a fixed allowlist even when internal fields are added', async () => {
+  const settings = {
+    displayName: 'Dealer',
+    primaryColor: '#123456',
+    telegram: { botToken: 'private' },
+    futureSecret: 'never-public',
+    id: 'internal-id',
+  } as unknown as SiteSettings;
+  const controller = new BrandingPublicController({
+    getCurrent: async () => settings,
+  } as BrandingService);
+  const result = await controller.get();
+  expect(result.displayName).toBe('Dealer');
+  expect(result).not.toHaveProperty('telegram');
+  expect(result).not.toHaveProperty('futureSecret');
+  expect(result.id).toBe('internal-id');
+  expect(settings.telegram).toEqual({ botToken: 'private' });
+});

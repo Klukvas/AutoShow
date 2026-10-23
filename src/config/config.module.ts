@@ -10,7 +10,7 @@ export type AppConfig = EnvSchema;
     NestConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      envFilePath: ['.env'],
+      envFilePath: [process.env.ENV_FILE ?? '.env'],
       validate: validateEnv,
     }),
   ],

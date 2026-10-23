@@ -106,6 +106,9 @@
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^src/(.*)$": "<rootDir>/src/$1"
-    }
+    },
+    "roots": [
+      "<rootDir>/src"
+    ]
   }
 }

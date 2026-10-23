@@ -9,3 +9,6 @@ coverage
 *.log
 test
 videos
+
+.npm-cache
+.*-release

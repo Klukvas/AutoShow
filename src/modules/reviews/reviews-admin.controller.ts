@@ -1,3 +1,4 @@
+import { RequiresFeature } from '../installation/feature.guard';
 import {
   Body,
   Controller,
@@ -26,6 +27,7 @@ import { ReviewsService } from './reviews.service';
 @UseGuards(JwtAuthGuard, RolesGuard)
 // Admin-only per the role policy: editors are scoped to listings + leads.
 @Roles('admin')
+@RequiresFeature('reviews')
 @Controller('admin/reviews')
 export class ReviewsAdminController {
   constructor(private readonly reviews: ReviewsService) {}

@@ -1,3 +1,4 @@
+import { WorkerHeartbeatService } from './modules/installation/worker-heartbeat.service';
 import { Module } from '@nestjs/common';
 import { BullRootModule } from './bull/bull.module';
 import { CommonModule } from './common/common.module';
@@ -10,6 +11,7 @@ import { ViewsModule } from './modules/views/views.module';
 import { WorkersModule } from './workers/workers.module';
 
 @Module({
+  providers: [WorkerHeartbeatService],
   imports: [
     ConfigModule,
     CommonModule,

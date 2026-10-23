@@ -12,13 +12,23 @@ export class BrandingPublicController {
   @Get()
   @ApiOperation({ summary: 'Site branding for the storefront' })
   async get() {
-    // The telegram block holds the bot token — a live credential that must
-    // never reach the public endpoint. (Delete on a fresh copy; the cached
-    // entity itself is never mutated.)
-    const settings: Partial<Awaited<ReturnType<BrandingService['getCurrent']>>> = {
-      ...(await this.branding.getCurrent()),
+    const settings = await this.branding.getCurrent();
+    // Deliberate allowlist: adding a private setting cannot publish it by accident.
+    return {
+      id: settings.id,
+      logoUrl: settings.logoUrl,
+      faviconUrl: settings.faviconUrl,
+      primaryColor: settings.primaryColor,
+      accentColor: settings.accentColor,
+      displayName: settings.displayName,
+      tagline: settings.tagline,
+      contactPhone: settings.contactPhone,
+      contactEmail: settings.contactEmail,
+      address: settings.address,
+      workingHours: settings.workingHours,
+      socialLinks: settings.socialLinks,
+      seoDefaults: settings.seoDefaults,
+      defaultCurrency: settings.defaultCurrency,
     };
-    delete settings.telegram;
-    return settings;
   }
 }

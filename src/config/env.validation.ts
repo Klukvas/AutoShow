@@ -10,6 +10,7 @@ import {
   Max,
   Min,
   MinLength,
+  Matches,
   validateSync,
 } from 'class-validator';
 
@@ -24,7 +25,37 @@ export enum PhotoAiMode {
   Managed = 'managed',
 }
 
+export enum StorefrontTheme {
+  Current = 'current',
+  Compact = 'compact',
+}
+export enum StorefrontFont {
+  Default = 'default',
+  System = 'system',
+}
+
 export class EnvSchema {
+  @IsString()
+  @Matches(/^[a-z0-9][a-z0-9-]{0,62}$/)
+  INSTALLATION_ID: string = 'autoflow';
+
+  @IsString()
+  @Matches(/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/)
+  APP_VERSION: string = 'development';
+
+  @IsEnum(StorefrontTheme)
+  STOREFRONT_THEME: StorefrontTheme = StorefrontTheme.Current;
+
+  @IsEnum(StorefrontFont)
+  STOREFRONT_FONT_PRESET: StorefrontFont = StorefrontFont.Default;
+
+  @IsBoolean()
+  FEATURE_REVIEWS: boolean = true;
+
+  @IsInt()
+  @Min(1)
+  HEALTH_MIN_FREE_MB: number = 512;
+
   @IsString()
   @IsOptional()
   PHOTO_AI_ENCRYPTION_KEY?: string;
@@ -337,7 +368,7 @@ export function validateEnv(raw: Record<string, unknown>): EnvSchema {
     }
   }
 
-  for (const key of ['S3_FORCE_PATH_STYLE', 'BILLING_ENABLED'] as const) {
+  for (const key of ['S3_FORCE_PATH_STYLE', 'BILLING_ENABLED', 'FEATURE_REVIEWS'] as const) {
     const value = coerced[key];
     if (typeof value !== 'string') continue;
     if (value !== 'true' && value !== 'false') {

@@ -14,6 +14,10 @@ import type { EnvSchema } from '../../config/env.validation';
         return {
           pinoHttp: {
             level: config.get('LOG_LEVEL', { infer: true }),
+            base: {
+              installationId: config.get('INSTALLATION_ID', { infer: true }),
+              appVersion: config.get('APP_VERSION', { infer: true }),
+            },
             transport: isDev
               ? {
                   target: 'pino-pretty',

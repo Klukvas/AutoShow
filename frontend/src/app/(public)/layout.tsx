@@ -1,3 +1,6 @@
+import { getInstallation } from '@/lib/installation/server';
+import { StorefrontPresentation } from '@/components/installation/storefront-presentation';
+import '@/styles/installations.css';
 import { HomepageShell } from '@/components/home/homepage-shell';
 import { PublicFooter } from '@/components/nav/public-footer';
 import { PublicNav } from '@/components/nav/public-nav';
@@ -9,21 +12,23 @@ import { CompareProvider } from '@/lib/compare';
 import { getSiteBranding } from '@/lib/branding/resolve';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const branding = await getSiteBranding();
+  const [branding, installation] = await Promise.all([getSiteBranding(), getInstallation()]);
   return (
-    <HomepageShell>
-      <ThemeProvider>
-        <LenisProvider>
-          <FavoritesProvider>
-            <CompareProvider>
-              <PublicNav branding={branding} />
-              <main className="min-h-dvh">{children}</main>
-              <CompareBar />
-              <PublicFooter branding={branding} />
-            </CompareProvider>
-          </FavoritesProvider>
-        </LenisProvider>
-      </ThemeProvider>
-    </HomepageShell>
+    <StorefrontPresentation installation={installation}>
+      <HomepageShell>
+        <ThemeProvider>
+          <LenisProvider>
+            <FavoritesProvider>
+              <CompareProvider>
+                <PublicNav branding={branding} />
+                <main className="min-h-dvh">{children}</main>
+                <CompareBar />
+                <PublicFooter branding={branding} />
+              </CompareProvider>
+            </FavoritesProvider>
+          </LenisProvider>
+        </ThemeProvider>
+      </HomepageShell>
+    </StorefrontPresentation>
   );
 }
