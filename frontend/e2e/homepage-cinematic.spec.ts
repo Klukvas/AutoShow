@@ -27,7 +27,8 @@ async function capture(page: Page, name: string) {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await page.evaluate(() => document.fonts.ready);
-  await expect(page.locator('h1')).toHaveText('Знайдіть авто. Відчуйте своє.');
+  await expect(page.locator('h1')).toHaveText('Знайдіть авто, яке вам підходить.');
+  await expect(page.getByText('Більше, ніж просто автомобілі', { exact: true })).toHaveCount(0);
   await assertNoOverflow(page);
   await page.screenshot({ path: path.join(evidence, `${name}.png`), fullPage: true });
 }

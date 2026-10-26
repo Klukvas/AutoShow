@@ -37,7 +37,6 @@ export function HomeHero({ listing, title, subtitle, baseCurrency }: HomeHeroPro
       <div className="home-hero-shade" aria-hidden />
       <div className="home-hero-content home-container">
         <div className="home-hero-copy">
-          <p className="home-kicker">{t('cinematicEyebrow')}</p>
           <h1>{title}</h1>
           <p className="home-hero-subtitle">{subtitle}</p>
           <Link className="home-primary-cta focus-ring" href="/cars">
