@@ -118,7 +118,6 @@ export function SelectField({
   options,
   placeholder,
   onChange,
-  disabled,
   hideLabel,
 }: {
   label: string;
@@ -126,7 +125,6 @@ export function SelectField({
   options: SelectOption[];
   placeholder: string;
   onChange: (next: string | undefined) => void;
-  disabled?: boolean;
   /** Keep the label for screen readers only (compact rows with a shared heading). */
   hideLabel?: boolean;
 }) {
@@ -136,13 +134,11 @@ export function SelectField({
       <span className="relative block">
       <select
         value={value ?? ''}
-        disabled={disabled}
         onChange={(e) => onChange(e.target.value || undefined)}
         className={cn(
           'platform-select focus-ring h-10 w-full appearance-none rounded-btn border border-line-input bg-surface px-3 pr-8 text-sub transition-colors',
 
           value ? 'text-ink' : 'text-ink-3',
-          disabled && 'cursor-not-allowed opacity-50',
         )}
       >
         <option value="">{placeholder}</option>

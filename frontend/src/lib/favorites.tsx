@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { appendSlug, removeSlugs } from './slug-store';
 
 const STORAGE_KEY = 'autoflow:favorites';
 const MAX_FAVORITES = 100;
@@ -13,6 +14,8 @@ interface FavoritesValue {
   has: (slug: string) => boolean;
   toggle: (slug: string) => void;
   remove: (slug: string) => void;
+  /** Prunes several slugs in one update (e.g. a batch of confirmed 404s). */
+  removeMany: (slugs: string[]) => void;
 }
 
 const FavoritesContext = createContext<FavoritesValue | null>(null);
@@ -31,6 +34,11 @@ function readStored(): string[] {
  * Guest favorites: slugs in localStorage, no account needed. Slugs (not ids)
  * so the /favorites page can hydrate each car from the public by-slug API.
  * Synced across tabs via the `storage` event.
+ *
+ * Every mutation is a functional `setSlugs(prev => …)` over the pure helpers in
+ * `slug-store`, so two changes in one tick (a batch of 404 prunes, a heart
+ * click racing a fetch) compose instead of overwriting each other with a stale
+ * render snapshot.
  */
 export function FavoritesProvider({ children }: { children: React.ReactNode }) {
   const [slugs, setSlugs] = useState<string[]>([]);
@@ -48,14 +56,17 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  const persist = useCallback((next: string[]) => {
-    setSlugs(next);
+  // Persist from an effect, never from inside an updater: updaters must stay
+  // pure (React may run them twice) and this way storage always mirrors the
+  // committed state. The hydration pass rewrites the value it just read.
+  useEffect(() => {
+    if (!ready) return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(slugs));
     } catch {
       // Private mode / quota — favorites silently become session-only.
     }
-  }, []);
+  }, [slugs, ready]);
 
   const value = useMemo<FavoritesValue>(
     () => ({
@@ -63,14 +74,15 @@ export function FavoritesProvider({ children }: { children: React.ReactNode }) {
       ready,
       has: (slug) => slugs.includes(slug),
       toggle: (slug) =>
-        persist(
-          slugs.includes(slug)
-            ? slugs.filter((s) => s !== slug)
-            : [...slugs, slug].slice(-MAX_FAVORITES),
+        setSlugs((prev) =>
+          prev.includes(slug)
+            ? removeSlugs(prev, [slug])
+            : appendSlug(prev, slug, MAX_FAVORITES),
         ),
-      remove: (slug) => persist(slugs.filter((s) => s !== slug)),
+      remove: (slug) => setSlugs((prev) => removeSlugs(prev, [slug])),
+      removeMany: (targets) => setSlugs((prev) => removeSlugs(prev, targets)),
     }),
-    [slugs, ready, persist],
+    [slugs, ready],
   );
 
   return <FavoritesContext.Provider value={value}>{children}</FavoritesContext.Provider>;

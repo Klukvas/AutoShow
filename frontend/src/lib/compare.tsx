@@ -1,6 +1,7 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { removeSlugs, toggleSlug } from './slug-store';
 
 const STORAGE_KEY = 'autoflow:compare';
 /** Side-by-side comparison stays readable up to 3 cars. */
@@ -16,6 +17,8 @@ interface CompareValue {
   canAdd: (slug: string) => boolean;
   toggle: (slug: string) => void;
   remove: (slug: string) => void;
+  /** Prunes several slugs in one update (e.g. a batch of confirmed 404s). */
+  removeMany: (slugs: string[]) => void;
   clear: () => void;
 }
 
@@ -37,6 +40,10 @@ function readStored(): string[] {
  * Guest compare list: up to {@link MAX_COMPARE} listing slugs in localStorage,
  * mirroring FavoritesProvider. Slugs (not ids) so the /compare page can hydrate
  * each car from the public by-slug API. Synced across tabs via `storage`.
+ *
+ * Every mutation is a functional `setSlugs(prev => …)` over the pure helpers in
+ * `slug-store`, so a batch of 404 prunes and a column removal in the same tick
+ * both apply instead of the last write winning from a stale snapshot.
  */
 export function CompareProvider({ children }: { children: React.ReactNode }) {
   const [slugs, setSlugs] = useState<string[]>([]);
@@ -52,14 +59,17 @@ export function CompareProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('storage', onStorage);
   }, []);
 
-  const persist = useCallback((next: string[]) => {
-    setSlugs(next);
+  // Persist from an effect, never from inside an updater: updaters must stay
+  // pure (React may run them twice) and this way storage always mirrors the
+  // committed state. The hydration pass rewrites the value it just read.
+  useEffect(() => {
+    if (!ready) return;
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(slugs));
     } catch {
       // Private mode / quota — compare list silently becomes session-only.
     }
-  }, []);
+  }, [slugs, ready]);
 
   const value = useMemo<CompareValue>(
     () => ({
@@ -67,18 +77,12 @@ export function CompareProvider({ children }: { children: React.ReactNode }) {
       ready,
       has: (slug) => slugs.includes(slug),
       canAdd: (slug) => slugs.includes(slug) || slugs.length < MAX_COMPARE,
-      toggle: (slug) => {
-        if (slugs.includes(slug)) {
-          persist(slugs.filter((s) => s !== slug));
-        } else if (slugs.length < MAX_COMPARE) {
-          persist([...slugs, slug]);
-        }
-        // At capacity and not present → no-op; the button is disabled anyway.
-      },
-      remove: (slug) => persist(slugs.filter((s) => s !== slug)),
-      clear: () => persist([]),
+      toggle: (slug) => setSlugs((prev) => toggleSlug(prev, slug, MAX_COMPARE)),
+      remove: (slug) => setSlugs((prev) => removeSlugs(prev, [slug])),
+      removeMany: (targets) => setSlugs((prev) => removeSlugs(prev, targets)),
+      clear: () => setSlugs([]),
     }),
-    [slugs, ready, persist],
+    [slugs, ready],
   );
 
   return <CompareContext.Provider value={value}>{children}</CompareContext.Provider>;

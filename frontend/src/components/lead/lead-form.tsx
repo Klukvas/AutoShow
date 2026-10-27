@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { LEAD_TYPE_EVENT, type LeadType } from '@/components/lead/lead-cta';
 import { cn } from '@/lib/cn';
 import { ApiClientError } from '@/lib/api/client';
-import { publicApi } from '@/lib/api/public';
+import { createIdempotencyKey, publicApi } from '@/lib/api/public';
 import type { CreateLeadBody } from '@/lib/api/types';
 
 interface LeadFormProps {
@@ -17,7 +17,13 @@ interface LeadFormProps {
   messagePrefix?: string;
 }
 
-type Status = 'idle' | 'sending' | 'success' | 'error-rate' | 'error-generic';
+type Status =
+  | 'idle'
+  | 'sending'
+  | 'success'
+  | 'error-rate'
+  | 'error-in-progress'
+  | 'error-generic';
 
 interface FieldErrors {
   name?: string;
@@ -71,6 +77,14 @@ export function LeadForm({ listingId, variant = 'callback', messagePrefix }: Lea
   // Capture the form element via ref — `e.target` is a synthetic React event
   // that may be nulled out by the time the async submit promise resolves.
   const formRef = useRef<HTMLFormElement>(null);
+  // One key per form draft, minted on mount (not on click). It survives
+  // validation fixes and retries after a timeout/error, so the server can turn
+  // a repeated request into the same lead. A successful submission clears it;
+  // the next mount (the success card replaces the form) starts a new draft.
+  const idempotencyKeyRef = useRef<string | null>(null);
+  if (idempotencyKeyRef.current === null) {
+    idempotencyKeyRef.current = createIdempotencyKey();
+  }
 
   // Contact-panel CTAs preselect the type (e.g. "Тест-драйв") via a DOM event.
   useEffect(() => {
@@ -113,15 +127,27 @@ export function LeadForm({ listingId, variant = 'callback', messagePrefix }: Lea
       website: String(form.get('website') ?? ''),
     };
     setStatus('sending');
+    // Read the draft key at submit time (it is stable for the mount). On a
+    // retry the ref still holds the same value, so the server deduplicates.
+    const idempotencyKey = idempotencyKeyRef.current ?? createIdempotencyKey();
+    idempotencyKeyRef.current = idempotencyKey;
     publicApi
-      .submitLead(body)
+      .submitLead(body, { idempotencyKey })
       .then(() => {
-        // Reset while the form is still mounted — the success branch replaces it.
+        // Accepted — the next draft (new mount) needs a new key. Reset the form
+        // while it is still mounted; the success branch replaces it.
+        idempotencyKeyRef.current = null;
         formRef.current?.reset();
         setStatus('success');
       })
       .catch((err) => {
-        if (err instanceof ApiClientError && (err.status === 403 || err.status === 429)) {
+        if (err instanceof ApiClientError && err.status === 409) {
+          // Another request with this draft key is still in flight. The key is
+          // kept, so pressing submit again returns the lead it is creating
+          // instead of making a second one. No auto-retry: a 409 loop would
+          // hammer the server while the first request is still working.
+          setStatus('error-in-progress');
+        } else if (err instanceof ApiClientError && (err.status === 403 || err.status === 429)) {
           setStatus('error-rate');
         } else {
           setStatus('error-generic');
@@ -227,6 +253,15 @@ export function LeadForm({ listingId, variant = 'callback', messagePrefix }: Lea
         <div className="mt-5 flex items-start gap-2.5 rounded-input border border-ratelimit-line bg-ratelimit-bg px-4 py-3">
           <span aria-hidden>⏱</span>
           <p className="text-sub font-medium text-ratelimit">{t('errorRate')}</p>
+        </div>
+      )}
+      {status === 'error-in-progress' && (
+        <div
+          role="status"
+          className="mt-5 flex items-start gap-2.5 rounded-input border border-line bg-bg px-4 py-3"
+        >
+          <span aria-hidden>⏳</span>
+          <p className="text-sub font-medium text-ink-2">{t('errorInProgress')}</p>
         </div>
       )}
       {status === 'error-generic' && (

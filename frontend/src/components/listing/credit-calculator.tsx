@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { HoneypotField, LeadField } from '@/components/lead/field';
 import { ApiClientError } from '@/lib/api/client';
-import { publicApi } from '@/lib/api/public';
+import { createIdempotencyKey, publicApi } from '@/lib/api/public';
 import { formatMoney } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import type { Currency } from '@/lib/api/types';
@@ -25,7 +25,7 @@ function monthlyPayment(principal: number, months: number): number {
   return (principal * r) / (1 - Math.pow(1 + r, -months));
 }
 
-type Status = 'idle' | 'sending' | 'success' | 'error';
+type Status = 'idle' | 'sending' | 'success' | 'error' | 'error-in-progress';
 
 interface CreditCalculatorProps {
   listingId: string;
@@ -43,6 +43,12 @@ export function CreditCalculator({ listingId, priceAmount, currency }: CreditCal
   const [status, setStatus] = useState<Status>('idle');
   const [phoneError, setPhoneError] = useState<string | undefined>();
   const formRef = useRef<HTMLFormElement>(null);
+  // The card itself is the draft: one key per mount, reused by every retry
+  // (including after the error state) and replaced only once a lead is saved.
+  const idempotencyKeyRef = useRef<string | null>(null);
+  if (idempotencyKeyRef.current === null) {
+    idempotencyKeyRef.current = createIdempotencyKey();
+  }
 
   const downPayment = Math.round(price * downShare);
   const monthly = useMemo(
@@ -63,22 +69,38 @@ export function CreditCalculator({ listingId, priceAmount, currency }: CreditCal
     }
     setPhoneError(undefined);
     setStatus('sending');
+    const idempotencyKey = idempotencyKeyRef.current ?? createIdempotencyKey();
+    idempotencyKeyRef.current = idempotencyKey;
     publicApi
-      .submitLead({
-        type: 'credit',
-        name,
-        phone,
-        listingId,
-        creditDownPayment: downPayment,
-        creditTermMonths: term,
-        sourceUrl: window.location.href,
-        website: String(form.get('website') ?? ''),
-      })
+      .submitLead(
+        {
+          type: 'credit',
+          name,
+          phone,
+          listingId,
+          creditDownPayment: downPayment,
+          creditTermMonths: term,
+          sourceUrl: window.location.href,
+          website: String(form.get('website') ?? ''),
+        },
+        { idempotencyKey },
+      )
       .then(() => {
+        // Saved — a fresh draft after this success must not reuse the key.
+        idempotencyKeyRef.current = null;
         formRef.current?.reset();
         setStatus('success');
       })
       .catch((err) => {
+        // Keep form values and the draft key: the visitor can fix the phone or
+        // simply press submit again, and the retry stays deduplicated.
+        if (err instanceof ApiClientError && err.status === 409) {
+          // The same draft key is still being processed server-side. Keep the
+          // key and let the visitor retry: that retry returns the lead the
+          // in-flight request is creating. No auto-retry — it would loop on 409.
+          setStatus('error-in-progress');
+          return;
+        }
         setStatus('error');
         if (err instanceof ApiClientError && err.status === 429) setPhoneError(t('errorRate'));
       });
@@ -168,6 +190,25 @@ export function CreditCalculator({ listingId, priceAmount, currency }: CreditCal
             placeholder="+38 (0__) ___-__-__"
           />
           <HoneypotField id="credit-website" />
+          {/* Failed request: values above stay untouched and the submit button
+              below remains enabled, so the visitor can retry in place. The
+              429 case already renders its own message under the phone field. */}
+          {status === 'error' && !phoneError && (
+            <p
+              role="alert"
+              className="rounded-input border border-danger-line bg-danger-bg px-4 py-3 text-sub font-medium text-danger"
+            >
+              {t('errorGeneric')}
+            </p>
+          )}
+          {status === 'error-in-progress' && (
+            <p
+              role="status"
+              className="rounded-input border border-line bg-bg px-4 py-3 text-sub font-medium text-ink-2"
+            >
+              {t('errorInProgress')}
+            </p>
+          )}
           <Button type="submit" variant="primary" size="lg" disabled={status === 'sending'}>
             {status === 'sending' ? t('sending') : t('submitRequest')}
           </Button>

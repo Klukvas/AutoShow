@@ -1,4 +1,12 @@
-import { ForbiddenException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  HttpException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { createHash, randomUUID } from 'node:crypto';
 import { In, IsNull, Repository } from 'typeorm';
@@ -17,6 +25,31 @@ import { Lead, type LeadDetails, type LeadStatus } from './entities/lead.entity'
 import { LeadNote } from './entities/lead-note.entity';
 
 const RATE_PREFIX = 'leads:rate:';
+/** Client draft key → lead id, kept for a day so a late retry still dedupes. */
+const IDEMPOTENCY_PREFIX = 'idem:lead:';
+/**
+ * Short-lived claim written before the lead row exists. Two simultaneous
+ * requests must not both pass the "already created?" check, so the winner owns
+ * this marker while it inserts and the loser polls for the resulting id.
+ */
+const IDEMPOTENCY_PENDING = '__pending__';
+const IDEMPOTENCY_PENDING_TTL_SEC = 30;
+const IDEMPOTENCY_TTL_SEC = 86_400;
+const IDEMPOTENCY_WAIT_ATTEMPTS = 15;
+const IDEMPOTENCY_WAIT_MS = 100;
+/**
+ * Accepted client draft keys: `crypto.randomUUID()` (36 chars, hex + dashes) or
+ * the `idem-<ts>-<random hex>` fallback. Anything outside this alphabet, shorter
+ * than 8 chars or longer than 200 is ignored — the lead is still created, just
+ * without dedup. This keeps arbitrary client text out of Redis keys and logs.
+ */
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9_-]{8,200}$/;
+
+/**
+ * The client only needs `{ id, status }` back to show its success/duplicate
+ * state — a deduplicated response is a reference to a row, not the entity.
+ */
+export type LeadRef = Pick<Lead, 'id' | 'status'>;
 
 @Injectable()
 export class LeadsService {
@@ -34,7 +67,11 @@ export class LeadsService {
     @Inject('APP_CONFIG') private readonly config: AppConfig,
   ) {}
 
-  async create(dto: CreateLeadDto, ip: string | undefined): Promise<Lead> {
+  async create(
+    dto: CreateLeadDto,
+    ip: string | undefined,
+    idempotencyKey?: string,
+  ): Promise<Lead | LeadRef> {
     if (dto.website) {
       // Honeypot hit — bots fill the hidden `website` field. Accept *silently*
       // with a fabricated success response: telling them they failed lets them
@@ -46,37 +83,198 @@ export class LeadsService {
       return {
         id: randomUUID(),
         status: 'new',
-      } as Lead;
+      };
     }
-    await this.rateLimit(dto.phone, ip);
 
-    if (dto.listingId) {
-      // Reserved cars still take inquiries (deal may fall through); sold ones
-      // don't — their page hides the form and direct POSTs get a 404.
-      const listing = await this.listings.findOne({
-        where: { id: dto.listingId, status: In(['published', 'reserved']), deletedAt: IsNull() },
-        select: ['id'],
+    // Claim before the rate limiter: a repeat of an accepted submission must
+    // neither create a row nor consume more of the visitor's hourly budget.
+    const idempotency = await this.claimIdempotency(idempotencyKey);
+    if (idempotency.duplicate) return idempotency.duplicate;
+
+    let persisted = false;
+    try {
+      await this.rateLimit(dto.phone, ip);
+
+      if (dto.listingId) {
+        // Reserved cars still take inquiries (deal may fall through); sold ones
+        // don't — their page hides the form and direct POSTs get a 404.
+        const listing = await this.listings.findOne({
+          where: { id: dto.listingId, status: In(['published', 'reserved']), deletedAt: IsNull() },
+          select: ['id'],
+        });
+        if (!listing) throw new NotFoundException('Listing not found');
+      }
+      const placementPackage = await this.resolvePackage(dto);
+
+      const lead = this.leads.create({
+        type: dto.type,
+        name: dto.name,
+        phone: dto.phone,
+        email: dto.email ?? null,
+        message: this.composeMessage(dto, placementPackage),
+        details: this.detailsFrom(dto, placementPackage),
+        sourceUrl: dto.sourceUrl ?? null,
+        utm: dto.utm ?? null,
+        status: 'new',
+        ipHash: ip ? this.hashIp(ip) : null,
+        listingId: dto.listingId ?? null,
       });
-      if (!listing) throw new NotFoundException('Listing not found');
+      const saved = await this.leads.save(lead);
+      // From here on the lead exists: never release the key, or a retry could
+      // insert a second row after a later (unexpected) failure in this block.
+      persisted = true;
+      await this.rememberIdempotency(idempotency.reservation, saved.id);
+      await this.notifyManagers(saved, dto);
+      return saved;
+    } catch (err) {
+      // Nothing was persisted, so free the draft key for a retry instead of
+      // leaving the client stuck on a pending marker for 30 s.
+      if (!persisted) await this.releaseIdempotency(idempotency.reservation);
+      throw err;
     }
-    const placementPackage = await this.resolvePackage(dto);
+  }
 
-    const lead = this.leads.create({
-      type: dto.type,
-      name: dto.name,
-      phone: dto.phone,
-      email: dto.email ?? null,
-      message: this.composeMessage(dto, placementPackage),
-      details: this.detailsFrom(dto, placementPackage),
-      sourceUrl: dto.sourceUrl ?? null,
-      utm: dto.utm ?? null,
-      status: 'new',
-      ipHash: ip ? this.hashIp(ip) : null,
-      listingId: dto.listingId ?? null,
-    });
-    const saved = await this.leads.save(lead);
-    await this.notifyManagers(saved, dto);
-    return saved;
+  /**
+   * Idempotency for the public form (UI-quality review #1).
+   *
+   * The client mints one key per form draft and sends it in `Idempotency-Key`.
+   * The key lives in a ref for the lifetime of a single mount, so what it
+   * actually deduplicates is a repeat of that draft: a double tap, or a retry
+   * after a timeout/error before the page is reloaded. A reload mints a new key
+   * and therefore creates a new lead — which is what we want for a person who
+   * deliberately filled the form again. Redis holds the mapping for a day:
+   *
+   *   SET idem:lead:<key> <leadId> EX 86400
+   *
+   * Before the row exists the winner claims the same key with a short-lived
+   * `__pending__` marker (`SET ... __pending__ EX 30 NX`), so a concurrent
+   * request cannot also pass the check. Exactly one request wins the `NX`;
+   * the loser polls for the winner's id for ~1.5 s and then answers 409
+   * ("in progress") rather than creating a second lead. Its client retries with
+   * the same key and receives the original `{ id, status }`.
+   *
+   * If Redis is unreachable the error is logged and the lead is created without
+   * dedup — a lost lead is worse than a possible duplicate.
+   */
+  private async claimIdempotency(rawKey: string | undefined): Promise<{
+    duplicate: LeadRef | null;
+    reservation: string | null;
+  }> {
+    const key = this.normalizeIdempotencyKey(rawKey);
+    if (!key) return { duplicate: null, reservation: null };
+
+    const redisKey = `${IDEMPOTENCY_PREFIX}${key}`;
+    try {
+      const claimed = await this.redis.client.set(
+        redisKey,
+        IDEMPOTENCY_PENDING,
+        'EX',
+        IDEMPOTENCY_PENDING_TTL_SEC,
+        'NX',
+      );
+      if (claimed === 'OK') return { duplicate: null, reservation: redisKey };
+
+      const duplicate = await this.waitForIdempotentLead(redisKey);
+      if (duplicate) return { duplicate, reservation: null };
+
+      // The marker vanished while we polled: the first request failed and
+      // released the key. Try once to become the new owner; if another request
+      // won that race, this one is a 409 and must not insert a row.
+      const reclaimed = await this.redis.client.set(
+        redisKey,
+        IDEMPOTENCY_PENDING,
+        'EX',
+        IDEMPOTENCY_PENDING_TTL_SEC,
+        'NX',
+      );
+      if (reclaimed === 'OK') return { duplicate: null, reservation: redisKey };
+      throw new ConflictException('Lead submission is already in progress');
+    } catch (err) {
+      if (err instanceof HttpException) throw err;
+      this.logger.warn(
+        // Never log the raw client key — it is the dedup credential. An 8-hex
+        // sha256 prefix is enough to correlate repeated log lines.
+        { err, idempotencyKeyHash: this.fingerprintKey(key) },
+        'Lead idempotency check failed — continuing without dedup',
+      );
+      return { duplicate: null, reservation: null };
+    }
+  }
+
+  /**
+   * Read the key until the first request publishes its lead id. `null` means
+   * the key disappeared (the first request failed) and the caller may claim it.
+   */
+  private async waitForIdempotentLead(redisKey: string): Promise<LeadRef | null> {
+    for (let attempt = 0; attempt < IDEMPOTENCY_WAIT_ATTEMPTS; attempt++) {
+      const leadId = await this.redis.client.get(redisKey);
+      if (!leadId) return null;
+      if (leadId !== IDEMPOTENCY_PENDING) return this.findIdempotentLead(leadId);
+      await new Promise((resolve) => setTimeout(resolve, IDEMPOTENCY_WAIT_MS));
+    }
+    // Still in flight after ~1.5 s: never create a second row. The caller gets
+    // a 409 and can retry with the same key once the winner has stored its id.
+    throw new ConflictException('Lead submission is already in progress');
+  }
+
+  /** The lead the original request created; its status may have changed since. */
+  private async findIdempotentLead(leadId: string): Promise<LeadRef> {
+    try {
+      const existing = await this.leads.findOne({
+        where: { id: leadId },
+        select: ['id', 'status'],
+      });
+      // The row might have been deleted since; still echo the original id
+      // instead of creating a second lead for a retry.
+      if (existing) return existing;
+    } catch (err) {
+      // The mapping is authoritative: a failed status read must not fall through
+      // to a second insert.
+      this.logger.warn({ err, leadId }, 'Failed to read the lead behind an idempotency key');
+    }
+    return { id: leadId, status: 'new' };
+  }
+
+  /** Replace the pending marker with the real id and extend the TTL to 24 h. */
+  private async rememberIdempotency(reservation: string | null, leadId: string): Promise<void> {
+    if (!reservation) return;
+    try {
+      await this.redis.client.set(reservation, leadId, 'EX', IDEMPOTENCY_TTL_SEC);
+    } catch (err) {
+      // The lead is already saved; failing the request here would only make the
+      // visitor retry. Log it: dedup is lost for this key.
+      this.logger.error(
+        { err, leadId },
+        'Failed to store lead idempotency mapping — a retry may duplicate the lead',
+      );
+    }
+  }
+
+  /** The request failed before completion, so the draft key may be reused. */
+  private async releaseIdempotency(reservation: string | null): Promise<void> {
+    if (!reservation) return;
+    try {
+      await this.redis.client.del(reservation);
+    } catch (err) {
+      // The 30 s pending TTL is the fallback; the lead request still fails.
+      this.logger.warn({ err }, 'Failed to release lead idempotency reservation');
+    }
+  }
+
+  /**
+   * Keep only keys that look like ours (`randomUUID()` or the `idem-…` fallback,
+   * see IDEMPOTENCY_KEY_PATTERN). A rejected header is not an error: the lead is
+   * created without dedup, exactly as if the client had sent no key at all.
+   */
+  private normalizeIdempotencyKey(rawKey: string | undefined): string | null {
+    const key = rawKey?.trim();
+    if (!key || !IDEMPOTENCY_KEY_PATTERN.test(key)) return null;
+    return key;
+  }
+
+  /** Log-safe key identifier: 8 hex chars of sha256, never the key itself. */
+  private fingerprintKey(key: string): string {
+    return createHash('sha256').update(key).digest('hex').slice(0, 8);
   }
 
   /**

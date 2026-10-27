@@ -7,10 +7,16 @@ import { Button } from '@/components/ui/button';
  * Catalog / detail error boundary (handoff 1c). A 429 from the API renders
  * the yellow rate-limit block; anything else gets the generic error state
  * with a retry button.
+ *
+ * `reset` is accepted because the Next error-boundary contract requires it,
+ * but it is deliberately not called: in Next 15 `reset()` only clears the
+ * boundary state and re-renders the segment without issuing a new RSC
+ * request, so a server-side throw would replay identically. Only a fresh
+ * document (a real reload) can reach the server again — same reasoning as
+ * `src/app/error.tsx`.
  */
 export default function CatalogError({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
@@ -47,7 +53,7 @@ export default function CatalogError({
       </span>
       <h1 className="mt-5 font-heading text-section font-medium text-ink">{t('errorTitle')}</h1>
       <p className="mt-1.5 text-body-md text-ink-2">{t('errorBody')}</p>
-      <Button variant="solid" className="mt-6" onClick={() => reset()}>
+      <Button variant="solid" className="mt-6" onClick={() => window.location.reload()}>
         {t('errorRetry')}
       </Button>
     </div>

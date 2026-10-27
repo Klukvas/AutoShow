@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import { fontDisplay, fontSans } from '@/lib/fonts';
@@ -28,6 +28,21 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: { index: true, follow: true },
   };
 }
+
+/**
+ * viewport-fit=cover is what makes env(safe-area-inset-*) non-zero on iOS.
+ * Without it the insets resolve to 0, so every `max(base, env(safe-area-inset-*))`
+ * collapses to `base` and the fixed bottom bars (mobile CTA, compare tray,
+ * filter sheet, mobile menu, admin sidebar/main) sit under the home indicator
+ * or the notch in landscape/standalone PWA mode. Declared once here — child
+ * layouts must not export their own `viewport` (Next resolves it per segment
+ * from the root, and a second export in a nested layout would override it).
+ */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Resolve locale alongside branding/messages — propagated to both <html lang>

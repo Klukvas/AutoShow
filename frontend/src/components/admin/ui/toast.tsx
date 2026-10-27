@@ -9,10 +9,18 @@ import { cn } from '@/lib/cn';
 
 type ToastTone = 'success' | 'error';
 
-/** Optional "take me there" link — e.g. a new lead pointing at the inbox. */
+/**
+ * Optional affordance on a toast: either "take me there" (`href`) or an
+ * in-place action such as Undo (`onAction`). `onAction` wins when both are set.
+ */
 export interface ToastAction {
   label: string;
-  href: string;
+  /** Navigation target — renders a link (e.g. a new lead pointing at the inbox). */
+  href?: string;
+  /** In-place action — renders a real button (e.g. Undo after a bulk archive). */
+  onAction?: () => void;
+  /** How long the toast stays clickable, ms. Never below the 5 s action minimum. */
+  durationMs?: number;
 }
 
 interface ToastItem {
@@ -29,9 +37,22 @@ interface ToastValue {
 const ToastContext = createContext<ToastValue | null>(null);
 
 const AUTO_DISMISS_MS = 4_000;
-/** Actionable toasts stay up long enough to actually be clicked. */
-const ACTION_DISMISS_MS = 10_000;
+/**
+ * Actionable toasts stay up long enough to actually be clicked, but no longer
+ * than the 5–8 s undo window: after that the state change is final and a stale
+ * "Undo" would only produce a 409.
+ */
+const ACTION_DISMISS_MS = 8_000;
+/** Below this an action toast would be gone before it can be read + clicked. */
+const MIN_ACTION_DISMISS_MS = 5_000;
 const MAX_STACK = 4;
+
+function actionDismissMs(action?: ToastAction): number {
+  if (!action) return AUTO_DISMISS_MS;
+  const requested = action.durationMs;
+  if (requested === undefined || !Number.isFinite(requested)) return ACTION_DISMISS_MS;
+  return Math.max(MIN_ACTION_DISMISS_MS, requested);
+}
 
 /**
  * Fire-and-forget notifications for SUCCESS feedback (saved, published,
@@ -86,7 +107,16 @@ function ToastCard({ item, dismiss }: { item: ToastItem; dismiss: (id: number) =
   const reduce = useReducedMotion();
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  const remaining = useRef(item.action ? ACTION_DISMISS_MS : AUTO_DISMISS_MS);
+  const remaining = useRef(actionDismissMs(item.action));
+  /** A double click must never run the action (and thus the undo) twice. */
+  const acted = useRef(false);
+
+  const runAction = () => {
+    if (acted.current) return;
+    acted.current = true;
+    dismiss(item.id);
+    item.action?.onAction?.();
+  };
 
   useEffect(() => {
     if (hovered || focused) return;
@@ -135,13 +165,25 @@ function ToastCard({ item, dismiss }: { item: ToastItem; dismiss: (id: number) =
       <span className="min-w-0 flex-1">
         <span className="block text-[0.8125rem] font-medium leading-snug">{item.message}</span>
         {item.action && (
-          <Link
-            href={item.action.href}
-            onClick={() => dismiss(item.id)}
-            className="focus-ring mt-1 inline-block rounded-none text-[0.75rem] font-medium text-accent-hover underline-offset-2 hover:underline"
-          >
-            {item.action.label}
-          </Link>
+          <span className="mt-1 block">
+            {item.action.onAction ? (
+              <button
+                type="button"
+                onClick={runAction}
+                className="focus-ring -ml-1.5 inline-flex min-h-9 items-center rounded-none px-1.5 text-[0.8125rem] font-medium text-accent-hover underline underline-offset-2 hover:bg-accent/5 hover:text-accent"
+              >
+                {item.action.label}
+              </button>
+            ) : item.action.href ? (
+              <Link
+                href={item.action.href}
+                onClick={() => dismiss(item.id)}
+                className="focus-ring -ml-1.5 inline-flex min-h-9 items-center rounded-none px-1.5 text-[0.75rem] font-medium text-accent-hover underline-offset-2 hover:underline"
+              >
+                {item.action.label}
+              </Link>
+            ) : null}
+          </span>
         )}
       </span>
       <button

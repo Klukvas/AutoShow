@@ -19,6 +19,23 @@ interface PublicOpts {
   revalidate?: number;
 }
 
+interface SubmitLeadOpts {
+  /** Key for one form draft; a retry with the same value must not duplicate the lead. */
+  idempotencyKey?: string;
+}
+
+/**
+ * Key that identifies one form draft across retries. `crypto.randomUUID()` is
+ * only exposed in secure contexts, and installations are regularly opened over
+ * plain `http://` on a LAN address, so fall back to time + randomness instead of
+ * throwing away the dedup guarantee.
+ */
+export function createIdempotencyKey(): string {
+  return (
+    globalThis.crypto?.randomUUID?.() ?? `idem-${Date.now()}-${Math.random().toString(16).slice(2)}`
+  );
+}
+
 /** Public storefront calls. RSC fetches lean on Next's fetch cache (revalidate + tags). */
 export const publicApi = {
   listListings(query: ListingsQuery, opts: PublicOpts = {}) {
@@ -116,10 +133,15 @@ export const publicApi = {
     });
   },
 
-  submitLead(body: CreateLeadBody) {
+  /**
+   * `idempotencyKey` travels in the `Idempotency-Key` header (not the body) so
+   * the DTO stays untouched and older callers keep working without a key.
+   */
+  submitLead(body: CreateLeadBody, opts: SubmitLeadOpts = {}) {
     return apiFetch<{ id: string; status: string }>('/leads', {
       method: 'POST',
       body,
+      ...(opts.idempotencyKey ? { headers: { 'Idempotency-Key': opts.idempotencyKey } } : {}),
     });
   },
 

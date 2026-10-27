@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { adminApi, type AdminListing } from '@/lib/api/admin';
 import { ApiClientError } from '@/lib/api/client';
@@ -20,6 +20,9 @@ interface ListingsTableProps {
   canDelete: boolean;
   /** Table (md+) and cards (mobile) render from the same data + actions. */
 }
+
+/** Archive is a legal, reversible transition (`archived → publish`) — undo, not a confirm. */
+const UNDO_WINDOW_MS = 8_000;
 
 /** Cover thumb for the row preview; any processed photo beats the placeholder. */
 function coverThumbUrl(listing: AdminListing): string | null {
@@ -72,6 +75,8 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkRunning, setBulkRunning] = useState(false);
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  /** One undo in flight at a time — a second click must not republish twice. */
+  const undoing = useRef(false);
 
   const allSelected = items.length > 0 && items.every((l) => selected.has(l.id));
 
@@ -84,6 +89,44 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
     });
 
   const toggleAll = () => setSelected(allSelected ? new Set() : new Set(items.map((l) => l.id)));
+
+  /**
+   * Undo of the bulk archive: republish exactly the ids that were archived
+   * (`archived → publish` is an allowed transition). Per-id results mean a
+   * listing changed elsewhere fails alone; those are surfaced in the banner.
+   */
+  const undoArchive = async (ids: string[]) => {
+    if (undoing.current || ids.length === 0) return;
+    undoing.current = true;
+    setError(null);
+    try {
+      const accessToken = await fetchAccessToken();
+      if (!accessToken) {
+        setError(t('common.sessionExpired'));
+        return;
+      }
+      const res = await adminApi.bulkListings({ ids, action: 'publish' }, { accessToken });
+      toast(
+        t('listings.bulkDone', { ok: res.succeeded, total: ids.length }),
+        res.succeeded > 0 ? 'success' : 'error',
+      );
+      if (res.failed > 0) {
+        const firstError = res.results.find((r) => !r.ok)?.error;
+        setError(firstError ?? t('common.errorTitle'));
+      }
+      router.refresh();
+    } catch (err) {
+      if (err instanceof ApiClientError && err.status === 401) setError(t('common.sessionExpired'));
+      else if (err instanceof ApiClientError && err.status === 429)
+        setError(t('common.rateLimited'));
+      else if (err instanceof ApiClientError && err.status === 409)
+        setError(t('common.errorTitle'));
+      else if (err instanceof ApiClientError) setError(err.message);
+      else setError(t('common.errorTitle'));
+    } finally {
+      undoing.current = false;
+    }
+  };
 
   /**
    * One server call applies the action to every selected id and returns a
@@ -102,11 +145,34 @@ export function ListingsTable({ items, canDelete }: ListingsTableProps) {
         return;
       }
       const ids = items.filter((l) => selected.has(l.id)).map((l) => l.id);
+      // Status BEFORE the call — the only source for a truthful rollback.
+      const statusBefore = new Map(items.map((l) => [l.id, l.status] as const));
       const res = await adminApi.bulkListings({ ids, action }, { accessToken });
-      toast(
-        t('listings.bulkDone', { ok: res.succeeded, total: ids.length }),
-        res.succeeded > 0 ? 'success' : 'error',
-      );
+      // Only ids the server actually archived can be undone; failures stay archived-free.
+      const archived = action === 'archive' ? res.results.filter((r) => r.ok).map((r) => r.id) : [];
+      // Undo runs `publish`, so it is a real rollback only for listings that were
+      // public before the archive. A draft/reserved listing would be published for
+      // the first time (draft → public site, reserved → published), so those are
+      // excluded; a mixed batch offers Undo for the published subset only.
+      const republishable = archived.filter((id) => statusBefore.get(id) === 'published');
+      if (archived.length > 0) {
+        toast(
+          t('listings.bulkArchived', { count: archived.length }),
+          'success',
+          republishable.length > 0
+            ? {
+                label: t('common.undo'),
+                onAction: () => void undoArchive(republishable),
+                durationMs: UNDO_WINDOW_MS,
+              }
+            : undefined,
+        );
+      } else {
+        toast(
+          t('listings.bulkDone', { ok: res.succeeded, total: ids.length }),
+          res.succeeded > 0 ? 'success' : 'error',
+        );
+      }
       if (res.failed > 0) {
         const firstError = res.results.find((r) => !r.ok)?.error;
         if (firstError) setError(firstError);

@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { Eyebrow } from '@/components/ui/eyebrow';
 import { ActiveChipsRow, type ActiveFilter } from '@/components/filters/active-chips';
@@ -16,6 +16,7 @@ import {
   type CarFilters,
   type CarSet,
 } from '@/lib/car-filter';
+import { cn } from '@/lib/cn';
 import { formatMileage, formatMoney } from '@/lib/format';
 import type {
   CatalogMake,
@@ -78,7 +79,9 @@ export function FilterBar({
   const t = useTranslations('catalog');
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [, startTransition] = useTransition();
+  const [pending, startTransition] = useTransition();
+  // Delayed so fast RSC responses do not flash the dimmed results region.
+  const pendingVisible = useDelayedPending(pending);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const currency: Currency = baseCurrency ?? 'USD';
@@ -90,9 +93,10 @@ export function FilterBar({
 
   const update = (patch: Record<string, string | string[] | undefined>) => {
     const next = new URLSearchParams(searchParams.toString());
-    // Reset cursor whenever a filter changes — the keyset only makes sense
-    // for the exact filter combo it was generated from.
+    // Reset pagination whenever a filter changes — the keyset (and the
+    // accumulated cursor stack) only makes sense for this exact filter combo.
     next.delete('cursor');
+    next.delete('stack');
     for (const [key, value] of Object.entries(patch)) {
       if (Array.isArray(value)) {
         // Hand-written links may use the bare key (?car=bmw, ?tags=x); drop it too.
@@ -250,6 +254,13 @@ export function FilterBar({
   ];
 
   // Shared field stack — rendered in the desktop rail AND the mobile sheet.
+  // Spacing is owned by the host container, not this stack: the sheet body
+  // already spaces its children (space-y-5, 20px) and the rail wraps the stack
+  // in its own space-y-4 (16px), so a fragment keeps both rhythms intact.
+  // Never disabled while a navigation is in flight: a disabled focused control
+  // makes the browser drop focus to <body>, so keyboard users would lose their
+  // place after every filter change, and rapid chip taps would be swallowed.
+  // Busy feedback lives on the results region only (aria-busy + opacity).
   const fields = (
     <>
       <CarSetsField makes={makes} models={models} filters={carFilters} onChange={updateCars} />
@@ -361,7 +372,7 @@ export function FilterBar({
       <select
         value={currentSort}
         onChange={(e) => update({ sort: e.target.value })}
-        className="focus-ring h-10 min-w-0 max-w-full appearance-none rounded-btn border border-line-input bg-surface px-3 pr-7 text-sub font-medium text-ink bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27 xmlns=%27http://www.w3.org/2000/svg%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%23948C79%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E')] bg-[position:right_10px_center] bg-no-repeat"
+        className="focus-ring h-10 min-w-0 max-w-full appearance-none rounded-btn border border-line-input bg-surface px-3 pr-7 text-sub font-medium text-ink bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg width=%2710%27 height=%276%27 viewBox=%270 0 10 6%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cpath d=%27M1 1l4 4 4-4%27 stroke=%27%23948C79%27 stroke-width=%271.5%27 fill=%27none%27 stroke-linecap=%27round%27/%3E%3C/svg%3E')] bg-[position:right_10px_center] bg-no-repeat"
       >
         {SORT_VALUES.map((s) => (
           <option key={s} value={s}>
@@ -387,7 +398,7 @@ export function FilterBar({
           <Eyebrow as="div" className="pt-1">
             {t('filterTitle')}
           </Eyebrow>
-          {fields}
+          <div className="min-w-0 space-y-4">{fields}</div>
         </div>
       </aside>
 
@@ -425,13 +436,15 @@ export function FilterBar({
             </button>
             {sortSelect}
           </div>
-          <ActiveChipsRow
-            filters={active}
-            resetLabel={t('activeReset')}
-            removeLabel={t('removeFilter')}
-            onResetAll={resetAll}
-            scrollable
-          />
+          {active.length > 0 && (
+            <ActiveChipsRow
+              filters={active}
+              resetLabel={t('activeReset')}
+              removeLabel={t('removeFilter')}
+              onResetAll={resetAll}
+              scrollable
+            />
+          )}
         </div>
 
         {/* Results header */}
@@ -452,15 +465,26 @@ export function FilterBar({
 
         {/* Desktop chips */}
         <div className="mt-4 hidden md:block">
-          <ActiveChipsRow
-            filters={active}
-            resetLabel={t('activeReset')}
-            removeLabel={t('removeFilter')}
-            onResetAll={resetAll}
-          />
+          {active.length > 0 && (
+            <ActiveChipsRow
+              filters={active}
+              resetLabel={t('activeReset')}
+              removeLabel={t('removeFilter')}
+              onResetAll={resetAll}
+            />
+          )}
         </div>
 
-        <div className="mt-6">{children}</div>
+        <div
+          id="catalog-results"
+          aria-busy={pending || undefined}
+          className={cn(
+            'mt-6 motion-safe:transition-opacity motion-safe:duration-200 motion-reduce:transition-none',
+            pendingVisible && 'pointer-events-none opacity-60',
+          )}
+        >
+          {children}
+        </div>
       </div>
 
       {/* ---------------- Mobile sheet ---------------- */}
@@ -480,4 +504,28 @@ export function FilterBar({
 
 function refsToOptions(refs: CatalogRef[]): Array<{ label: string; value: string }> {
   return refs.map((r) => ({ label: r.nameUk, value: r.slug }));
+}
+
+/**
+ * Shows busy chrome only when a navigation is genuinely slow: the first
+ * ~180 ms of a transition render unchanged, so fast RSC responses never
+ * flash the dimmed results region. Filter controls are never disabled by the
+ * pending state (individual fields may still set `disabled` for their own
+ * reasons, e.g. models without a make), so a focused select keeps focus
+ * across a filter change. Reduced-motion users get the same opacity cue
+ * without any transition (see the results container classes).
+ */
+function useDelayedPending(pending: boolean, delay = 180): boolean {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!pending) {
+      setVisible(false);
+      return;
+    }
+    const timer = setTimeout(() => setVisible(true), delay);
+    return () => clearTimeout(timer);
+  }, [pending, delay]);
+
+  return visible;
 }

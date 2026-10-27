@@ -7,10 +7,16 @@ import { PACKAGE_PICK_EVENT } from '@/components/home/package-pick';
 import { HoneypotField, LeadField } from '@/components/lead/field';
 import { PackageSelect } from '@/components/lead/package-select';
 import { ApiClientError } from '@/lib/api/client';
-import { publicApi } from '@/lib/api/public';
+import { createIdempotencyKey, publicApi } from '@/lib/api/public';
 import type { PublicPlacementPackage } from '@/lib/api/types';
 
-type Status = 'idle' | 'sending' | 'success' | 'error-rate' | 'error-generic';
+type Status =
+  | 'idle'
+  | 'sending'
+  | 'success'
+  | 'error-rate'
+  | 'error-in-progress'
+  | 'error-generic';
 
 interface FieldErrors {
   name?: string;
@@ -38,6 +44,14 @@ export function SellCarForm({ packages = NO_PACKAGES }: { packages?: PublicPlace
   const [errors, setErrors] = useState<FieldErrors>({});
   const [packageId, setPackageId] = useState('');
   const formRef = useRef<HTMLFormElement>(null);
+  // One draft key per mount (same lifecycle as LeadForm): it survives a failed
+  // request and validation fixes, so pressing submit again returns the lead the
+  // first attempt already created. Cleared on success — the next draft needs a
+  // new key. Minting here (render body) rather than on click keeps it stable.
+  const idempotencyKeyRef = useRef<string | null>(null);
+  if (idempotencyKeyRef.current === null) {
+    idempotencyKeyRef.current = createIdempotencyKey();
+  }
 
   useEffect(() => {
     const onPick = (event: Event) => {
@@ -72,31 +86,46 @@ export function SellCarForm({ packages = NO_PACKAGES }: { packages?: PublicPlace
     const mileage = Number(String(form.get('carMileageKm') ?? '').replace(/\D/g, ''));
 
     setStatus('sending');
+    // Same key for a retry while this draft is open; cleared once the lead is
+    // accepted further down.
+    const idempotencyKey = idempotencyKeyRef.current ?? createIdempotencyKey();
+    idempotencyKeyRef.current = idempotencyKey;
     publicApi
-      .submitLead({
-        type: 'sell_request',
-        name,
-        phone,
-        carMake,
-        carModel: String(form.get('carModel') ?? '').trim() || undefined,
-        carYear: Number.isInteger(year) && year >= 1950 ? year : undefined,
-        carMileageKm: Number.isInteger(mileage) && mileage > 0 ? mileage : undefined,
-        packageId: packageId || undefined,
-        message: String(form.get('message') ?? '').trim() || undefined,
-        sourceUrl: window.location.href,
-        website: String(form.get('website') ?? ''),
-      })
+      .submitLead(
+        {
+          type: 'sell_request',
+          name,
+          phone,
+          carMake,
+          carModel: String(form.get('carModel') ?? '').trim() || undefined,
+          carYear: Number.isInteger(year) && year >= 1950 ? year : undefined,
+          carMileageKm: Number.isInteger(mileage) && mileage > 0 ? mileage : undefined,
+          packageId: packageId || undefined,
+          message: String(form.get('message') ?? '').trim() || undefined,
+          sourceUrl: window.location.href,
+          website: String(form.get('website') ?? ''),
+        },
+        { idempotencyKey },
+      )
       .then(() => {
+        idempotencyKeyRef.current = null;
         formRef.current?.reset();
         setPackageId('');
         setStatus('success');
       })
       .catch((err) => {
-        setStatus(
-          err instanceof ApiClientError && (err.status === 403 || err.status === 429)
-            ? 'error-rate'
-            : 'error-generic',
-        );
+        if (err instanceof ApiClientError && err.status === 409) {
+          // The draft key is already being used by an in-flight request. Keep
+          // it, so pressing submit again returns the lead that request is
+          // creating rather than making a second one.
+          setStatus('error-in-progress');
+        } else {
+          setStatus(
+            err instanceof ApiClientError && (err.status === 403 || err.status === 429)
+              ? 'error-rate'
+              : 'error-generic',
+          );
+        }
       });
   };
 
@@ -145,6 +174,15 @@ export function SellCarForm({ packages = NO_PACKAGES }: { packages?: PublicPlace
         <p className="mt-4 rounded-input border border-ratelimit-line bg-ratelimit-bg px-4 py-3 text-sub font-medium text-ratelimit">
           {t('errorRate')}
         </p>
+      )}
+      {status === 'error-in-progress' && (
+        <div
+          role="status"
+          className="mt-4 flex items-start gap-2.5 rounded-input border border-line bg-bg px-4 py-3"
+        >
+          <span aria-hidden>⏳</span>
+          <p className="text-sub font-medium text-ink-2">{t('errorInProgress')}</p>
+        </div>
       )}
       {status === 'error-generic' && (
         <p className="mt-4 rounded-input border border-danger-line bg-danger-bg px-4 py-3 text-sub font-medium text-danger">

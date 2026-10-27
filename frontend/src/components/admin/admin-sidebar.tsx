@@ -373,7 +373,7 @@ export function AdminSidebar({ links, email, role, brandName }: AdminSidebarProp
               role="dialog"
               aria-modal="true"
               aria-label={t('nav.label')}
-              className="absolute inset-y-0 left-0 flex w-[280px] max-w-[85vw] flex-col overflow-y-auto overscroll-contain bg-sb-bg px-[13px] py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
+              className="absolute inset-y-0 left-0 flex w-[280px] max-w-[85vw] flex-col overflow-y-auto overscroll-contain bg-sb-bg pl-[max(13px,env(safe-area-inset-left))] pr-[max(13px,env(safe-area-inset-right))] py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]"
               initial={drawerHidden}
               animate={drawerShown}
               exit={drawerHidden}

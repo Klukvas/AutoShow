@@ -157,7 +157,7 @@ export function PublicNav({ branding }: PublicNavProps) {
                 transition={
                   reduce ? { duration: 0.12 } : { type: 'spring', bounce: 0, duration: 0.3 }
                 }
-                className={cn(isHomepage ? 'homepage-cinematic home-mobile-menu' : 'cinematic-interior', 'fixed inset-0 z-[100] flex flex-col overflow-y-auto overscroll-contain bg-bg px-5 pb-[max(2rem,env(safe-area-inset-bottom))] pt-4 text-ink md:hidden')}
+                className={cn(isHomepage ? 'homepage-cinematic home-mobile-menu' : 'cinematic-interior', 'fixed inset-0 z-[100] flex flex-col overflow-y-auto overscroll-contain bg-bg pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pt-4 text-ink md:hidden')}
               >
                 <div className="flex h-header items-center justify-between">
                   <BrandMark branding={branding} displayName={displayName} cinematic />

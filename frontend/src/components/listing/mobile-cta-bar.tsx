@@ -26,7 +26,7 @@ export function MobileCtaBar({
   return (
     <div
       data-mobile-cta-bar
-      className="material-bar fixed inset-x-0 bottom-0 z-40 border-t border-line px-4 pb-[max(12px,env(safe-area-inset-bottom))] pt-3 shadow-none md:hidden"
+      className="material-bar fixed inset-x-0 bottom-0 z-40 border-t border-line pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] pb-[max(12px,env(safe-area-inset-bottom))] pt-3 shadow-none md:hidden"
     >
       <div className="flex items-center gap-2.5">
         {phoneHref && (
