@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BMW — 3D arrival</title>
+<link rel="icon" href="data:,"><link rel="stylesheet" href="style.css">
+<script src="./node_modules/gsap/dist/gsap.min.js"></script>
+<script type="importmap">{"imports":{"three":"./node_modules/three/build/three.module.js","three/addons/":"./node_modules/three/examples/jsm/"}}</script></head>
+<body><main data-hf-id="hf-2zhz" id="stage" data-composition-id="bmw-arrival" data-width="1280" data-height="720" data-duration="5" data-runtime="three" aria-label="Тривимірний під’їзд BMW M4"><canvas data-hf-id="hf-v3uf" id="car" data-layout-allow-overflow aria-label="3D-модель BMW M4"></canvas></main>
+<div data-hf-id="hf-fdy6" id="loading" role="status"><span data-hf-id="hf-4z69" class="eyebrow">BMW / 3D STUDY</span><p data-hf-id="hf-dpev" id="status">Завантажуємо модель…</p><button data-hf-id="hf-ol9i" id="retry" hidden>Спробувати ще раз</button></div>
+<script>
+window.registerBMWTimeline = function(renderAt) {
+  const clock = { time: 0 };
+  const timeline = gsap.timeline({ paused: true });
+  timeline.to(clock, { time: 5, duration: 5, ease: 'none', onUpdate: () => renderAt(clock.time) });
+  window.__timelines = window.__timelines || {};
+  window.__timelines['bmw-arrival'] = timeline;
+  window.__hfForceTimelineRebind?.();
+  return timeline;
+};
+</script>
+<script type="module" src="./stage.js"></script></body></html>

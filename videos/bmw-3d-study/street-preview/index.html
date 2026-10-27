@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BMW V5 — street arrival preview</title><link rel="icon" href="data:,"><script src="./vendor/gsap.min.js"></script><style>html,body{margin:0;width:100%;height:100%;background:#141819}#stage{position:relative;width:896px;height:504px;overflow:hidden}#camera{width:100%;height:100%;transform-origin:70% 62%}video{display:block;width:100%;height:100%;object-fit:contain}</style></head>
+<body><main data-hf-id="hf-czde" id="stage" data-composition-id="bmw-v5-street" data-width="896" data-height="504" data-duration="3.846153846153846" aria-label="BMW M4 — під’їзд на міській вулиці"><div id="camera"><video data-hf-id="hf-p64q" id="arrival" class="clip" src="./assets/arrival-preview-clean-street.mp4" poster="./assets/first-frame-clean-street.jpg" muted playsinline data-has-audio="false" data-start="0" data-duration="3.846153846153846" data-playback-rate="1.3" data-track-index="0" aria-label="Тривимірний під’їзд BMW M4"></video></div></main><script>
+const duration = 5 / 1.3;
+const durationClock = { time: 0 };
+const timeline = gsap.timeline({ paused: true });
+timeline.to(durationClock, { time: duration, duration, ease: 'none' }, 0);
+window.__timelines = { 'bmw-v5-street': timeline };
+</script></body></html>

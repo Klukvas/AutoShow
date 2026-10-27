@@ -1,0 +1,8 @@
+node_modules/
+.npm-cache/
+.pip-cache/
+__pycache__/
+.hyperframes/
+.thumbnails/
+lookdev/
+evidence/
