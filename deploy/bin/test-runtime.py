@@ -4,6 +4,7 @@ import importlib.util
 import http.server
 import subprocess
 import threading
+import tempfile
 import json
 import sys
 import unittest
@@ -36,6 +37,44 @@ class RuntimeTest(unittest.TestCase):
         self.assertIn(literal, options["input"])
         self.assertTrue(options["capture_output"])
         self.assertEqual(options["timeout"], 15)
+
+    def test_optional_installation_override_follows_bundle_and_keeps_environment(self) -> None:
+        with tempfile.TemporaryDirectory(prefix=".override-test-", dir=HERE) as folder:
+            root = Path(folder)
+            with patch.object(runtime, "read_env", return_value={"COMPOSE_PROJECT_NAME": "autoflow"}):
+                before, env_before = runtime.compose_command(root, "release")
+                override = root / "compose.override.yml"
+                override.write_text("services: {}\n")
+                after, env_after = runtime.compose_command(root, "release")
+            self.assertEqual(after, before + ["-f", str(override)])
+            self.assertEqual(env_after, env_before)
+            self.assertEqual(before[-2:], ["-f", str(root / "releases/release/docker-compose.yml")])
+
+    def test_installation_override_rejects_symlink_and_directory(self) -> None:
+        with tempfile.TemporaryDirectory(prefix=".override-test-", dir=HERE) as folder:
+            root = Path(folder)
+            override = root / "compose.override.yml"
+            override.symlink_to(root / "missing")
+            with self.assertRaisesRegex(ValueError, "regular file"):
+                runtime.installation_override(root)
+            override.unlink()
+            override.mkdir()
+            with self.assertRaisesRegex(ValueError, "regular file"):
+                runtime.installation_override(root)
+
+    def test_resolved_hash_replaces_every_compose_file(self) -> None:
+        command = [
+            "docker", "compose", "--project-name", "autoflow",
+            "--env-file", "/private/env", "-f", "/bundle/base.yml",
+            "-f", "/installation/override.yml",
+        ]
+        model = {"services": {"caddy": {"ports": ["127.0.0.1:8444:443"]}}}
+        with patch.object(runtime, "execute", return_value="caddy expected-hash") as execute:
+            hashes = runtime.configuration_hashes(command, {}, model)
+        self.assertEqual(hashes, {"caddy": "expected-hash"})
+        arguments = execute.call_args.args
+        self.assertEqual(arguments[0], command[:6] + ["-f", "-", "config", "--hash", "*"])
+        self.assertEqual(json.loads(arguments[2]), model)
 
     def setUp(self) -> None:
         self.states: dict[str, dict[str, Any]] = {

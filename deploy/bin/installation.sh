@@ -15,7 +15,22 @@ case "$operation" in
     # Dependencies are separately approved/preloaded digests, never silently pulled
     # or upgraded/downgraded as part of an application rollout.
     for image in CADDY_IMAGE POSTGRES_IMAGE REDIS_IMAGE MINIO_IMAGE MINIO_CLIENT_IMAGE BACKUP_HELPER_IMAGE; do
-      docker image inspect "$(value "$image" "$bundle/dependencies.env")" >/dev/null 2>&1 || fail 'approved dependency digest must be preloaded explicitly'
+      approved_image=$(value "$image" "$bundle/dependencies.env")
+      selected_image=$approved_image
+      if [[ -f "$root/compose.override.yml" && ( "$image" = MINIO_IMAGE || "$image" = MINIO_CLIENT_IMAGE ) ]]; then
+        service=minio
+        [[ "$image" != MINIO_CLIENT_IMAGE ]] || service=minio-init
+        # config --images minio-init also includes minio. Extract only this
+        # service from resolved JSON; protected values stay inside the pipe.
+        selected_image=$(compose config --format json | python3 -c 'import json,sys; print(json.load(sys.stdin)["services"][sys.argv[1]]["image"])' "$service")
+        [[ "$selected_image" = "$approved_image" || "$selected_image" =~ ^sha256:[a-f0-9]{64}$ ]] || fail 'MinIO override requires its approved reference or a full local image ID'
+      fi
+      if [[ "$selected_image" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+        actual_image=$(docker image inspect --format '{{.Id}}' "$selected_image" 2>/dev/null) || fail 'approved dependency image must be preloaded explicitly'
+        [[ "$actual_image" = "$selected_image" ]] || fail 'local dependency image identity differs'
+      else
+        docker image inspect "$selected_image" >/dev/null 2>&1 || fail 'approved dependency digest must be preloaded explicitly'
+      fi
     done
     compose pull app worker frontend
     compose up -d --pull never postgres redis minio minio-init

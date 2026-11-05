@@ -123,6 +123,47 @@ if sys.argv[1]=={failure!r}: sys.exit(1)
             else []
         )
 
+    def minio_override(self, image: str, actual: str | None = None) -> None:
+        (self.root / "compose.override.yml").write_text("services: {}\n")
+        client = "sha256:" + "e" * 64
+        model = {"services": {"minio": {"image": image}, "minio-init": {"image": client}}}
+        ids = {image: actual or image, client: client}
+        self.script(
+            "docker",
+            f"""import json,sys
+args=sys.argv[1:]
+with open({str(self.log)!r},'a') as stream: stream.write(json.dumps(args)+'\\n')
+if 'config' in args and '--format' in args: print(json.dumps({model!r}))
+elif args[:2]==['image','inspect'] and '--format' in args: print({ids!r}.get(args[-1],args[-1]))
+""",
+        )
+
+    def test_minio_local_full_ids_pass_without_changing_other_dependency_checks(self) -> None:
+        image = "sha256:" + "d" * 64
+        self.minio_override(image)
+        result = self.run_script("installation.sh", "update", str(self.root), "new")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        inspected = [args[-1] for args in self.calls() if args[:2] == ["image", "inspect"]]
+        self.assertEqual(inspected.count("example/dependency@sha256:" + "a" * 64), 4)
+        self.assertIn(image, inspected)
+        self.assertIn("sha256:" + "e" * 64, inspected)
+
+    def test_minio_mutable_or_unapproved_reference_fails_before_pull(self) -> None:
+        self.minio_override("minio/minio:latest")
+        result = self.run_script("installation.sh", "update", str(self.root), "new")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("approved reference or a full local image ID", result.stderr)
+        self.assertFalse(any("pull" in args for args in self.calls()))
+        self.assertEqual((self.root / "current-release").read_text(), "old\n")
+
+    def test_minio_local_id_mismatch_fails_before_pull(self) -> None:
+        self.minio_override("sha256:" + "d" * 64, "sha256:" + "f" * 64)
+        result = self.run_script("installation.sh", "update", str(self.root), "new")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("local dependency image identity differs", result.stderr)
+        self.assertFalse(any("pull" in args for args in self.calls()))
+        self.assertEqual((self.root / "current-release").read_text(), "old\n")
+
     def test_migration_waits_for_dependency_init_and_pointer_waits_for_ingress(
         self,
     ) -> None:

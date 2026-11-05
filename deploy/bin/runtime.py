@@ -38,6 +38,13 @@ def inspect_container(identifier: str) -> dict[str, Any]:
     return json.loads(execute(["docker", "inspect", identifier]))[0]
 
 
+def installation_override(root: Path) -> Path | None:
+    override = root / "compose.override.yml"
+    if override.is_symlink() or (override.exists() and not override.is_file()):
+        raise ValueError("Installation compose override must be a regular file")
+    return override if override.is_file() else None
+
+
 def compose_command(root: Path, release: str) -> tuple[list[str], dict[str, str]]:
     # The strict validator has already accepted these files; no shell evaluation.
     values = read_env(root / ".env")
@@ -74,6 +81,9 @@ def compose_command(root: Path, release: str) -> tuple[list[str], dict[str, str]
         "-f",
         str(bundle / "docker-compose.yml"),
     ]
+    override = installation_override(root)
+    if override is not None:
+        command.extend(["-f", str(override)])
     return command, environment
 
 
@@ -85,10 +95,19 @@ def configuration_hashes(
     # Compose versions affected by docker/compose#14001 hash unresolved env_file
     # values differently from `up`. Hash the resolved model through stdin instead;
     # operator secrets stay in memory and never enter argv or a temporary file.
+    # The JSON already contains every override. Re-reading any base file would
+    # merge its ports and mounts back into the resolved configuration.
+    resolved_command = []
+    arguments = iter(command)
+    for argument in arguments:
+        if argument == "-f":
+            next(arguments)
+        else:
+            resolved_command.append(argument)
     return dict(
         line.split()
         for line in execute(
-            command[:-1] + ["-", "config", "--hash", "*"],
+            resolved_command + ["-f", "-", "config", "--hash", "*"],
             environment,
             json.dumps(configuration),
         ).splitlines()
@@ -168,10 +187,11 @@ def wait_infra(root: Path, release: str, seconds: int = 90) -> None:
 INGRESS_CHECK = r"""
 const http = require('node:http'), https = require('node:https');
 const site = new URL(process.argv[1].includes('://') ? process.argv[1] : 'https://'+process.argv[1]);
+const ingress = process.argv[3]==='public' ? {hostname:site.hostname} : {hostname:'caddy'};
 function check(path, expectedVersion) {
   return new Promise((resolve,reject) => {
     const transport = site.protocol==='https:' ? https : http;
-    const req = transport.request({hostname:'caddy',port:site.port||(site.protocol==='https:'?443:80),servername:site.hostname,method:'GET',path,headers:{host:site.host},timeout:3000}, res => {
+    const req = transport.request({...ingress,port:site.port||(site.protocol==='https:'?443:80),servername:site.hostname,method:'GET',path,headers:{host:site.host},timeout:3000}, res => {
       if(res.statusCode!==200) {res.resume();reject(Error('status'));return;}
       if(!expectedVersion) {res.resume();resolve();return;}
       let body='';res.on('data',chunk=>{body+=chunk;if(body.length>4096)req.destroy(Error('size'));});
@@ -204,6 +224,7 @@ def wait_ready(root: Path, release: str, seconds: int = 120) -> None:
                     INGRESS_CHECK,
                     operator["SITE_ADDRESS"],
                     artifact["FRONTEND_VERSION"],
+                    "public" if installation_override(root) else "internal",
                 ],
                 environment,
             )

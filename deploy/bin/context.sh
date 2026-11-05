@@ -15,6 +15,11 @@ value() { python3 "$bundle/bin/validate-installation.py" --value "$2" "$1"; }
 id=$(value INSTALLATION_ID .env)
 project=$(value COMPOSE_PROJECT_NAME .env)
 export INSTALLATION_ID="$id"
+compose_files=(-f "$bundle/docker-compose.yml")
+if [[ -e "$root/compose.override.yml" || -L "$root/compose.override.yml" ]]; then
+  [[ -f "$root/compose.override.yml" && ! -L "$root/compose.override.yml" ]] || fail 'installation compose override must be a regular file'
+  compose_files+=(-f "$root/compose.override.yml")
+fi
 # Operator/release files, not unrelated shell env, own compose interpolation.
 # Retain only the caller's Docker transport/registry context.
 compose() {
@@ -25,7 +30,7 @@ compose() {
     SSH_AUTH_SOCK="${SSH_AUTH_SOCK:-}" INSTALLATION_ROOT="$root" \
     docker compose --project-name "$project" --env-file "$root/.env" \
     --env-file "$bundle/dependencies.env" --env-file "$bundle/release.env" --project-directory "$bundle" \
-    -f "$bundle/docker-compose.yml" "$@"
+    "${compose_files[@]}" "$@"
 }
 
 lock_installation() {
