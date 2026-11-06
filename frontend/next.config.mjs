@@ -3,6 +3,15 @@ import createNextIntlPlugin from 'next-intl/plugin';
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const isDev = process.env.NODE_ENV !== 'production';
+// Match the client validator: malformed or absent IDs leave GA completely off.
+const hasGoogleAnalytics = /^G-[A-Z0-9]{10}$/.test(process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? '');
+const analyticsScript = hasGoogleAnalytics ? ' https://www.googletagmanager.com' : '';
+const analyticsImages = hasGoogleAnalytics
+  ? ' https://www.googletagmanager.com https://*.google-analytics.com'
+  : '';
+const analyticsConnections = hasGoogleAnalytics
+  ? ' https://www.googletagmanager.com https://*.google-analytics.com https://*.google.com'
+  : '';
 /**
  * NEXT_PUBLIC_MEDIA_HOSTS entries: bare hostname (`media.example.com` → https)
  * or a full origin (`http://157.90.1.2:8081` — the no-domain deploy mode).
@@ -25,11 +34,11 @@ const mediaOrigins = [
  */
 const csp = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}${analyticsScript}`,
   `style-src 'self' 'unsafe-inline'`,
-  `img-src 'self' data: blob: ${mediaOrigins.join(' ')}`.trim(),
+  `img-src 'self' data: blob: ${mediaOrigins.join(' ')}${analyticsImages}`.trim(),
   // XHR: API calls + direct presigned PUT uploads to object storage.
-  `connect-src 'self' ${mediaOrigins.join(' ')}`.trim(),
+  `connect-src 'self' ${mediaOrigins.join(' ')}${analyticsConnections}`.trim(),
   `font-src 'self' data:`,
   `object-src 'none'`,
   `base-uri 'self'`,

@@ -188,6 +188,37 @@ LCP — героїчне фото (priority + sized + preload через next/im
 
 ## Deploy
 
+### Google Analytics 4 (необовʼязково)
+
+Без `NEXT_PUBLIC_GA_MEASUREMENT_ID` аналітика вимкнена: Google script не
+завантажується, CSP не дозволяє Google endpoints. Потрібен Measurement ID
+вебпотоку GA4: `G-` і 10 великих латинських літер/цифр. Некоректний ID також
+вимикає інтеграцію; Release відхиляє непорожнє некоректне значення.
+
+Перед увімкненням у GA4 → Admin → Data streams → Web stream вимкніть
+**Enhanced measurement** (зокрема автоматичні page views за history changes,
+form interactions та site search). Вітрина сама надсилає один `page_view`
+під час першого відкриття і переходів між pathname через Next.js.
+`send_page_view: false` прибирає config-view, але сам по собі не вимикає
+автоматичні history views — це окреме обовʼязкове налаштування вебпотоку.
+
+Локально задайте ID у власному frontend env і перезапустіть dev server.
+У production задайте GitHub Environment variable `NEXT_PUBLIC_GA_MEASUREMENT_ID`
+для `installation-ID`, зберіть новий Release frontend image і окремо застосуйте
+bundle за [інструкцією деплою](../deploy/README.md). ID публічний, це не API secret.
+Next.js вшиває його та CSP під час build: зміна runtime env або restart існуючого
+image не вмикає й не вимикає GA. Для вимкнення очистіть variable і перебудуйте image.
+
+Збираються тільки публічні перегляди; `/admin` не підключає tag, а перехід з
+вітрини в адмінку встановлює GA opt-out для вже завантаженого tag. Query string,
+fragment, початковий document referrer і поля форм не передаються; внутрішній
+referrer містить лише попередній публічний pathname. Рекламні signals вимкнені.
+Наявна backend-аналітика переглядів оголошень працює окремо.
+
+Після активації перевірте GA4 Realtime/DebugView: публічна сторінка → інша
+публічна сторінка → admin; без дублювання `page_view` і без admin events.
+Розширення браузера, що блокують аналітику, можуть завадити перевірці.
+
 Порядок незалежного розгортання кожного автосалону, image pins і секрети описані
 в [канонічній інструкції деплою](../deploy/README.md).
 

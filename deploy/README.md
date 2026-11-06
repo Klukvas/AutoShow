@@ -14,6 +14,16 @@
 | `site_settings` в локальной БД, обычная админка | название, логотип, контакты, цвета, SEO, валюта, часы работы; существующие настройки Telegram/AI | сохранение в админке, storefront fetch cache до 300 секунд |
 | GitHub Environment `installation-ID` | SSH именно этого сервера; media allowlist для сборки frontend | новая сборка frontend при смене media origin |
 
+Для необязательного GA4 задайте в этом же GitHub Environment публичную variable
+`NEXT_PUBLIC_GA_MEASUREMENT_ID` (`G-` + 10 заглавных букв/цифр). Пустая variable
+оставляет интеграцию выключенной; непустая некорректная отклоняет Release.
+Перед включением отключите Enhanced measurement в GA4 web stream, включая
+history page views, формы и site search: сайт отправляет page views вручную.
+Подробности и проверка — [в frontend README](../frontend/README.md).
+ID и разрешения CSP фиксируются в frontend image при сборке. Для включения,
+смены или отключения ID нужен новый Release и отдельно одобренный rollout;
+добавление ID только в серверный runtime `.env`/restart недостаточно.
+
 `INSTALLATION_ID` обозначает установку, не является разграничением строк в БД.
 Данные разделены отдельными серверами/хранилищами. Не направляйте две установки
 на одну БД, Redis или bucket и не копируйте секреты между клиентами.

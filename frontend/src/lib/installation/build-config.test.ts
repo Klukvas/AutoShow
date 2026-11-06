@@ -14,7 +14,12 @@ describe('per-install frontend media artifact', () => {
         ],
         {
           cwd: process.cwd(),
-          env: { ...process.env, NODE_ENV: 'production', NEXT_PUBLIC_MEDIA_HOSTS: origin },
+          env: {
+            ...process.env,
+            NODE_ENV: 'production',
+            NEXT_PUBLIC_MEDIA_HOSTS: origin,
+            NEXT_PUBLIC_GA_MEASUREMENT_ID: '',
+          },
           encoding: 'utf8',
         },
       );

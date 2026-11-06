@@ -23,6 +23,7 @@ jobs:
         env:
           INSTALLATION: ${{ inputs.installation }}
           MEDIA_HOSTS: ${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
+          GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
           REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
           CADDY_IMAGE: ${{ vars.CADDY_IMAGE }}
           POSTGRES_IMAGE: ${{ vars.POSTGRES_IMAGE }}
@@ -33,6 +34,7 @@ jobs:
         run: |
           [[ "$INSTALLATION" =~ ^[a-z0-9][a-z0-9-]{0,62}$ ]]
           test -n "$MEDIA_HOSTS"
+          [[ -z "$GA_MEASUREMENT_ID" || "$GA_MEASUREMENT_ID" =~ ^G-[A-Z0-9]{10}$ ]]
           test -n "$REGISTRY_USER"
           for name in CADDY_IMAGE POSTGRES_IMAGE REDIS_IMAGE MINIO_IMAGE MINIO_CLIENT_IMAGE BACKUP_HELPER_IMAGE; do
             [[ "${!name}" =~ ^[A-Za-z0-9][A-Za-z0-9./:_-]*@sha256:[a-f0-9]{64}$ ]]
@@ -49,6 +51,7 @@ jobs:
         working-directory: frontend
         env:
           NEXT_PUBLIC_MEDIA_HOSTS: ${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
+          NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
           NEXT_TELEMETRY_DISABLED: 1
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
@@ -72,6 +75,7 @@ jobs:
           push: true
           build-args: |
             NEXT_PUBLIC_MEDIA_HOSTS=${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
+            NEXT_PUBLIC_GA_MEASUREMENT_ID=${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoflow-frontend:${{ github.sha }}-${{ inputs.installation }}-${{ github.run_id }}
           cache-from: type=gha,scope=frontend-${{ inputs.installation }}
           cache-to: type=gha,scope=frontend-${{ inputs.installation }},mode=max

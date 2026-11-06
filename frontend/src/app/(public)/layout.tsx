@@ -10,11 +10,13 @@ import { ThemeProvider } from '@/components/theme/theme-provider';
 import { FavoritesProvider } from '@/lib/favorites';
 import { CompareProvider } from '@/lib/compare';
 import { getSiteBranding } from '@/lib/branding/resolve';
+import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [branding, installation] = await Promise.all([getSiteBranding(), getInstallation()]);
   return (
     <StorefrontPresentation installation={installation}>
+      <GoogleAnalytics />
       <HomepageShell>
         <ThemeProvider>
           <LenisProvider>
