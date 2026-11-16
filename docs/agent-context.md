@@ -808,6 +808,8 @@ frontend/src/
   components/         # nav, hero, home, filters, listing, lead, admin/*, ui/*, theme, motion (≈90 tsx)
                       # admin/: billing/, branding/{photo-ai-settings,photo-pack-panel}, catalog/, collections/, tags/,
                       #         leads/{lead-crm-panel,lead-live-notifier}, media/photo-ai/photo-ai-workspace, ...
+  themes/             # дизайны витрины по STOREFRONT_THEME: contract.ts (заменяемые блоки), ids.ts,
+                      # registry.ts, styles.ts (все theme.css); каждая подпапка = id темы: current/ (главная + карточка), compact/ (только карточка + CSS)
   lib/
     api/              # client.ts, public.ts, admin.ts, types.ts
     auth/             # session.ts (HMAC-cookie), refresh.ts, actions.ts

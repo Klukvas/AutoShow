@@ -9,17 +9,10 @@ import { HomeSectionHeading } from '@/components/home/home-section-heading';
 import { PackagesSection } from '@/components/home/packages-section';
 import { ScrollReveal } from '@/components/motion/scroll-reveal';
 
-import type { HomeModel } from '@/lib/installation/home-model';
-import type { InventoryCardComponent } from './inventory-card';
+import type { HomeProps } from '../contract';
 
-/** Existing default markup, shared by presentation variants through named slots. */
-export function HomeView({
-  model,
-  InventoryCard,
-}: {
-  model: HomeModel;
-  InventoryCard: InventoryCardComponent;
-}) {
+/** Existing default markup, shared by themes through named slots. */
+export function HomeView({ model, InventoryCard }: HomeProps) {
   const { installation, t, branding, hero, inventory, collections, reviews, packages } = model;
   return (
     <>
