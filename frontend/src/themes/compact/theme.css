@@ -1,0 +1,10 @@
+/* The CSS of every theme ships to every installation, so each selector must start
+   with this theme's [data-storefront-theme='compact'] prefix; an unprefixed rule
+   would restyle all installations. Compact is a small proof of the theme seam. */
+[data-storefront-theme='compact'] .home-section {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+[data-storefront-theme='compact'] .home-inventory-grid {
+  gap: 16px;
+}

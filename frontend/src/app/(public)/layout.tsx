@@ -1,5 +1,6 @@
 import { getInstallation } from '@/lib/installation/server';
 import { StorefrontPresentation } from '@/components/installation/storefront-presentation';
+import '@/themes/styles';
 import '@/styles/installations.css';
 import { HomepageShell } from '@/components/home/homepage-shell';
 import { PublicFooter } from '@/components/nav/public-footer';
