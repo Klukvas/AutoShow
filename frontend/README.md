@@ -230,5 +230,13 @@ referrer містить лише попередній публічний pathnam
 - `NEXT_PUBLIC_MEDIA_HOSTS` задається **під час збірки** та формує точні allowlists
   для `next/image` і CSP, зокрема presigned uploads. Зміна media origin потребує
   нового frontend image/bundle із того самого спільного коду.
+- `STOREFRONT_THEME` задається **під час збірки** (`next build`/`next dev`, Docker
+  build-arg): назва папки в `src/themes/`, без значення — `current`; невідома назва
+  зупиняє збірку. Image містить лише цю тему, `@theme/<блок>` веде в її папку;
+  зміна теми потребує нового image. Тему зібраного image показує `/health/frontend`:
+  це id з `src/themes/<id>/id.ts` реально зібраної папки, і збірка падає, якщо він
+  не збігається із запитаним `STOREFRONT_THEME` (тому збирати лише webpack —
+  Turbopack заміну `@theme` ігнорує). `npm test` завжди працює з темою `current`,
+  незалежно від змінної в оточенні.
 - `ADMIN_COOKIE_SIGNING_KEY` — окремий секрет frontend runtime. Для HTTPS
   `ADMIN_COOKIE_SECURE=true`; явний HTTP-режим потребує `false`.

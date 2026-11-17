@@ -9,10 +9,10 @@
 
 | Источник | Что хранит | Как применять |
 | --- | --- | --- |
-| `/opt/autoflow/.env` на конкретном сервере | installation ID, стабильное compose-имя, домены, theme/font, flags, интеграции, тарифы, лимиты и секреты | перезапуск соответствующих app/worker/frontend/Caddy |
+| `/opt/autoflow/.env` на конкретном сервере | installation ID, стабильное compose-имя, домены, font, flags, интеграции, тарифы, лимиты и секреты | перезапуск соответствующих app/worker/frontend/Caddy |
 | Версионный `releases/BUNDLE/release.env` | backend/frontend **image digests**, source/version | явно выбрать bundle и выполнить update/rollback |
 | `site_settings` в локальной БД, обычная админка | название, логотип, контакты, цвета, SEO, валюта, часы работы; существующие настройки Telegram/AI | сохранение в админке, storefront fetch cache до 300 секунд |
-| GitHub Environment `installation-ID` | SSH именно этого сервера; media allowlist для сборки frontend | новая сборка frontend при смене media origin |
+| GitHub Environment `installation-ID` | SSH именно этого сервера; media allowlist и тема витрины (`STOREFRONT_THEME`) для сборки frontend | новый Release + update при смене media origin или темы |
 
 Для необязательного GA4 задайте в этом же GitHub Environment публичную variable
 `NEXT_PUBLIC_GA_MEASUREMENT_ID` (`G-` + 10 заглавных букв/цифр). Пустая variable
@@ -29,7 +29,8 @@ ID и разрешения CSP фиксируются в frontend image при �
 на одну БД, Redis или bucket и не копируйте секреты между клиентами.
 
 Публичный `GET /api/installation` возвращает только
-`installationId`, `themeId`, `fontPreset`, `features.reviews`.
+`installationId`, `themeId`, `fontPreset`, `features.reviews`. Новый frontend
+`themeId` не читает (тема зашита в image); поле остаётся для images, собранных раньше.
 Операторские домены, соединения, лимиты, ключи и цены туда не попадают.
 `GET /api/branding` использует явный список публичных полей.
 `PATCH /api/admin/branding` не меняет операторскую конфигурацию.
@@ -43,13 +44,35 @@ ID и разрешения CSP фиксируются в frontend image при �
 Витрина использует те же API, типы, фильтры и бизнес-логику для всех тем.
 `STOREFRONT_THEME=current`, `STOREFRONT_FONT_PRESET=default` сохраняют дизайн;
 `compact` и `system` — минимальная проверочная вариация отступов/шрифта в публичном
-поддереве. Админка не переоформляется. Тема — папка `frontend/src/themes/<id>/`
-(имя папки = значение `STOREFRONT_THEME`) плюс значение в backend enum
-`StorefrontTheme`; тесты frontend и backend падают, если папки, реестр тем и enum
-расходятся. CSS темы — `themes/<id>/theme.css`, подключённый в `themes/styles.ts`;
-он попадает во все установки, поэтому каждый селектор начинается с
-`[data-storefront-theme='<id>']`. Тема заменяет только нужные блоки, без копирования
-бизнес-логики или страниц.
+поддереве. Админка не переоформляется.
+**Тема выбирается при сборке frontend**, а не на сервере: variable `STOREFRONT_THEME`
+в GitHub Environment установки (обязательна, Release без неё падает с пояснением)
+передаётся в `next build`/Docker build-arg, и image содержит только этот дизайн (его JS
+и CSS). Задавайте её **на уровне Environment** `installation-ID`, не на уровне
+репозитория: repository variable унаследовали бы все установки, и она стала бы тем самым
+молчаливым значением по умолчанию, от которого защищает обязательность.
+Смена темы — новый Release + update. `GET /health/frontend` (`theme`) показывает id,
+который сообщает о себе папка темы, реально попавшая в image (`themes/<id>/id.ts`);
+сборка падает, если он не совпадает с запрошенным `STOREFRONT_THEME`, поэтому image
+не может называться одной темой, а содержать другую. Ключ `STOREFRONT_THEME` в серверном `.env` дизайн
+больше не выбирает: backend пока проверяет и отдаёт его, чтобы старые images работали
+во время обновления, и ключ будет удалён отдельным шагом. **Существующим установкам**
+перед следующим Release нужно добавить variable `STOREFRONT_THEME` в их GitHub
+Environment — то же значение, что сейчас в серверном `.env`.
+Тема — папка `frontend/src/themes/<id>/` (имя папки = значение `STOREFRONT_THEME`) плюс
+значение в backend enum `StorefrontTheme`; тесты backend падают, если папки и enum
+расходятся, а неизвестное значение роняет сборку frontend. В папке темы — полный
+набор модулей блоков из `themes/contract.ts` (`slotModules`: рамка витрины, главная,
+каталог, коллекция, страница автомобиля, «О салоне», контакты, избранное, сравнение,
+карточка) и `id.ts` с именем своей папки; блок,
+который тема не меняет, — однострочный re-export из другой темы. Избранное и сравнение —
+клиентские блоки, остальные — серверные: их модуль нельзя помечать `'use client'`
+(причина — в `themes/contract.ts`, `clientSlots`). CSS темы
+(`themes/<id>/theme.css`) импортирует её `shell.ts`, поэтому он попадает только в images
+этой темы; любой другой `*.css` в папке темы тоже должен быть импортирован файлом этой
+папки. Данные готовит `frontend/src/lib/storefront/` (для избранного и сравнения —
+клиентские хуки: список в браузере, загрузка, повтор), а SEO (метаданные и JSON-LD)
+и учёт просмотров остаются в `page.tsx` и от темы не зависят.
 Брендовые цвета/логотипы редактируются существующим механизмом branding.
 
 ## Новая установка без исходников на сервере
@@ -83,6 +106,8 @@ ID и разрешения CSP фиксируются в frontend image при �
    а также Docker Hub `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` (registry можно держать
    на уровне repo). Variable `NEXT_PUBLIC_MEDIA_HOSTS` — точные разрешённые media
    hostname/origin, включая все media/CDN hosts, реально возвращаемые API.
+   Variable `STOREFRONT_THEME` — тема витрины (имя папки в `frontend/src/themes/`),
+   обязательна и задаётся именно в этом Environment, не как repository variable.
    Variables `CADDY_IMAGE`, `POSTGRES_IMAGE`, `REDIS_IMAGE`, `MINIO_IMAGE`,
    `MINIO_CLIENT_IMAGE`, `BACKUP_HELPER_IMAGE` — только полные `repo@sha256:…`.
    Эти шесть approved pins должны **точно совпадать** с операторским `.env`;
@@ -92,7 +117,7 @@ ID и разрешения CSP фиксируются в frontend image при �
    dependency images. Новый сервер тоже получает явный approved dependency set.
 5. Запустить **Release installation images** на нужном source ref с ID установки.
    Он проверяет код, собирает общий backend и frontend этого source с выбранной
-   media allowlist, публикует digests и сохраняет artifact
+   media allowlist и темой, публикует digests и сохраняет artifact
    `release-ID-SOURCE_SHA-RUN_ID`. Это не деплой. Скачать и хранить этот bundle
    вне срока хранения Actions artifacts; он содержит compose/Caddy/init/scripts,
    версии, dependency pins и checksum manifest, без исходников и `.env`.
@@ -120,8 +145,8 @@ Next standalone фиксируются на этапе сборки. Один fr
 переносить между произвольными media hosts. При смене host соберите новый bundle
 из того же общего source, задайте новый S3 origin в `.env` и примените его.
 Source SHA + run ID различают такие варианты; backend и frontend pins хранятся
-раздельно. Нет wildcard remote host/CSP. Смена theme/flag требует только restart,
-смена branding — save, смена media allowlist — build + update. Изменение только
+раздельно. Нет wildcard remote host/CSP. Смена flag/font требует только restart,
+смена branding — save, смена media allowlist или темы — build + update. Изменение только
 домена сайта при неизменном media host требует пересоздания Caddy/app/frontend,
 обновления site URLs/CORS/cookie; frontend rebuild не нужен.
 
@@ -137,7 +162,8 @@ volumes с downgrade. Смена зависимости — отдельное �
 project **autoflow**: задайте **COMPOSE_PROJECT_NAME=autoflow**, чтобы сохранить
 `autoflow_pg_data`, `autoflow_minio_data` и остальные существующие volumes.
 Не выбирайте новое имя для существующих данных. Задайте installation ID,
-theme/default flag, заполните недостающие операторские ключи без ротации текущих.
+default flag (тему — variable `STOREFRONT_THEME` в GitHub Environment), заполните
+недостающие операторские ключи без ротации текущих.
 Подготовьте и сохраните legacy rollback bundle с точными старыми images/compose
 до первого перехода. Первый bootstrap нового tooling допускается только после
 проверки имён volumes; SQL seed идемпотентен. Не удаляйте существующие volumes.
@@ -241,7 +267,10 @@ raw MinIO/Redis архивы в работающий storage process. Drill не
   Redis, S3 bucket, worker heartbeat с **тем же app release**, free disk app FS.
 - `GET /api/admin/installation` — admin Bearer token, installation/theme/flags,
   app version и sanitized checks. Доступно при billing block; editor не допускается.
-- `GET /health/frontend` — публичная non-sensitive runtime frontend version для ingress gate.
+  `theme` здесь — устаревший ключ `STOREFRONT_THEME` из серверного `.env`: он дизайн не
+  выбирает и может отличаться от работающего; настоящую тему показывает `/health/frontend`.
+- `GET /health/frontend` — публичная non-sensitive runtime frontend version для ingress gate
+  и `theme` — id темы, реально собранной в image (проверяется при сборке).
 - `/admin/api/installation` — admin session, frontend version + backend diagnostics.
   В логах app/worker есть `installationId`/`appVersion`.
 - `bin/installation.sh status ROOT BUNDLE` — compose processes + readiness.

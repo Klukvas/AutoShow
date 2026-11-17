@@ -2,27 +2,28 @@ import { describe, expect, it } from 'vitest';
 import { installationSchema } from './config';
 
 describe('installation API boundary', () => {
-  const current = {
+  const installation = {
     installationId: 'dealer-a',
-    themeId: 'current',
     fontPreset: 'default',
     features: { reviews: true },
   };
-  it('accepts default and minimal theme without duplicating car contracts', () => {
-    expect(installationSchema.parse(current)).toEqual(current);
+  it('accepts the default and the minimal font preset without duplicating car contracts', () => {
+    expect(installationSchema.parse(installation)).toEqual(installation);
     expect(
       installationSchema.parse({
-        ...current,
-        themeId: 'compact',
+        ...installation,
         fontPreset: 'system',
         features: { reviews: false },
       }).features.reviews,
     ).toBe(false);
   });
+  it('ignores the themeId a backend still sends: the theme is fixed when the image is built', () => {
+    expect(installationSchema.parse({ ...installation, themeId: 'compact' })).toEqual(installation);
+  });
   it('rejects a malformed flag instead of truthy string coercion', () => {
     expect(() =>
-      installationSchema.parse({ ...current, features: { reviews: 'false' } }),
+      installationSchema.parse({ ...installation, features: { reviews: 'false' } }),
     ).toThrow();
-    expect(() => installationSchema.parse({ ...current, themeId: '<style>' })).toThrow();
+    expect(() => installationSchema.parse({ ...installation, fontPreset: '<style>' })).toThrow();
   });
 });

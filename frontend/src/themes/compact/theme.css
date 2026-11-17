@@ -1,6 +1,7 @@
-/* The CSS of every theme ships to every installation, so each selector must start
-   with this theme's [data-storefront-theme='compact'] prefix; an unprefixed rule
-   would restyle all installations. Compact is a small proof of the theme seam. */
+/* Built only into compact images (imported by ./shell.ts). The
+   [data-storefront-theme='compact'] prefix is kept because it raises specificity
+   over the base .home-* rules; dropping it could change which rule wins.
+   Compact is a small proof of the theme seam. */
 [data-storefront-theme='compact'] .home-section {
   padding-top: 40px;
   padding-bottom: 40px;

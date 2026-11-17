@@ -8,11 +8,10 @@ import { StatsBand } from '@/components/home/stats-band';
 import { HomeSectionHeading } from '@/components/home/home-section-heading';
 import { PackagesSection } from '@/components/home/packages-section';
 import { ScrollReveal } from '@/components/motion/scroll-reveal';
-
 import type { HomeProps } from '../contract';
 
 /** Existing default markup, shared by themes through named slots. */
-export function HomeView({ model, InventoryCard }: HomeProps) {
+export function Home({ model, InventoryCard }: HomeProps) {
   const { installation, t, branding, hero, inventory, collections, reviews, packages } = model;
   return (
     <>

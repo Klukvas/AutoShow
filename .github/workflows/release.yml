@@ -24,6 +24,7 @@ jobs:
           INSTALLATION: ${{ inputs.installation }}
           MEDIA_HOSTS: ${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
           GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+          STOREFRONT_THEME: ${{ vars.STOREFRONT_THEME }}
           REGISTRY_USER: ${{ secrets.DOCKERHUB_USERNAME }}
           CADDY_IMAGE: ${{ vars.CADDY_IMAGE }}
           POSTGRES_IMAGE: ${{ vars.POSTGRES_IMAGE }}
@@ -35,6 +36,22 @@ jobs:
           [[ "$INSTALLATION" =~ ^[a-z0-9][a-z0-9-]{0,62}$ ]]
           test -n "$MEDIA_HOSTS"
           [[ -z "$GA_MEASUREMENT_ID" || "$GA_MEASUREMENT_ID" =~ ^G-[A-Z0-9]{10}$ ]]
+          # Required: an unset variable must not silently build the default design. Every
+          # installation that predates the variable stops here once, so say what to do.
+          # The value is echoed only after it passed the name check (no log injection).
+          theme_problem=''
+          if [[ -z "$STOREFRONT_THEME" ]]; then
+            theme_problem='is not set'
+          elif [[ ! "$STOREFRONT_THEME" =~ ^[a-z][a-z0-9-]{0,62}$ ]]; then
+            theme_problem='is not a valid theme name'
+          elif [[ ! -d "frontend/src/themes/$STOREFRONT_THEME" ]]; then
+            theme_problem="is '$STOREFRONT_THEME', which is not a folder in frontend/src/themes/"
+          fi
+          if [[ -n "$theme_problem" ]]; then
+            available=$(cd frontend/src/themes && printf '%s ' */ | tr -d /)
+            echo "::error title=STOREFRONT_THEME missing or invalid::Variable STOREFRONT_THEME of the GitHub Environment installation-$INSTALLATION $theme_problem. Set it at environment level (Settings > Environments > installation-$INSTALLATION > Environment variables), not as a repository variable, to one of: $available(an installation released before this variable existed uses the STOREFRONT_THEME value from its server .env). See deploy/README.md."
+            exit 1
+          fi
           test -n "$REGISTRY_USER"
           for name in CADDY_IMAGE POSTGRES_IMAGE REDIS_IMAGE MINIO_IMAGE MINIO_CLIENT_IMAGE BACKUP_HELPER_IMAGE; do
             [[ "${!name}" =~ ^[A-Za-z0-9][A-Za-z0-9./:_-]*@sha256:[a-f0-9]{64}$ ]]
@@ -52,6 +69,7 @@ jobs:
         env:
           NEXT_PUBLIC_MEDIA_HOSTS: ${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
           NEXT_PUBLIC_GA_MEASUREMENT_ID: ${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+          STOREFRONT_THEME: ${{ vars.STOREFRONT_THEME }}
           NEXT_TELEMETRY_DISABLED: 1
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
@@ -67,7 +85,7 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoflow-backend:${{ github.sha }}
           cache-from: type=gha,scope=backend
           cache-to: type=gha,scope=backend,mode=max
-      - name: Frontend image (shared source, selected media allowlist)
+      - name: Frontend image (shared source, selected media allowlist and theme)
         id: frontend
         uses: docker/build-push-action@v6
         with:
@@ -76,6 +94,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_MEDIA_HOSTS=${{ vars.NEXT_PUBLIC_MEDIA_HOSTS }}
             NEXT_PUBLIC_GA_MEASUREMENT_ID=${{ vars.NEXT_PUBLIC_GA_MEASUREMENT_ID }}
+            STOREFRONT_THEME=${{ vars.STOREFRONT_THEME }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/autoflow-frontend:${{ github.sha }}-${{ inputs.installation }}-${{ github.run_id }}
           cache-from: type=gha,scope=frontend-${{ inputs.installation }}
           cache-to: type=gha,scope=frontend-${{ inputs.installation }},mode=max
