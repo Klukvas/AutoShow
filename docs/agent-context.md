@@ -816,7 +816,7 @@ frontend/src/
                       # `@theme/id` и роняет сборку, если он не равен запрошенному STOREFRONT_THEME (bundler не применил
                       # замену `@theme`, например Turbopack). Каждая подпапка = id темы с ПОЛНЫМ набором модулей
                       # shell/home/catalog/collection/listing/about/contacts/favorites/compare/inventory-card + id.ts
-                      # (имя своей папки) + index.ts
+                      # (имя своей папки) + fonts.ts + tokens.css + index.ts
                       # (только для tsc/тестов); current/ — эталон (+ parts/ для помощников), compact/ — re-export из
                       # current, своя карточка, theme.css (импортирует его shell.ts). Маршрут импортирует только свой
                       # блок `@theme/<блок>`, без barrel. Вид получает готовую модель и только рисует; JSON-LD и
@@ -834,6 +834,39 @@ frontend/src/
                       # (api/storefront/installation-server/branding-resolve) и fetch в темах; исключения вне тем: общие
                       # components/home/stats-band.tsx (главная и «О салоне») и components/listing/similar-cars.tsx
                       # сами грузят данные.
+                      # Токены и шрифты темы (подробно — frontend/README.md «Теми вітрини: токени та шрифти»):
+                      # tokens.css — только custom properties, уже объявленные в styles/globals.css и cinematic.css, со
+                      # значением той же формы (три RGB-канала / длина / цвет rgb()-hsl()), только под селектором витрины своей темы
+                      # (contract.ts `storefrontScope`): `:root body:has([data-storefront-theme='<id>'])` — оба режима,
+                      # `:root[data-theme='light'|'dark'] body:has(…)` — один режим (перекрывает правило без режима);
+                      # дальше может идти потомок, напр. `.homepage-cinematic`. Импортирует (public)/layout.tsx как
+                      # `@theme/tokens.css`. <body>, а не обёртка: общие токены объявлены на <body>
+                      # (.platform-cinematic), мобильное меню — портал в <body> вне обёртки; у админки обёртки нет,
+                      # поэтому тема её не задевает. `:root` — ради веса: общий `[data-theme='light']
+                      # .platform-cinematic` весит (0,2,0), `body:has(…)` без `:root` — (0,1,1) и в светлом режиме
+                      # проигрывал бы; `:root body:has(…)` — (0,2,1). Акцент салона (`--accent` из админки: <style> в <head> с правилами `:root{}` и `[data-theme='dark']{}`, т.е. на
+                      # <html>) сохраняется, если тема не задаёт `--accent`; заданный в tokens.css `--accent` осознанно
+                      # его перекрывает на витрине. fonts.ts — `fonts = { sans, display }` (ThemeFonts; next/font или
+                      # null = шрифт приложения; пропущенная роль роняет сборку); StorefrontPresentation пишет <style>,
+                      # переопределяющий `--font-sans`/`--font-display` на <body> витрины (theme-font-css.ts),
+                      # runtime-пресет `system` внутри обёртки по-прежнему сильнее. current и compact ничего не
+                      # переопределяют. Гварды (theme-folders.test.ts, разбор CSS — stylesheet-scan.ts): наличие
+                      # tokens.css/fonts.ts; селекторы tokens.css — только три написания селектора витрины; его вес
+                      # больше веса любого общего правила с токенами; имена и форма значений токенов, без ссылок
+                      # на себя и циклов var(), без !important, каждая декларация внутри правила; другие CSS темы
+                      # (theme.css) не задают общих токенов и --font-sans/--font-display и не содержат @property; общий
+                      # CSS не @import-ит CSS темы; правила — token-guards.ts (+ token-guards.test.ts); только
+                      # @media/@supports; next/font — только в lib/fonts.ts и fonts.ts тем; `@theme/tokens.css`
+                      # импортирует только (public)/layout.tsx, `@theme/fonts` — только StorefrontPresentation (и читает
+                      # `fonts` как значение); index.ts каждой темы проверяет тип fonts (ThemeFontsOf). Ограничения:
+                      # нужен `:has()`; любая 404 (и notFound() из страниц авто/подборки), app/error и global-error
+                      # рендерятся вне публичного layout — общий вид, не тема ((public)/not-found.tsx нет); исключение —
+                      # (public)/cars/error.tsx (внутри layout, тема сохраняется); зона `.homepage-cinematic` (HomepageShell и
+                      # мобильное меню PublicNav на главной) сама переобъявляет палитру и радиусы — теме нужно своё правило; 404
+                      # неизвестной подборки отдаётся без data-theme (всегда общая тёмная палитра, как на origin/main); цвета
+                      # главной кнопки в cinematic.css заданы жёстко (не токены); общие правила prefers-contrast слабее
+                      # правил темы; шрифты приложения всё равно preload-ятся на витрине (заголовок Link); `system` не
+                      # достаёт до порталов.
                       # Vitest всегда работает с темой current (vitest.config.ts закрепляет и `@theme`, и STOREFRONT_THEME)
   lib/
     storefront/       # модели публичных страниц для тем: home-model, catalog-model (+ catalog-query, catalog-results),
