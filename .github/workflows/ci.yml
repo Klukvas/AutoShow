@@ -42,7 +42,15 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
-      # Build catches RSC/route errors that tsc alone misses.
-      - run: npm run build
+      # Build catches RSC/route errors that tsc alone misses. The design is chosen at
+      # build time, so every theme folder is built: a broken theme cannot merge.
+      - name: Build every storefront theme
+        run: |
+          for theme_dir in src/themes/*/; do
+            theme=$(basename "$theme_dir")
+            echo "::group::next build (STOREFRONT_THEME=$theme)"
+            STOREFRONT_THEME="$theme" npm run build
+            echo "::endgroup::"
+          done
         env:
           NEXT_TELEMETRY_DISABLED: 1

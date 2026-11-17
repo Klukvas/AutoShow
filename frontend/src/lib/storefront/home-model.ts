@@ -1,7 +1,7 @@
 import { getTranslations } from 'next-intl/server';
 import { publicApi } from '@/lib/api/public';
 import { getSiteBranding } from '@/lib/branding/resolve';
-import { getInstallation } from './server';
+import { getInstallation } from '@/lib/installation/server';
 
 /** Fetch and derive the same storefront model before selecting any presentation. */
 export async function getHomeModel() {

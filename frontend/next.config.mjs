@@ -1,6 +1,29 @@
+import { readdirSync } from 'node:fs';
+import { join } from 'node:path';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
+
+/**
+ * STOREFRONT_THEME picks the storefront design when the image is BUILT: `@theme/<slot>`
+ * resolves to src/themes/<id>/, so an image contains only its client's design and no
+ * page has to ask the backend which one to render. Unset means `current`; any value
+ * that is not a theme folder fails the build instead of shipping another design.
+ */
+const themesDir = join(import.meta.dirname, 'src/themes');
+const themeIds = readdirSync(themesDir, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort();
+const storefrontTheme = process.env.STOREFRONT_THEME ?? 'current';
+if (!themeIds.includes(storefrontTheme)) {
+  throw new Error(
+    `Invalid STOREFRONT_THEME=${JSON.stringify(storefrontTheme)}: expected one of ` +
+      `${themeIds.join(', ')} (the folders in frontend/src/themes/), or unset for current.`,
+  );
+}
+const selectedThemeDir = join(themesDir, storefrontTheme);
+const themeImport = /^@theme\//;
 
 const isDev = process.env.NODE_ENV !== 'production';
 // Match the client validator: malformed or absent IDs leave GA completely off.
@@ -56,6 +79,23 @@ const nextConfig = {
   // root, $HOME) Next guesses wrong and nests server.js deep inside
   // .next/standalone/<full/path>. Pinned, it is always at the top level.
   outputFileTracingRoot: import.meta.dirname,
+  // The single definition of the built theme id for runtime code (src/themes/built-theme.ts).
+  env: { STOREFRONT_THEME: storefrontTheme },
+  // `@theme/<slot>` -> src/themes/<built theme>/<slot>. Not `resolve.alias`: Next applies
+  // the tsconfig `paths` (where @theme is `current`, for tsc and editors) in a resolver
+  // plugin that runs before the alias, so an alias would silently build `current`. This
+  // plugin rewrites the request before any resolution; webpack's API is to edit it in place.
+  // A bundler that skips this hook (Turbopack) resolves `@theme` to `current` again:
+  // src/themes/built-theme.ts compares `@theme/id` with the inlined id and fails that build.
+  webpack: (config, { webpack }) => ({
+    ...config,
+    plugins: [
+      ...config.plugins,
+      new webpack.NormalModuleReplacementPlugin(themeImport, (resource) => {
+        resource.request = resource.request.replace(themeImport, `${selectedThemeDir}/`);
+      }),
+    ],
+  }),
   experimental: {
     optimizePackageImports: ['framer-motion', '@studio-freight/lenis'],
   },

@@ -1,11 +1,7 @@
 import { getInstallation } from '@/lib/installation/server';
 import { StorefrontPresentation } from '@/components/installation/storefront-presentation';
-import '@/themes/styles';
+import { Shell } from '@theme/shell';
 import '@/styles/installations.css';
-import { HomepageShell } from '@/components/home/homepage-shell';
-import { PublicFooter } from '@/components/nav/public-footer';
-import { PublicNav } from '@/components/nav/public-nav';
-import { CompareBar } from '@/components/listing/compare-bar';
 import { LenisProvider } from '@/components/motion/lenis-provider';
 import { ThemeProvider } from '@/components/theme/theme-provider';
 import { FavoritesProvider } from '@/lib/favorites';
@@ -15,23 +11,21 @@ import { GoogleAnalytics } from '@/components/analytics/google-analytics';
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const [branding, installation] = await Promise.all([getSiteBranding(), getInstallation()]);
+  // Providers render no DOM, so wrapping the theme's frame (instead of sitting
+  // inside it) keeps the markup and lets a theme replace the frame without
+  // being able to drop favorites, compare or scroll behaviour.
   return (
     <StorefrontPresentation installation={installation}>
       <GoogleAnalytics />
-      <HomepageShell>
-        <ThemeProvider>
-          <LenisProvider>
-            <FavoritesProvider>
-              <CompareProvider>
-                <PublicNav branding={branding} />
-                <main className="min-h-dvh">{children}</main>
-                <CompareBar />
-                <PublicFooter branding={branding} />
-              </CompareProvider>
-            </FavoritesProvider>
-          </LenisProvider>
-        </ThemeProvider>
-      </HomepageShell>
+      <ThemeProvider>
+        <LenisProvider>
+          <FavoritesProvider>
+            <CompareProvider>
+              <Shell branding={branding}>{children}</Shell>
+            </CompareProvider>
+          </FavoritesProvider>
+        </LenisProvider>
+      </ThemeProvider>
     </StorefrontPresentation>
   );
 }

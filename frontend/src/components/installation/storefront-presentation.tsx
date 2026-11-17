@@ -1,6 +1,10 @@
 import type { PublicInstallation } from '@/lib/installation/config';
+import { builtThemeId } from '@/themes/built-theme';
 
-/** Presentation selection is separate from fetching, permissions and car logic. */
+/**
+ * Presentation markers for the public subtree. The theme is the one this image was
+ * built with; the font preset is still runtime installation config.
+ */
 export function StorefrontPresentation({
   installation,
   children,
@@ -9,10 +13,7 @@ export function StorefrontPresentation({
   children: React.ReactNode;
 }) {
   return (
-    <div
-      data-storefront-theme={installation.themeId}
-      data-storefront-font={installation.fontPreset}
-    >
+    <div data-storefront-theme={builtThemeId} data-storefront-font={installation.fontPreset}>
       {children}
     </div>
   );

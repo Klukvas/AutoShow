@@ -13,12 +13,16 @@ COPY . .
 # media-origin-specific. Browser API calls use same-origin /api.
 # BACKEND_INTERNAL_URL is ALSO frozen at build time by Next's rewrites()
 # (robots/sitemap proxy) — default to the compose service name.
+# STOREFRONT_THEME selects the storefront design (a folder in src/themes/); the image
+# contains only that design and next.config.mjs rejects an unknown id.
 ARG NEXT_PUBLIC_MEDIA_HOSTS
 ARG NEXT_PUBLIC_GA_MEASUREMENT_ID
 ARG BACKEND_INTERNAL_URL=http://app:3000/api
+ARG STOREFRONT_THEME=current
 ENV NEXT_PUBLIC_MEDIA_HOSTS=$NEXT_PUBLIC_MEDIA_HOSTS \
     NEXT_PUBLIC_GA_MEASUREMENT_ID=$NEXT_PUBLIC_GA_MEASUREMENT_ID \
     BACKEND_INTERNAL_URL=$BACKEND_INTERNAL_URL \
+    STOREFRONT_THEME=$STOREFRONT_THEME \
     NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

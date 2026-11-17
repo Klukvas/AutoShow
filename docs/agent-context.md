@@ -808,9 +808,44 @@ frontend/src/
   components/         # nav, hero, home, filters, listing, lead, admin/*, ui/*, theme, motion (≈90 tsx)
                       # admin/: billing/, branding/{photo-ai-settings,photo-pack-panel}, catalog/, collections/, tags/,
                       #         leads/{lead-crm-panel,lead-live-notifier}, media/photo-ai/photo-ai-workspace, ...
-  themes/             # дизайны витрины по STOREFRONT_THEME: contract.ts (заменяемые блоки), ids.ts,
-                      # registry.ts, styles.ts (все theme.css); каждая подпапка = id темы: current/ (главная + карточка), compact/ (только карточка + CSS)
+  themes/             # дизайны витрины; тема выбирается ПРИ СБОРКЕ (STOREFRONT_THEME → next.config.mjs, по умолчанию
+                      # current, неизвестная роняет build): `@theme/<блок>` → themes/<id>/<блок>. contract.ts — блоки
+                      # (Shell, Home, Catalog, Collection, Listing, About, Contacts, Favorites, Compare, InventoryCard)
+                      # и slotModules (файл каждого блока);
+                      # built-theme.ts — id собранной темы (data-storefront-theme, /health/frontend): берёт его из
+                      # `@theme/id` и роняет сборку, если он не равен запрошенному STOREFRONT_THEME (bundler не применил
+                      # замену `@theme`, например Turbopack). Каждая подпапка = id темы с ПОЛНЫМ набором модулей
+                      # shell/home/catalog/collection/listing/about/contacts/favorites/compare/inventory-card + id.ts
+                      # (имя своей папки) + index.ts
+                      # (только для tsc/тестов); current/ — эталон (+ parts/ для помощников), compact/ — re-export из
+                      # current, своя карточка, theme.css (импортирует его shell.ts). Маршрут импортирует только свой
+                      # блок `@theme/<блок>`, без barrel. Вид получает готовую модель и только рисует; JSON-LD и
+                      # ViewBeacon страницы авто выводит page.tsx, не вид. Favorites и Compare — клиентские блоки
+                      # (contract.ts `clientSlots`): их page.tsx (`'use client'`) вызывает хук модели и передаёт её виду
+                      # вместе с колбэками; состояния, загрузки и localStorage в виде нет. Остальные блоки — серверные:
+                      # их модуль (и re-export) не может быть `'use client'` — в модели функции (переводчик next-intl),
+                      # Next откажет при запросе страницы, а tsc и build пройдут. theme-folders.test.ts (разбор
+                      # исходников — source-scan.ts) проверяет: имена папок (формат release.yml), набор файлов, id.ts,
+                      # theme.css ↔ shell и что любой *.css темы импортирован её файлом, серверные блоки без
+                      # `'use client'`, импорты из app и из файлов верхнего уровня themes/, вычисляемые
+                      # import()/require() и require.context по темам, импорт built-theme.ts в health-route и
+                      # StorefrontPresentation (иначе сборка не проверит тему), STOREFRONT_THEME в коде — только в
+                      # built-theme.ts, запрет data-импортов
+                      # (api/storefront/installation-server/branding-resolve) и fetch в темах; исключения вне тем: общие
+                      # components/home/stats-band.tsx (главная и «О салоне») и components/listing/similar-cars.tsx
+                      # сами грузят данные.
+                      # Vitest всегда работает с темой current (vitest.config.ts закрепляет и `@theme`, и STOREFRONT_THEME)
   lib/
+    storefront/       # модели публичных страниц для тем: home-model, catalog-model (+ catalog-query, catalog-results),
+                      # collection-model, listing-model (+ listing-summary: чистые вычисления цены, статуса, JSON-LD крошек),
+                      # about-model, contacts-model (+ contacts-summary: ссылки tel:/карты, таблица часов). Клиентские
+                      # страницы: хуки use-favorites-model и use-compare-model (slugs из localStorage, загрузка по slug,
+                      # удаление 404 из хранилища, retry) возвращают модель-состояние loading | empty | ready | error и
+                      # колбэки; в хуках только React-обвязка. Чистые части — saved-listings (исход загрузки slug,
+                      # loadSavedListings — запросы партии и её свод, pruneGoneListings — убрать из хранилища только
+                      # 404), compared-listings (branding + авто сравнения), favorites-state (loading отдаёт число
+                      # сохранённых авто, сколько плейсхолдеров рисовать — решает тема), compare-state (строки
+                      # сравнения, «только отличия», текст для заявки)
     api/              # client.ts, public.ts, admin.ts, types.ts
     auth/             # session.ts (HMAC-cookie), refresh.ts, actions.ts
     admin/            # listing-form-schema (zod), lockout, cursor-stack, audit-format, billing(+billing-server),
@@ -1167,7 +1202,7 @@ zod, Framer Motion + Lenis. Порт dev/prod — 3001.
 
 ### 9.1 Маршруты
 
-**Публичные (`(public)`, layout: HomepageShell > ThemeProvider > Lenis > Favorites > CompareProvider + PublicNav/CompareBar/Footer):**
+**Публичные (`(public)`, layout: StorefrontPresentation > ThemeProvider > Lenis > Favorites > CompareProvider > `Shell` темы (`@theme/shell`; в current — HomepageShell + PublicNav/CompareBar/Footer)):**
 
 | Путь | Файл | Назначение | Данные |
 |------|------|-----------|--------|
@@ -1175,10 +1210,10 @@ zod, Framer Motion + Lenis. Порт dev/prod — 3001.
 | `/cars` | `(public)/cars/page.tsx` | Каталог с фильтрами (24/стр, cursor), включая теги | загрузки каталога (+ `/catalog/tags`) + branding, revalidate 30 |
 | `/cars/[slug]` | `(public)/cars/[slug]/page.tsx` | Деталь: галерея, спеки, опции, контакт-панель, форма, похожие | `getListingBySlug` + view-beacon (client) |
 | `/collections/[key]` | `(public)/collections/[key]/page.tsx` | SEO-коллекции из БД | `generateStaticParams` из `listCollections`, `getCollection(key)` + `listListings`, revalidate 300 |
-| `/compare` | `(public)/compare/page.tsx` | Сравнение до 3 авто | client: slugs из localStorage → `getListingBySlug` (revalidate 0) + branding |
-| `/about` | `(public)/about/page.tsx` | О салоне (часы, tagline) | branding |
-| `/contacts` | `(public)/contacts/page.tsx` | Контакты + форма callback | branding + LeadForm |
-| `/favorites` | `(public)/favorites/page.tsx` | Избранное (localStorage) | client-fetch по slug |
+| `/compare` | `(public)/compare/page.tsx` | Сравнение до 3 авто | client (`useCompareModel`): slugs из localStorage → `getListingBySlug` (revalidate 0) + branding |
+| `/about` | `(public)/about/page.tsx` | О салоне (часы, tagline) | `getAboutModel`: branding (+ `StatsBand` сам грузит `/stats`) |
+| `/contacts` | `(public)/contacts/page.tsx` | Контакты + форма callback | `getContactsModel`: branding + LeadForm |
+| `/favorites` | `(public)/favorites/page.tsx` | Избранное (localStorage) | client (`useFavoritesModel`): fetch по slug |
 
 **Админка (`(admin)`, session-gate → `/admin/login`, robots:false, `force-dynamic`):**
 

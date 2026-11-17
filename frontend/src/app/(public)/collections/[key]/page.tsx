@@ -1,12 +1,11 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
-import { Button } from '@/components/ui/button';
-import { ListingCard } from '@/components/listing/listing-card';
-import { publicApi } from '@/lib/api/public';
-import { getSiteBranding } from '@/lib/branding/resolve';
-import { collectionCatalogHref } from '@/lib/collections';
+import {
+  getCollectionModel,
+  getCollectionPreset,
+  listCollectionKeys,
+} from '@/lib/storefront/collection-model';
+import { Collection } from '@theme/collection';
 
 interface PageProps {
   params: Promise<{ key: string }>;
@@ -15,17 +14,13 @@ interface PageProps {
 export const revalidate = 300;
 
 export async function generateStaticParams() {
-  try {
-    const collections = await publicApi.listCollections();
-    return collections.map((c) => ({ key: c.key }));
-  } catch {
-    return [];
-  }
+  const keys = await listCollectionKeys();
+  return keys.map((key) => ({ key }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { key } = await params;
-  const preset = await publicApi.getCollection(key).catch(() => null);
+  const preset = await getCollectionPreset(key);
   if (!preset) return {};
   return {
     title: preset.titleUk,
@@ -37,59 +32,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 /** Curated SEO landing: a filter preset with its own copy and URL. */
 export default async function CollectionPage({ params }: PageProps) {
   const { key } = await params;
-  const preset = await publicApi.getCollection(key).catch(() => null);
-  if (!preset) notFound();
+  const model = await getCollectionModel(key);
+  if (!model) notFound();
 
-  const [t, branding] = await Promise.all([getTranslations('catalog'), getSiteBranding()]);
-  let items: Awaited<ReturnType<typeof publicApi.listListings>>['items'] = [];
-  try {
-    const page = await publicApi.listListings(
-      { ...preset.query, sort: 'newest', limit: 24 },
-      { revalidate: 300 },
-    );
-    items = page.items;
-  } catch {
-    items = [];
-  }
-
-  return (
-    <div className="mx-auto max-w-[1200px] px-5 pb-16 pt-8 md:px-8">
-      <nav className="text-sub text-ink-3">
-        <Link href="/" className="focus-ring rounded-none hover:text-ink">
-          AutoFlow
-        </Link>
-        {' / '}
-        <Link href="/cars" className="focus-ring rounded-none hover:text-ink">
-          {t('title')}
-        </Link>
-      </nav>
-      <h1 className="mt-3 font-heading text-title-lg font-medium text-ink">
-        {preset.emoji} {preset.titleUk}
-      </h1>
-      <p className="mt-2 max-w-[620px] text-body-md leading-relaxed text-ink-2">
-        {preset.descriptionUk}
-      </p>
-
-      {items.length === 0 ? (
-        <p className="mt-10 text-body-md text-ink-2">{t('empty')}</p>
-      ) : (
-        <div className="mt-8 grid grid-cols-1 gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((listing, idx) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              priority={idx < 3}
-              baseCurrency={branding?.defaultCurrency}
-            />
-          ))}
-        </div>
-      )}
-
-      <div className="mt-10">
-        <Button as="link" href={collectionCatalogHref(preset.query)} variant="outline" size="lg">
-          {t('collectionAllFilters')} →
-        </Button>
-      </div>
-    </div>
-  );
+  return <Collection model={model} />;
 }
