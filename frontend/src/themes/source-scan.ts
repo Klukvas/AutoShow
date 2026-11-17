@@ -220,6 +220,26 @@ export function readsAsValue(file: string, name: string): boolean {
   return visit(parse(file));
 }
 
+/**
+ * Whether a type in the file is `Generic<typeof value>`: the way a module checks the
+ * type of a value it must not evaluate, by passing it to a generic with a constraint.
+ */
+export function instantiatesWithTypeOf(file: string, generic: string, value: string): boolean {
+  const visit = (node: ts.Node): boolean => {
+    const [argument] = ts.isTypeReferenceNode(node) ? (node.typeArguments ?? []) : [];
+    const isTheCheck =
+      ts.isTypeReferenceNode(node) &&
+      ts.isIdentifier(node.typeName) &&
+      node.typeName.text === generic &&
+      argument !== undefined &&
+      ts.isTypeQueryNode(argument) &&
+      ts.isIdentifier(argument.exprName) &&
+      argument.exprName.text === value;
+    return isTheCheck || (ts.forEachChild(node, visit) ?? false);
+  };
+  return visit(parse(file));
+}
+
 const directiveOf = (statement: ts.Statement) =>
   ts.isExpressionStatement(statement) && ts.isStringLiteral(statement.expression)
     ? statement.expression.text

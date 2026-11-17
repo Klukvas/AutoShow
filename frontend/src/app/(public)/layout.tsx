@@ -1,6 +1,7 @@
 import { getInstallation } from '@/lib/installation/server';
 import { StorefrontPresentation } from '@/components/installation/storefront-presentation';
 import { Shell } from '@theme/shell';
+import '@theme/tokens.css';
 import '@/styles/installations.css';
 import { LenisProvider } from '@/components/motion/lenis-provider';
 import { ThemeProvider } from '@/components/theme/theme-provider';
