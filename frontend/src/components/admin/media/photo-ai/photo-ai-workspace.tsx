@@ -2,7 +2,8 @@
 /* eslint-disable @next/next/no-img-element -- exact original/candidate inspection, uncropped */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { intlLocale } from '@/i18n/intl';
 import { Dialog } from '@/components/admin/ui/dialog';
 import { Banner } from '@/components/admin/ui/banner';
 import { cn } from '@/lib/cn';
@@ -31,6 +32,7 @@ export function PhotoAiWorkspace({
   onApplied: () => Promise<void>;
 }) {
   const t = useTranslations('admin.photoAi');
+  const locale = useLocale();
   const client = useQueryClient();
   const attempt = useRef<PhotoAiAttempt | null>(null);
   const [category, setCategory] = useState<PhotoAiCategory>('enhance');
@@ -250,7 +252,7 @@ export function PhotoAiWorkspace({
                     <span className="min-w-0">
                       <span className="block">
                         {g.category === 'scene' ? t('sceneHistory') : t('enhanceHistory')} ·{' '}
-                        {new Date(g.createdAt).toLocaleString('uk-UA', {
+                        {new Date(g.createdAt).toLocaleString(intlLocale(locale), {
                           day: 'numeric',
                           month: 'short',
                           hour: '2-digit',

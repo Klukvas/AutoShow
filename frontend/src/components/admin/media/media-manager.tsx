@@ -357,7 +357,7 @@ export function MediaManager({ listingId, initial, readOnly = false }: MediaMana
     return (
       <div>
         <Banner tone="info" className="mb-3">
-          Продане оголошення доступне лише для перегляду.
+          {t('readOnly')}
         </Banner>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {initial.map((item) => (
@@ -366,11 +366,11 @@ export function MediaManager({ listingId, initial, readOnly = false }: MediaMana
               {item.thumbUrl ? (
                 <img
                   src={item.thumbUrl}
-                  alt="Фото проданого авто"
+                  alt={t('soldPhotoAlt')}
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <span>Фото</span>
+                <span>{t('photo')}</span>
               )}
             </div>
           ))}

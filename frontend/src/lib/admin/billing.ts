@@ -1,3 +1,4 @@
+import { intlLocale } from '@/i18n/intl';
 import { apiFetch } from '../api/client';
 
 /** Hosting subscription (Monobank) — mirrors backend src/modules/billing. */
@@ -113,8 +114,8 @@ export function latestPendingInvoice(invoices: BillingInvoice[]): BillingInvoice
 }
 
 /** Dates are shown in Kyiv time regardless of the server's zone. */
-export function formatBillingDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('uk-UA', {
+export function formatBillingDate(iso: string, locale = 'uk'): string {
+  return new Date(iso).toLocaleDateString(intlLocale(locale), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -122,6 +123,6 @@ export function formatBillingDate(iso: string): string {
   });
 }
 
-export function formatUah(amount: number): string {
-  return `${new Intl.NumberFormat('uk-UA', { maximumFractionDigits: 2 }).format(amount)} ₴`;
+export function formatUah(amount: number, locale = 'uk'): string {
+  return `${new Intl.NumberFormat(intlLocale(locale), { maximumFractionDigits: 2 }).format(amount)} ₴`;
 }

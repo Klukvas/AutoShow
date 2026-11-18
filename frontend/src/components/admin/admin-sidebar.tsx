@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/cn';
 import { logoutAction } from '@/lib/auth/actions';
+import { LanguageSwitcher } from '@/components/nav/language-switcher';
 import { useTheme } from '@/components/theme/theme-provider';
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scroll-lock';
 import { useOverlayPresence } from '@/lib/use-overlay-presence';
@@ -197,6 +198,7 @@ const ICONS: Record<AdminNavLink['key'], React.ReactNode> = {
  */
 export function AdminSidebar({ links, email, role, brandName }: AdminSidebarProps) {
   const t = useTranslations('admin');
+  const navLabel = useTranslations('nav');
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const { toggle } = useTheme();
@@ -285,6 +287,9 @@ export function AdminSidebar({ links, email, role, brandName }: AdminSidebarProp
             {t(`nav.role.${role}`)}
           </span>
         </span>
+      </div>
+      <div className="mb-[7px]">
+        <LanguageSwitcher label={navLabel('language')} tone="admin" />
       </div>
       <div className="flex gap-[7px]">
         <button

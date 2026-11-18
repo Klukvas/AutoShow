@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { resolveLocale, type Locale } from '@/i18n/locales';
 import { adminApi, type AnalyticsSummary } from '@/lib/api/admin';
 import { requireServerToken } from '@/lib/auth/refresh';
 import { getSiteBranding } from '@/lib/branding/resolve';
@@ -47,32 +48,25 @@ function FunnelStep({ label, value, accent }: { label: string; value: string; ac
   );
 }
 
-const MONTH_LABELS = [
-  'Січ',
-  'Лют',
-  'Бер',
-  'Кві',
-  'Тра',
-  'Чер',
-  'Лип',
-  'Сер',
-  'Вер',
-  'Жов',
-  'Лис',
-  'Гру',
-];
+const MONTH_LABELS: Record<Locale, readonly string[]> = {
+  uk: ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'],
+  ru: ['янв', 'фев', 'мар', 'апр', 'май', 'июн', 'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'],
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+};
 
-function monthLabel(month: string): string {
+function monthLabel(month: string, locale: string): string {
   const idx = Number(month.slice(5, 7)) - 1;
-  return `${MONTH_LABELS[idx] ?? month} ’${month.slice(2, 4)}`;
+  const label = MONTH_LABELS[resolveLocale(locale)][idx] ?? month;
+  return `${label} ’${month.slice(2, 4)}`;
 }
 
 /** Dashboard (handoff-consistent cards): sales, commissions, leads, views. */
 export default async function AdminDashboardPage() {
-  const [auth, t, branding] = await Promise.all([
+  const [auth, t, branding, locale] = await Promise.all([
     requireServerToken('/admin'),
     getTranslations('admin.dashboard'),
     getSiteBranding().catch(() => null),
+    getLocale(),
   ]);
   // Admin-only: the dashboard shows sales/commission money — editors get
   // bounced to their workspace (nav already hides the link).
@@ -170,7 +164,7 @@ export default async function AdminDashboardPage() {
               {summary.salesByMonth.map((m) => (
                 <div key={m.month} className="flex items-center gap-3">
                   <span className="tabular w-[64px] flex-none text-[0.75rem] font-medium text-ink-2">
-                    {monthLabel(m.month)}
+                    {monthLabel(m.month, locale)}
                   </span>
                   <div className="h-[22px] flex-1 overflow-hidden rounded-none bg-surface-2">
                     <div

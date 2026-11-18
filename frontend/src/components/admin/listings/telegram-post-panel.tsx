@@ -2,7 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { intlLocale } from '@/i18n/intl';
 import { adminApi, type ListingStatus } from '@/lib/api/admin';
 import { ApiClientError } from '@/lib/api/client';
 import { fetchAccessToken } from '@/lib/auth/use-access-token';
@@ -18,8 +19,8 @@ interface TelegramPostPanelProps {
   configured: boolean;
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('uk-UA', { day: 'numeric', month: 'long' });
+function formatDate(iso: string, locale: string): string {
+  return new Date(iso).toLocaleDateString(intlLocale(locale), { day: 'numeric', month: 'long' });
 }
 
 /**
@@ -35,6 +36,7 @@ export function TelegramPostPanel({
 }: TelegramPostPanelProps) {
   const t = useTranslations('admin.telegram');
   const tc = useTranslations('admin.common');
+  const locale = useLocale();
   const router = useRouter();
   const { toast } = useToast();
   const [pending, setPending] = useState(false);
@@ -76,7 +78,7 @@ export function TelegramPostPanel({
             >
               <span className="font-medium text-ink">{post.label ?? post.chatId}</span>
               <span className="text-ink-3">
-                {t('postedAt', { date: formatDate(post.postedAt) })}
+                {t('postedAt', { date: formatDate(post.postedAt, locale) })}
               </span>
               {post.soldMarkedAt && (
                 <span className="rounded-none bg-surface-2 px-1.5 py-0.5 text-[0.71875rem] font-medium text-ink-3">

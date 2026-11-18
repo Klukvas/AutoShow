@@ -1,3 +1,5 @@
+import { useLocale } from 'next-intl';
+import { catalogLabel } from '@/lib/catalog-label';
 import { formatEngineVolume, formatMileage, formatPowerHp, formatYear } from '@/lib/format';
 import type { PublicListing } from '@/lib/api/types';
 
@@ -13,22 +15,26 @@ interface SpecTableProps {
  * hairlines. Null-ish specs are skipped so the grid never shows dashes.
  */
 export function SpecTable({ listing, t }: SpecTableProps) {
+  const locale = useLocale();
   const engine = [
-    listing.engineVolumeL ? formatEngineVolume(listing.engineVolumeL) : null,
-    listing.fuelType?.nameUk?.toLowerCase() ?? null,
+    listing.engineVolumeL ? formatEngineVolume(listing.engineVolumeL, locale) : null,
+    catalogLabel(listing.fuelType, locale).toLowerCase() || null,
   ]
     .filter(Boolean)
     .join(', ');
 
   const rows: Array<{ term: string; value: string | null }> = [
     { term: t('specYear'), value: formatYear(listing.year) },
-    { term: t('specMileage'), value: formatMileage(listing.mileageKm) },
+    { term: t('specMileage'), value: formatMileage(listing.mileageKm, locale) },
     { term: t('specEngine'), value: engine || null },
-    { term: t('specPower'), value: listing.powerHp ? formatPowerHp(listing.powerHp) : null },
-    { term: t('specGearbox'), value: listing.transmission?.nameUk ?? null },
-    { term: t('specDrive'), value: listing.driveType?.nameUk ?? null },
-    { term: t('specBody'), value: listing.bodyType?.nameUk ?? null },
-    { term: t('specColor'), value: listing.color?.nameUk ?? null },
+    {
+      term: t('specPower'),
+      value: listing.powerHp ? formatPowerHp(listing.powerHp, locale) : null,
+    },
+    { term: t('specGearbox'), value: catalogLabel(listing.transmission, locale) || null },
+    { term: t('specDrive'), value: catalogLabel(listing.driveType, locale) || null },
+    { term: t('specBody'), value: catalogLabel(listing.bodyType, locale) || null },
+    { term: t('specColor'), value: catalogLabel(listing.color, locale) || null },
     { term: t('specOwners'), value: String(listing.ownersCount) },
     { term: t('specVin'), value: listing.vin ?? null },
   ].filter((row) => row.value);

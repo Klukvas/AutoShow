@@ -1,3 +1,4 @@
+import { useLocale } from 'next-intl';
 import { formatEngineVolume, formatMileage, formatPowerHp } from '@/lib/format';
 import type { PublicListing } from '@/lib/api/types';
 
@@ -8,15 +9,16 @@ type Translate = (key: string) => string;
  * bordered tiles under the price.
  */
 export function KeySpecs({ listing, t }: { listing: PublicListing; t: Translate }) {
+  const locale = useLocale();
   const specs = [
-    { label: t('specMileage'), value: formatMileage(listing.mileageKm) },
+    { label: t('specMileage'), value: formatMileage(listing.mileageKm, locale) },
     {
       label: t('specEngine'),
-      value: listing.engineVolumeL ? formatEngineVolume(listing.engineVolumeL) : null,
+      value: listing.engineVolumeL ? formatEngineVolume(listing.engineVolumeL, locale) : null,
     },
     {
       label: t('specPowerShort'),
-      value: listing.powerHp ? formatPowerHp(listing.powerHp) : null,
+      value: listing.powerHp ? formatPowerHp(listing.powerHp, locale) : null,
     },
   ].filter((s) => s.value);
 

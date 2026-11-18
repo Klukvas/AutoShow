@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Banner } from '@/components/admin/ui/banner';
 import { formatBillingDate, formatUah, latestPendingInvoice } from '@/lib/admin/billing';
 import {
@@ -26,6 +26,7 @@ const button =
  */
 export function PhotoPackPanel() {
   const t = useTranslations('admin.photoAiSettings.managed');
+  const locale = useLocale();
   const query = useQuery({
     queryKey,
     queryFn: photoPacksApi.overview,
@@ -88,7 +89,10 @@ export function PhotoPackPanel() {
       <button type="button" className={button} disabled={busy} onClick={() => void buy()}>
         {busy
           ? t('buying')
-          : t('buy', { photos: overview.packSize, price: formatUah(overview.packPriceUah) })}
+          : t('buy', {
+              photos: overview.packSize,
+              price: formatUah(overview.packPriceUah, locale),
+            })}
       </button>
       <PackHistory overview={overview} />
     </div>
@@ -98,6 +102,7 @@ export function PhotoPackPanel() {
 function PackHistory({ overview }: { overview: Extract<PhotoPackOverview, { mode: 'managed' }> }) {
   const t = useTranslations('admin.photoAiSettings.managed');
   const tStatus = useTranslations('admin.billing.invoiceStatus');
+  const locale = useLocale();
   return (
     <div className="space-y-2">
       <h4 className="text-xs font-medium uppercase tracking-[0.05em] text-ink-3">{t('history')}</h4>
@@ -107,8 +112,10 @@ function PackHistory({ overview }: { overview: Extract<PhotoPackOverview, { mode
         <ul className="divide-y divide-line/70 text-sm">
           {overview.invoices.map((invoice) => (
             <li key={invoice.invoiceId} className="flex flex-wrap gap-x-4 gap-y-1 py-2">
-              <span className="w-[150px] text-ink-2">{formatBillingDate(invoice.createdAt)}</span>
-              <span className="w-[80px] text-ink">{formatUah(invoice.amountUah)}</span>
+              <span className="w-[150px] text-ink-2">
+                {formatBillingDate(invoice.createdAt, locale)}
+              </span>
+              <span className="w-[80px] text-ink">{formatUah(invoice.amountUah, locale)}</span>
               <span className="w-[80px] text-ink-3">
                 {t('photosValue', { photos: invoice.photos ?? 0 })}
               </span>

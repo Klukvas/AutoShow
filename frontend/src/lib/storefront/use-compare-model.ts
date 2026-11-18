@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { Currency, PublicListing } from '@/lib/api/types';
 import { useCompare } from '@/lib/compare';
 import { compareState, type CompareState } from './compare-state';
@@ -28,6 +28,7 @@ export type CompareModel = Readonly<{
  */
 export function useCompareModel(): CompareModel {
   const t = useTranslations('compare');
+  const locale = useLocale();
   const { slugs, ready, remove, removeMany } = useCompare();
   const [items, setItems] = useState<readonly PublicListing[] | null>(null);
   const [base, setBase] = useState<Currency | undefined>(undefined);
@@ -74,6 +75,7 @@ export function useCompareModel(): CompareModel {
       isLoading: loading,
       isShowingOnlyDifferences: onlyDiff,
       lead: () => ({ siteOrigin: window.location.origin, heading: t('leadHeading') }),
+      locale,
     }),
     retry: () => setAttempt((n) => n + 1),
     removeCar,

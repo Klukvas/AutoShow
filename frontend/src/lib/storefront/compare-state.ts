@@ -34,8 +34,9 @@ function comparisonOf(
   baseCurrency: Currency | undefined,
   isShowingOnlyDifferences: boolean,
   lead: { siteOrigin: string; heading: string },
+  locale?: string,
 ): Comparison {
-  const rows = COMPARE_ROWS.map((row) => buildRowView(row, cars, baseCurrency));
+  const rows = COMPARE_ROWS.map((row) => buildRowView(row, cars, baseCurrency, locale));
   const canShowOnlyDifferences = cars.length > 1;
   return {
     cars,
@@ -46,7 +47,7 @@ function comparisonOf(
         : rows,
     canShowOnlyDifferences,
     isShowingOnlyDifferences,
-    leadSummary: compareLeadSummary(cars, lead.siteOrigin, lead.heading),
+    leadSummary: compareLeadSummary(cars, lead.siteOrigin, lead.heading, locale),
   };
 }
 
@@ -59,12 +60,16 @@ export function compareState(input: {
   isShowingOnlyDifferences: boolean;
   /** Read only once there are cars, i.e. after a client-side load: needs the browser's origin. */
   lead: () => { siteOrigin: string; heading: string };
+  locale?: string;
 }): CompareState {
-  const { cars, baseCurrency, hasLoadFailure, isLoading, isShowingOnlyDifferences, lead } = input;
+  const { cars, baseCurrency, hasLoadFailure, isLoading, isShowingOnlyDifferences, lead, locale } =
+    input;
   if (cars === null) return { status: 'loading', rowCount: COMPARE_ROWS.length };
 
   const comparison =
-    cars.length > 0 ? comparisonOf(cars, baseCurrency, isShowingOnlyDifferences, lead()) : null;
+    cars.length > 0
+      ? comparisonOf(cars, baseCurrency, isShowingOnlyDifferences, lead(), locale)
+      : null;
   // A failed load is never "empty": the cars may exist, they just did not arrive.
   if (hasLoadFailure) return { status: 'error', comparison, isRetrying: isLoading };
   return comparison ? { status: 'ready', comparison } : { status: 'empty' };

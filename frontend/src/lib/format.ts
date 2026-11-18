@@ -1,3 +1,4 @@
+import { resolveLocale, type Locale } from '@/i18n/locales';
 import type { Currency } from './api/types';
 
 const CURRENCY_SYMBOL: Record<Currency, string> = {
@@ -19,21 +20,31 @@ export function formatMoney(amount: string | number, currency: Currency): string
   return `${CURRENCY_SYMBOL[currency] ?? currency} ${grouped}`;
 }
 
-export function formatMileage(km: number): string {
+const UNITS: Record<Locale, { thousandKm: string; km: string; hp: string; liter: string }> = {
+  uk: { thousandKm: 'тис. км', km: 'км', hp: 'к.с.', liter: 'л' },
+  ru: { thousandKm: 'тыс. км', km: 'км', hp: 'л. с.', liter: 'л' },
+  en: { thousandKm: 'k km', km: 'km', hp: 'hp', liter: 'L' },
+};
+
+export function formatMileage(km: number, locale?: string | null): string {
   if (!Number.isFinite(km)) return '—';
+  const unit = UNITS[resolveLocale(locale)];
   if (km >= 1000) {
-    return `${Math.round(km / 1000).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} тис. км`;
+    const thousands = Math.round(km / 1000)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return `${thousands} ${unit.thousandKm}`;
   }
-  return `${km} км`;
+  return `${km} ${unit.km}`;
 }
 
-export function formatPowerHp(hp: number): string {
-  return `${hp} к.с.`;
+export function formatPowerHp(hp: number, locale?: string | null): string {
+  return `${hp} ${UNITS[resolveLocale(locale)].hp}`;
 }
 
-export function formatEngineVolume(volume: string): string {
+export function formatEngineVolume(volume: string, locale?: string | null): string {
   const trimmed = String(volume).replace(/\.0$/, '');
-  return `${trimmed} л`;
+  return `${trimmed} ${UNITS[resolveLocale(locale)].liter}`;
 }
 
 export function formatYear(year: number): string {

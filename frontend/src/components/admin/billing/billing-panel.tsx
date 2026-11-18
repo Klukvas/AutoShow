@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/lib/cn';
 import { ApiClientError } from '@/lib/api/client';
 import { fetchAccessToken } from '@/lib/auth/use-access-token';
@@ -51,6 +51,7 @@ type Feedback = { tone: 'error' | 'info'; text: string } | null;
 export function BillingPanel({ status, invoices }: BillingPanelProps) {
   const t = useTranslations('admin.billing');
   const tc = useTranslations('admin.common');
+  const locale = useLocale();
   const router = useRouter();
   /** 'pay' or the invoice id being re-checked. */
   const [busy, setBusy] = useState<string | null>(null);
@@ -129,13 +130,13 @@ export function BillingPanel({ status, invoices }: BillingPanelProps) {
           <Fact label={t('stateLabel')}>
             <span className={cn(STATE_TONE[status.state])}>{t(`state.${status.state}`)}</span>
           </Fact>
-          <Fact label={t('paidUntil')}>{formatBillingDate(status.paidUntil)}</Fact>
+          <Fact label={t('paidUntil')}>{formatBillingDate(status.paidUntil, locale)}</Fact>
           <Fact label={t('price')}>
-            {t('pricePerMonth', { amount: formatUah(status.monthlyPriceUah) })}
+            {t('pricePerMonth', { amount: formatUah(status.monthlyPriceUah, locale) })}
           </Fact>
           <Fact label={t('invoiceAmount')}>
             {t('invoiceAmountValue', {
-              amount: formatUah(status.amountUah),
+              amount: formatUah(status.amountUah, locale),
               months: status.periodMonths,
             })}
           </Fact>
@@ -197,11 +198,12 @@ function InvoiceRow({
   onCheck: () => void;
 }) {
   const t = useTranslations('admin.billing');
+  const locale = useLocale();
   const isPending = invoice.status === 'created' || invoice.status === 'processing';
   return (
     <li className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 text-[0.8125rem] font-medium">
-      <span className="w-[150px] text-ink-2">{formatBillingDate(invoice.createdAt)}</span>
-      <span className="w-[90px] text-ink">{formatUah(invoice.amountUah)}</span>
+      <span className="w-[150px] text-ink-2">{formatBillingDate(invoice.createdAt, locale)}</span>
+      <span className="w-[90px] text-ink">{formatUah(invoice.amountUah, locale)}</span>
       <span className="w-[90px] text-ink-3">
         {t('periodValue', { months: invoice.periodMonths ?? 0 })}
       </span>

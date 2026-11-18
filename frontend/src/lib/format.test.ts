@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { formatMoney, formatMileage, formatEngineVolume, formatYear } from './format';
+import {
+  formatMoney,
+  formatMileage,
+  formatEngineVolume,
+  formatPowerHp,
+  formatYear,
+} from './format';
 
 // The formatters use typographic (narrow no-break) spaces on purpose; these
 // tests assert the digits/grouping/glyph, not the exact whitespace codepoint.
@@ -27,6 +33,14 @@ describe('formatMileage', () => {
   });
   it('renders small values in km', () => {
     expect(norm(formatMileage(800))).toBe('800 км');
+  });
+  it('follows the selected language', () => {
+    expect(norm(formatMileage(42000, 'ru'))).toBe('42 тыс. км');
+    expect(norm(formatMileage(42000, 'en'))).toBe('42 k km');
+    expect(norm(formatMileage(800, 'en'))).toBe('800 km');
+    expect(norm(formatPowerHp(190, 'en'))).toBe('190 hp');
+    expect(norm(formatPowerHp(190, 'ru'))).toBe('190 л. с.');
+    expect(norm(formatEngineVolume('2.0', 'en'))).toBe('2 L');
   });
 });
 

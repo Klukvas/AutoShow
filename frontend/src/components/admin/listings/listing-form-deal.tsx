@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { intlLocale } from '@/i18n/intl';
 import type { AdminListing, FeeType, SellerType } from '@/lib/api/admin';
 import { cityOptions } from '@/lib/admin/cities';
 import { CheckboxField, SelectField, TextField } from '@/components/admin/ui/field';
@@ -65,12 +66,13 @@ export function ListingPriceSection({ initial, err }: SectionProps) {
   );
 }
 
-const formatMoney = (amount: string | number, currency: string) =>
-  `${Number(amount).toLocaleString('uk-UA')} ${currency}`;
+const formatMoney = (amount: string | number, currency: string, locale: string) =>
+  `${Number(amount).toLocaleString(intlLocale(locale))} ${currency}`;
 
 /** «Продавець і комісія»: seller/fee kind drive which detail fields render. */
 export function ListingSellerSection({ initial, err }: SectionProps) {
   const t = useTranslations('admin');
+  const locale = useLocale();
   const [sellerType, setSellerType] = useState<SellerType>(initial?.sellerType ?? 'own');
   const [feeType, setFeeType] = useState<FeeType>(initial?.feeType ?? 'none');
 
@@ -145,8 +147,8 @@ export function ListingSellerSection({ initial, err }: SectionProps) {
         {initial?.status === 'sold' && initial.salePriceAmount && (
           <p className="rounded-none bg-ok-bg px-3 py-2 text-[0.8125rem] font-medium text-ok">
             {t('form.saleResult', {
-              price: formatMoney(initial.salePriceAmount, initial.priceCurrency),
-              commission: formatMoney(initial.commissionAmount ?? 0, initial.priceCurrency),
+              price: formatMoney(initial.salePriceAmount, initial.priceCurrency, locale),
+              commission: formatMoney(initial.commissionAmount ?? 0, initial.priceCurrency, locale),
             })}
           </p>
         )}

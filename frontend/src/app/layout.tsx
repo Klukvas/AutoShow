@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
 import { fontDisplay, fontSans } from '@/lib/fonts';
 import { getSiteBranding } from '@/lib/branding/resolve';
 import { brandingThemeCss } from '@/lib/branding/theme';
@@ -10,7 +10,7 @@ import '@/styles/globals.css';
 import '@/styles/cinematic.css';
 
 export async function generateMetadata(): Promise<Metadata> {
-  const branding = await getSiteBranding();
+  const [branding, t] = await Promise.all([getSiteBranding(), getTranslations('meta')]);
   const display = branding?.displayName ?? 'AutoFlow';
   const seo = branding?.seoDefaults;
   return {
@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
       default: display,
       template: seo?.titleTemplate ?? `%s — ${display}`,
     },
-    description: seo?.description ?? 'Кураторська вітрина авто',
+    description: seo?.description ?? t('fallbackDescription'),
     openGraph: {
       siteName: display,
       type: 'website',

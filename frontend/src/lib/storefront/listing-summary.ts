@@ -1,13 +1,19 @@
 import type { ListingAvailability } from '@/components/ui/status-badge';
 import type { Currency, PublicListing } from '@/lib/api/types';
+import { catalogLabel } from '@/lib/catalog-label';
 import { formatMoney, formatYear } from '@/lib/format';
 import { formatPriceNote } from '@/lib/listing-price';
 
 /** "2019 · Седан · Київ" under the title; a listing without a body type skips that part. */
 export function listingSubLine(
   listing: Pick<PublicListing, 'year' | 'bodyType' | 'location'>,
+  locale?: string,
 ): string {
-  return [formatYear(listing.year), listing.bodyType?.nameUk ?? null, listing.location.city]
+  return [
+    formatYear(listing.year),
+    catalogLabel(listing.bodyType, locale) || null,
+    listing.location.city,
+  ]
     .filter(Boolean)
     .join(' · ');
 }

@@ -1,7 +1,8 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { intlLocale } from '@/i18n/intl';
 import { Banner } from '@/components/admin/ui/banner';
 import { SectionCard } from '@/components/admin/ui/section-card';
 import { cn } from '@/lib/cn';
@@ -44,6 +45,7 @@ export function ListingAiPanel({
   onApply: (values: Partial<Saved>) => void;
 }) {
   const t = useTranslations('admin.listingAi');
+  const locale = useLocale();
   const client = useQueryClient();
   const workspaceKey = useMemo(() => ['listing-ai', listingId], [listingId]);
   const workspace = useQuery({
@@ -259,7 +261,7 @@ export function ListingAiPanel({
                     onClick={() => setSelectedId(d.id)}
                   >
                     {t(`presets.${d.preset}`)} ·{' '}
-                    {new Date(d.createdAt).toLocaleString('uk-UA', {
+                    {new Date(d.createdAt).toLocaleString(intlLocale(locale), {
                       day: 'numeric',
                       month: 'short',
                       hour: '2-digit',

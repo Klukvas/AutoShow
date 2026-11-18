@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { catalogLabel } from '@/lib/catalog-label';
 import { useEffect, useState, useTransition } from 'react';
 import { FilterChip } from '@/components/ui/filter-chip';
 import { Eyebrow } from '@/components/ui/eyebrow';
@@ -77,6 +78,8 @@ export function FilterBar({
   children,
 }: FilterBarProps) {
   const t = useTranslations('catalog');
+  const locale = useLocale();
+  const kmUnit = locale === 'en' ? 'km' : 'км';
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pending, startTransition] = useTransition();
@@ -137,7 +140,10 @@ export function FilterBar({
   const conditionOptions = CONDITIONS.map((c) => ({ label: t(`condition.${c}`), value: c }));
 
   const nameOf = (refs: CatalogRef[], slug: string) =>
-    refs.find((r) => r.slug === slug)?.nameUk ?? slug;
+    catalogLabel(
+      refs.find((r) => r.slug === slug),
+      locale,
+    ) || slug;
 
   // --- Active-filter summary ----------------------------------------------
   const active: ActiveFilter[] = [];
@@ -224,7 +230,7 @@ export function FilterBar({
   if (mileageMax)
     active.push({
       id: 'mileageMax',
-      label: `${t('filter.mileageMax')} ${formatMileage(Number(mileageMax))}`,
+      label: `${t('filter.mileageMax')} ${formatMileage(Number(mileageMax), locale)}`,
       onRemove: () => update({ mileageMax: undefined }),
     });
   for (const slug of currentArray('options')) {
@@ -267,28 +273,28 @@ export function FilterBar({
       <SelectField
         label={t('filter.bodyType')}
         value={current('bodyType')}
-        options={refsToOptions(bodyTypes)}
+        options={refsToOptions(bodyTypes, locale)}
         placeholder={t('anyOption')}
         onChange={(v) => update({ bodyType: v })}
       />
       <SelectField
         label={t('filter.fuelType')}
         value={current('fuelType')}
-        options={refsToOptions(fuelTypes)}
+        options={refsToOptions(fuelTypes, locale)}
         placeholder={t('anyOption')}
         onChange={(v) => update({ fuelType: v })}
       />
       <SelectField
         label={t('filter.transmission')}
         value={current('transmission')}
-        options={refsToOptions(transmissions)}
+        options={refsToOptions(transmissions, locale)}
         placeholder={t('anyOption')}
         onChange={(v) => update({ transmission: v })}
       />
       <SelectField
         label={t('filter.driveType')}
         value={current('driveType')}
-        options={refsToOptions(driveTypes)}
+        options={refsToOptions(driveTypes, locale)}
         placeholder={t('anyOption')}
         onChange={(v) => update({ driveType: v })}
       />
@@ -322,7 +328,7 @@ export function FilterBar({
         onToChange={(v) => update({ priceMax: v })}
       />
       <RangeField
-        label={`${t('filter.mileageMax')}, км`}
+        label={`${t('filter.mileageMax')}, ${kmUnit}`}
         fromValue={mileageMax}
         fromPlaceholder={t('to')}
         onFromChange={(v) => update({ mileageMax: v })}
@@ -502,8 +508,11 @@ export function FilterBar({
   );
 }
 
-function refsToOptions(refs: CatalogRef[]): Array<{ label: string; value: string }> {
-  return refs.map((r) => ({ label: r.nameUk, value: r.slug }));
+function refsToOptions(
+  refs: CatalogRef[],
+  locale: string,
+): Array<{ label: string; value: string }> {
+  return refs.map((r) => ({ label: catalogLabel(r, locale), value: r.slug }));
 }
 
 /**

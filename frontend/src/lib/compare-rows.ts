@@ -1,3 +1,4 @@
+import { catalogLabel } from './catalog-label';
 import {
   formatEngineVolume,
   formatMileage,
@@ -12,7 +13,7 @@ type Better = 'lower' | 'higher';
 
 export interface CompareRow {
   key: string;
-  value: (l: PublicListing, base?: Currency) => string;
+  value: (l: PublicListing, base?: Currency, locale?: string) => string;
   /** Rows with an objective winner (price, mileage…) mark the best car. */
   rank?: { metric: (l: PublicListing) => number; better: Better };
 }
@@ -33,20 +34,20 @@ export const COMPARE_ROWS: readonly CompareRow[] = [
   },
   {
     key: 'mileage',
-    value: (l) => formatMileage(l.mileageKm),
+    value: (l, _base, locale) => formatMileage(l.mileageKm, locale),
     rank: { metric: (l) => l.mileageKm, better: 'lower' },
   },
-  { key: 'engine', value: (l) => formatEngineVolume(l.engineVolumeL) },
+  { key: 'engine', value: (l, _base, locale) => formatEngineVolume(l.engineVolumeL, locale) },
   {
     key: 'power',
-    value: (l) => formatPowerHp(l.powerHp),
+    value: (l, _base, locale) => formatPowerHp(l.powerHp, locale),
     rank: { metric: (l) => l.powerHp, better: 'higher' },
   },
-  { key: 'body', value: (l) => l.bodyType?.nameUk ?? '—' },
-  { key: 'fuel', value: (l) => l.fuelType?.nameUk ?? '—' },
-  { key: 'transmission', value: (l) => l.transmission?.nameUk ?? '—' },
-  { key: 'drive', value: (l) => l.driveType?.nameUk ?? '—' },
-  { key: 'color', value: (l) => l.color?.nameUk ?? '—' },
+  { key: 'body', value: (l, _base, locale) => catalogLabel(l.bodyType, locale) || '—' },
+  { key: 'fuel', value: (l, _base, locale) => catalogLabel(l.fuelType, locale) || '—' },
+  { key: 'transmission', value: (l, _base, locale) => catalogLabel(l.transmission, locale) || '—' },
+  { key: 'drive', value: (l, _base, locale) => catalogLabel(l.driveType, locale) || '—' },
+  { key: 'color', value: (l, _base, locale) => catalogLabel(l.color, locale) || '—' },
   {
     key: 'owners',
     value: (l) => String(l.ownersCount),
@@ -91,8 +92,9 @@ export function buildRowView(
   row: CompareRow,
   items: readonly PublicListing[],
   base?: Currency,
+  locale?: string,
 ): CompareRowView {
-  const values = items.map((l) => row.value(l, base));
+  const values = items.map((l) => row.value(l, base, locale));
   const uniform = isUniform(values);
   return { row, values, uniform, best: uniform ? [] : bestIndexes(row, items) };
 }
@@ -102,9 +104,11 @@ export function compareLeadSummary(
   items: readonly PublicListing[],
   origin: string,
   heading: string,
+  locale?: string,
 ): string {
   const lines = items.map(
-    (l) => `• ${l.make.nameUk} ${l.model.nameUk} ${l.year} — ${origin}/cars/${l.slug}`,
+    (l) =>
+      `• ${catalogLabel(l.make, locale)} ${catalogLabel(l.model, locale)} ${l.year} — ${origin}/cars/${l.slug}`,
   );
   return [heading, ...lines].join('\n');
 }

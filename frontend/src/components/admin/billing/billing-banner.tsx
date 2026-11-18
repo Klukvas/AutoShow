@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Banner } from '@/components/admin/ui/banner';
 import {
   billingNotice,
@@ -11,13 +11,17 @@ import {
 /** Admin-only payment reminder above every dashboard page (editors never get details). */
 export function BillingBanner({ status }: { status: BillingStatus | null }) {
   const t = useTranslations('admin.billing');
+  const locale = useLocale();
   const notice = billingNotice(status);
   if (!notice || !hasBillingDetails(status)) return null;
 
   const text =
     notice.kind === 'dueSoon'
-      ? t('banner.dueSoon', { date: formatBillingDate(status.paidUntil), days: status.daysLeft })
-      : t('banner.overdue', { date: formatBillingDate(status.blockAt) });
+      ? t('banner.dueSoon', {
+          date: formatBillingDate(status.paidUntil, locale),
+          days: status.daysLeft,
+        })
+      : t('banner.overdue', { date: formatBillingDate(status.blockAt, locale) });
 
   return (
     <Banner

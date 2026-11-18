@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { FavoriteButton } from './favorite-button';
 import { CompareButton } from './compare-button';
 import { MediaPicture } from '@/components/ui/media-picture';
@@ -25,13 +25,17 @@ export function ListingCard({
 }: ListingCardProps) {
   const t = useTranslations('catalog');
   const tl = useTranslations('listing');
-  const cover = listing.media.find((media) => media.type === 'image' && media.isCover)
-    ?? listing.media.find((media) => media.type === 'image');
+  const locale = useLocale();
+  const cover =
+    listing.media.find((media) => media.type === 'image' && media.isCover) ??
+    listing.media.find((media) => media.type === 'image');
   const price = formatMoney(
     baseCurrency ? listing.price.normalized : listing.price.amount,
     baseCurrency ?? listing.price.currency,
   );
-  const isNew = listing.publishedAt !== null && Date.now() - Date.parse(listing.publishedAt) < 7 * 24 * 60 * 60 * 1000;
+  const isNew =
+    listing.publishedAt !== null &&
+    Date.now() - Date.parse(listing.publishedAt) < 7 * 24 * 60 * 60 * 1000;
   const hasVideo = listing.media.some((media) => media.type === 'video');
   const photos = listing.media.filter((media) => media.type === 'image').length;
   return (
@@ -43,12 +47,22 @@ export function ListingCard({
           aria-label={listing.title}
         >
           {cover ? (
-            <MediaPicture media={cover} alt={listing.title} fill sizes={sizes} priority={priority} />
+            <MediaPicture
+              media={cover}
+              alt={listing.title}
+              fill
+              sizes={sizes}
+              priority={priority}
+            />
           ) : (
             <MediaPlaceholder ariaLabel={listing.title} className="absolute inset-0" />
           )}
         </Link>
-        {cover?.aiEdited && <span className="pointer-events-none absolute bottom-3 left-3 bg-black/75 px-2 py-1 text-xs text-white">{tl(cover.sceneAltered ? 'sceneAltered' : 'aiEdited')}</span>}
+        {cover?.aiEdited && (
+          <span className="pointer-events-none absolute bottom-3 left-3 bg-black/75 px-2 py-1 text-xs text-white">
+            {tl(cover.sceneAltered ? 'sceneAltered' : 'aiEdited')}
+          </span>
+        )}
         <div className="home-listing-tools">
           <FavoriteButton slug={listing.slug} />
           <CompareButton slug={listing.slug} />
@@ -60,7 +74,9 @@ export function ListingCard({
         )}
       </div>
       <Link href={`/cars/${listing.slug}`} className="home-listing-caption focus-ring">
-        <h3>{listing.title} · {formatYear(listing.year)}</h3>
+        <h3>
+          {listing.title} · {formatYear(listing.year)}
+        </h3>
         <div className="home-listing-price">
           {price} <span aria-hidden>⟶</span>
           {variant === 'default' && listing.price.priceDrop && (
@@ -69,14 +85,18 @@ export function ListingCard({
             </small>
           )}
         </div>
-        <p>{formatMileage(listing.mileageKm)} · {listing.location.city}</p>
+        <p>
+          {formatMileage(listing.mileageKm, locale)} · {listing.location.city}
+        </p>
         {variant === 'default' && (
           <>
             <ul className="platform-card-tags">
               <li>{t(`condition.${listing.condition}`)}</li>
               {isNew && <li>{t('badgeNew')}</li>}
               {hasVideo && <li aria-label="Video">▶</li>}
-              {listing.tags.map((tag) => <li key={tag.slug}>{tag.nameUk}</li>)}
+              {listing.tags.map((tag) => (
+                <li key={tag.slug}>{tag.nameUk}</li>
+              ))}
               {photos > 0 && <li>{t('photoCount', { count: photos })}</li>}
             </ul>
           </>

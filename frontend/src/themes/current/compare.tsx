@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
+import { catalogLabel } from '@/lib/catalog-label';
 import { LeadForm } from '@/components/lead/lead-form';
 import { MediaPicture } from '@/components/ui/media-picture';
 import type { PublicListing } from '@/lib/api/types';
@@ -126,6 +128,7 @@ function CarColumnHeader({
   removeLabel: string;
   onRemove: (slug: string) => void;
 }) {
+  const locale = useLocale();
   const cover = car.media.find((m) => m.isCover) ?? car.media[0];
   return (
     <th className="p-2 align-top">
@@ -140,7 +143,7 @@ function CarColumnHeader({
           href={`/cars/${car.slug}`}
           className="focus-ring text-left text-sub font-medium text-ink hover:text-lot-gold"
         >
-          {car.make.nameUk} {car.model.nameUk}
+          {catalogLabel(car.make, locale)} {catalogLabel(car.model, locale)}
         </Link>
         <button
           type="button"

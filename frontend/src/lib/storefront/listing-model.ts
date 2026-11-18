@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import { ApiClientError } from '@/lib/api/client';
 import { publicApi } from '@/lib/api/public';
 import { getSiteBranding } from '@/lib/branding/resolve';
@@ -28,10 +28,11 @@ export async function getListing(slug: string) {
 
 /** Fetch and derive a car page; null when the listing does not exist. */
 export async function getListingModel(slug: string) {
-  const [listing, branding, t] = await Promise.all([
+  const [listing, branding, t, locale] = await Promise.all([
     getListing(slug),
     getSiteBranding(),
     getTranslations('listing'),
+    getLocale(),
   ]);
   if (!listing) return null;
 
@@ -44,7 +45,7 @@ export async function getListingModel(slug: string) {
     listing,
     branding,
     baseCurrency,
-    subLine: listingSubLine(listing),
+    subLine: listingSubLine(listing, locale),
     ...listingPrice(listing.price, baseCurrency, t('negotiable')),
     availability,
     availabilityLabel: t(AVAILABILITY_LABEL_KEYS[availability]),

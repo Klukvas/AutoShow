@@ -1,9 +1,10 @@
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { intlLocale } from '@/i18n/intl';
 import { publicApi } from '@/lib/api/public';
 
 /** Trust numbers strip: live counters from the public stats endpoint. */
 export async function StatsBand() {
-  const t = await getTranslations('home');
+  const [t, locale] = await Promise.all([getTranslations('home'), getLocale()]);
   let stats: { available: number; sold: number; views: number } | null = null;
   try {
     stats = await publicApi.getStats({ revalidate: 300 });
@@ -25,7 +26,7 @@ export async function StatsBand() {
         {items.map((item) => (
           <div key={item.label} className="text-center">
             <div className="home-stats-value tabular font-heading text-[1.875rem] font-extrabold text-ink md:text-[2.375rem]">
-              {item.value.toLocaleString('uk-UA')}
+              {item.value.toLocaleString(intlLocale(locale))}
             </div>
             <div className="mt-1 text-sub font-medium text-ink-3">{item.label}</div>
           </div>

@@ -1,5 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
+import { catalogLabel } from '@/lib/catalog-label';
 import { cn } from '@/lib/cn';
 import type { CatalogMake } from '@/lib/api/types';
 
@@ -20,6 +22,7 @@ interface MakeLogoStripProps {
  * the storefront.
  */
 export function MakeLogoStrip({ makes, activeMake, label }: MakeLogoStripProps) {
+  const locale = useLocale();
   const branded = makes.filter((make) => make.logoUrl).slice(0, MAX_BRANDS);
   if (branded.length < MIN_BRANDS) return null;
 
@@ -47,7 +50,7 @@ export function MakeLogoStrip({ makes, activeMake, label }: MakeLogoStripProps) 
               height={24}
               className="h-6 w-6 object-contain"
             />
-            {make.nameUk}
+            {catalogLabel(make, locale)}
           </Link>
         );
       })}

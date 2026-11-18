@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useFocusTrap, isTopFocusTrap } from '@/lib/use-focus-trap';
 import { useOverlayPresence } from '@/lib/use-overlay-presence';
@@ -14,6 +14,7 @@ import { useFavorites } from '@/lib/favorites';
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scroll-lock';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
+import { LanguageSwitcher } from '@/components/nav/language-switcher';
 import type { Branding } from '@/lib/api/types';
 
 interface PublicNavProps {
@@ -79,8 +80,19 @@ export function PublicNav({ branding }: PublicNavProps) {
   const displayName = branding?.displayName ?? 'AutoFlow';
 
   return (
-    <header className={isHomepage ? 'home-nav absolute inset-x-0 top-0 z-40' : 'material-bar sticky top-0 z-40 h-header border-b border-line'}>
-      <div className={cn('mx-auto flex h-full items-center justify-between gap-4 px-5 md:px-8', isHomepage && 'home-container home-nav-inner')}>
+    <header
+      className={
+        isHomepage
+          ? 'home-nav absolute inset-x-0 top-0 z-40'
+          : 'material-bar sticky top-0 z-40 h-header border-b border-line'
+      }
+    >
+      <div
+        className={cn(
+          'mx-auto flex h-full items-center justify-between gap-4 px-5 md:px-8',
+          isHomepage && 'home-container home-nav-inner',
+        )}
+      >
         <div className="flex min-w-0 items-center gap-10">
           <BrandMark branding={branding} displayName={displayName} cinematic />
 
@@ -115,8 +127,14 @@ export function PublicNav({ branding }: PublicNavProps) {
         <div className="hidden items-center gap-3 md:flex">
           <FavoritesLink label={t('favorites')} />
           {!isHomepage && <ThemeToggle />}
-          {!isHomepage && <LanguageSwitcher label={t('language')} />}
-          <Button as="link" href="/contacts#lead" variant={isHomepage ? 'ghost' : 'primary'} size="sm" className={isHomepage ? 'home-nav-cta' : undefined}>
+          <LanguageSwitcher label={t('language')} />
+          <Button
+            as="link"
+            href="/contacts#lead"
+            variant={isHomepage ? 'ghost' : 'primary'}
+            size="sm"
+            className={isHomepage ? 'home-nav-cta' : undefined}
+          >
             {isHomepage ? th('cinematicNavCta') : t('cta')}
             {isHomepage && <span aria-hidden>↗</span>}
           </Button>
@@ -157,7 +175,10 @@ export function PublicNav({ branding }: PublicNavProps) {
                 transition={
                   reduce ? { duration: 0.12 } : { type: 'spring', bounce: 0, duration: 0.3 }
                 }
-                className={cn(isHomepage ? 'homepage-cinematic home-mobile-menu' : 'cinematic-interior', 'fixed inset-0 z-[100] flex flex-col overflow-y-auto overscroll-contain bg-bg pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pt-4 text-ink md:hidden')}
+                className={cn(
+                  isHomepage ? 'homepage-cinematic home-mobile-menu' : 'cinematic-interior',
+                  'fixed inset-0 z-[100] flex flex-col overflow-y-auto overscroll-contain bg-bg pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] pb-[max(2rem,env(safe-area-inset-bottom))] pt-4 text-ink md:hidden',
+                )}
               >
                 <div className="flex h-header items-center justify-between">
                   <BrandMark branding={branding} displayName={displayName} cinematic />
@@ -184,7 +205,9 @@ export function PublicNav({ branding }: PublicNavProps) {
                           active ? 'border-lot-gold' : 'border-line',
                         )}
                       >
-                        {isHomepage && link.key === 'catalog' ? th('cinematicNavCatalog') : t(link.key)}
+                        {isHomepage && link.key === 'catalog'
+                          ? th('cinematicNavCatalog')
+                          : t(link.key)}
                       </Link>
                     );
                   })}
@@ -198,9 +221,9 @@ export function PublicNav({ branding }: PublicNavProps) {
                     className="min-w-0 flex-1 basis-full"
                   >
                     {isHomepage ? th('cinematicNavCta') : t('cta')}
-            {isHomepage && <span aria-hidden>↗</span>}
+                    {isHomepage && <span aria-hidden>↗</span>}
                   </Button>
-                  {!isHomepage && <LanguageSwitcher label={t('language')} />}
+                  <LanguageSwitcher label={t('language')} />
                 </div>
               </motion.div>
             )}
@@ -237,11 +260,22 @@ function FavoritesLink({ label }: { label: string }) {
   );
 }
 
-function BrandMark({ branding, displayName, cinematic = false }: { branding: Branding | null; displayName: string; cinematic?: boolean }) {
+function BrandMark({
+  branding,
+  displayName,
+  cinematic = false,
+}: {
+  branding: Branding | null;
+  displayName: string;
+  cinematic?: boolean;
+}) {
   return (
     <Link
       href="/"
-      className={cn('focus-ring inline-flex min-w-0 items-center gap-2.5', cinematic && 'home-brand')}
+      className={cn(
+        'focus-ring inline-flex min-w-0 items-center gap-2.5',
+        cinematic && 'home-brand',
+      )}
       aria-label={displayName}
     >
       {branding?.logoUrl ? (
@@ -254,7 +288,15 @@ function BrandMark({ branding, displayName, cinematic = false }: { branding: Bra
           className="h-[30px] min-w-0 max-w-full object-contain"
         />
       ) : cinematic ? (
-        <span className="home-wordmark">{displayName === 'AutoFlow' ? <>Auto<span>Flow</span></> : displayName}</span>
+        <span className="home-wordmark">
+          {displayName === 'AutoFlow' ? (
+            <>
+              Auto<span>Flow</span>
+            </>
+          ) : (
+            displayName
+          )}
+        </span>
       ) : (
         <>
           <span
@@ -269,99 +311,6 @@ function BrandMark({ branding, displayName, cinematic = false }: { branding: Bra
         </>
       )}
     </Link>
-  );
-}
-
-/**
- * Language disclosure — the site currently ships one locale (UA), so this is
- * an architecture-ready stub: the menu lists the active locale and closes on
- * outside click / Escape. Adding locales only means extending the list.
- */
-function LanguageSwitcher({ label }: { label: string }) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const optionRef = useRef<HTMLButtonElement>(null);
-  const reduce = useReducedMotion();
-  const close = () => {
-    setOpen(false);
-    triggerRef.current?.focus();
-  };
-
-  useEffect(() => {
-    if (!open) return;
-    const onDown = (event: PointerEvent) => {
-      if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false);
-    };
-    optionRef.current?.focus();
-    document.addEventListener('pointerdown', onDown);
-    return () => {
-      document.removeEventListener('pointerdown', onDown);
-    };
-  }, [open]);
-
-  return (
-    <div
-      ref={rootRef}
-      className="relative"
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node)) setOpen(false);
-      }}
-      onKeyDown={(event) => {
-        if (open && event.key === 'Escape') {
-          event.preventDefault();
-          event.stopPropagation();
-          close();
-        }
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-          event.preventDefault();
-          setOpen(true);
-          optionRef.current?.focus();
-        }
-      }}
-    >
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-label={label}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className="focus-ring flex h-[38px] items-center gap-1 rounded-btn border border-line-input bg-surface px-3 text-sub font-medium text-ink transition-colors hover:border-line-hover"
-      >
-        UA
-        <span aria-hidden className="text-[0.5625rem] text-ink-3">
-          ▾
-        </span>
-      </button>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            role="menu"
-            initial={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: -4 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={reduce ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: -4 }}
-            transition={reduce ? { duration: 0.12 } : { type: 'spring', bounce: 0, duration: 0.25 }}
-            style={{ transformOrigin: 'top right' }}
-            className="material-panel absolute right-0 top-[calc(100%+6px)] min-w-[160px] rounded-input border border-line p-1 shadow-none"
-          >
-            <button
-              type="button"
-              ref={optionRef}
-              role="menuitemradio"
-              aria-checked
-              onClick={close}
-              className="focus-ring flex w-full items-center justify-between rounded-btn px-3 py-2 text-sub font-medium text-ink hover:bg-bg"
-            >
-              Українська
-              <span aria-hidden className="text-accent">
-                ✓
-              </span>
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
   );
 }
 

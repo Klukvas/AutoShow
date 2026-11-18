@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
+import { catalogLabel } from '@/lib/catalog-label';
 import { Eyebrow } from '@/components/ui/eyebrow';
 import { MultiSelectField, RangeInput, SelectField } from '@/components/filters/filter-fields';
 import {
@@ -75,6 +76,7 @@ function usePendingRow<T>(committedCount: number) {
  */
 export function CarSetsField({ makes, models, filters, onChange }: CarSetsFieldProps) {
   const t = useTranslations('catalog');
+  const locale = useLocale();
   const { sets, exclusions } = filters;
   const draftSet = usePendingRow<CarSet>(sets.length);
   const draftExclusion = usePendingRow<CarExclusion | null>(exclusions.length);
@@ -86,11 +88,13 @@ export function CarSetsField({ makes, models, filters, onChange }: CarSetsFieldP
     ? [...exclusions, draftExclusion.value ?? null]
     : exclusions;
 
-  const makeOptions = makes.map((m) => ({ label: m.nameUk, value: m.slug }));
+  const makeOptions = makes.map((m) => ({ label: catalogLabel(m, locale), value: m.slug }));
   const modelOptionsFor = (makeSlug: string | undefined) => {
     const make = makes.find((m) => m.slug === makeSlug);
     return make
-      ? models.filter((m) => m.makeId === make.id).map((m) => ({ label: m.nameUk, value: m.slug }))
+      ? models
+          .filter((m) => m.makeId === make.id)
+          .map((m) => ({ label: catalogLabel(m, locale), value: m.slug }))
       : [];
   };
 
