@@ -62,6 +62,31 @@
   --radius-window: 0px;
   --radius-hero: 0px;
   --radius-sheet: 0px;
+  /* Resolved here, on the element whose colours the design toggle actually changes.
+     Homepage and the admin sidebar then override --surface / --ink for themselves;
+     these copies stay with the active design. */
+  --lang-surface: var(--surface);
+  --lang-ink: var(--ink);
+  --lang-ink-2: var(--ink-2);
+  --lang-ink-3: var(--ink-3);
+  --lang-line-input: var(--line-input);
+  color-scheme: dark;
+}
+
+/* The language menu reads the design toggle, not the surface it happens to sit on. */
+.language-switcher {
+  --surface: var(--lang-surface);
+  --ink: var(--lang-ink);
+  --ink-2: var(--lang-ink-2);
+  --ink-3: var(--lang-ink-3);
+  --line-input: var(--lang-line-input);
+}
+
+:root[data-theme='light'] .language-switcher {
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] .language-switcher {
   color-scheme: dark;
 }
 
