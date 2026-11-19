@@ -22,7 +22,7 @@ import { PhotoAiSettings } from './photo-ai-settings';
 /** Handoff swatch set; «+» opens the custom picker. */
 const SWATCHES = ['#2E53E6', '#E86A2C', '#1F9D57', '#C23B57'];
 const CURRENCIES: Currency[] = ['USD', 'EUR', 'UAH'];
-const SOCIAL_KEYS = ['instagram', 'facebook', 'youtube'] as const;
+const SOCIAL_KEYS = ['instagram', 'tiktok', 'facebook', 'youtube', 'telegram', 'viber'] as const;
 
 interface BrandingEditorProps {
   initial: Branding;

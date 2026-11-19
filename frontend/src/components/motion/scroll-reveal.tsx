@@ -13,15 +13,14 @@ interface ScrollRevealProps {
 }
 
 /**
- * Single, disciplined reveal primitive: fade + small translateY on enter.
- * Tuned for the "Paper Lot" editorial storefront — a short, restrained settle
- * (small offset, quick ease-out, no overshoot) reads like print laying down
- * rather than springy/bouncy motion. Strictly one-shot, no infinite hover.
+ * Fade and a short rise on enter. The default travel is large enough to read
+ * on a laptop (28px, 0.55s, ease-out, no overshoot) and plays once.
+ * Reduced motion skips the offset and the delay.
  */
 export function ScrollReveal({
   children,
   delay = 0,
-  offset = 12,
+  offset = 28,
   className,
   as = 'div',
 }: ScrollRevealProps) {
@@ -29,22 +28,24 @@ export function ScrollReveal({
   const MotionTag = motion[as];
 
   const variants: Variants = {
-    hidden: { opacity: 0, y: reduceMotion ? 0 : offset },
+    hidden: { opacity: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : offset },
     shown: {
       opacity: 1,
       y: 0,
-      transition: {
-        type: 'spring',
-        bounce: 0,
-        duration: reduceMotion ? 0.12 : 0.35,
-        delay: reduceMotion ? 0 : Math.min(delay, 0.15),
-      },
+      transition: reduceMotion
+        ? { duration: 0 }
+        : {
+            type: 'tween',
+            duration: 0.55,
+            ease: 'easeOut',
+            delay: Math.min(delay, 0.15),
+          },
     },
   };
 
   return (
     <MotionTag
-      className={className}
+      className={['home-reveal', className].filter(Boolean).join(' ')}
       initial={reduceMotion ? false : 'hidden'}
       animate={reduceMotion ? 'shown' : undefined}
       whileInView="shown"

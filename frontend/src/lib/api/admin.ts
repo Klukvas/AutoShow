@@ -65,6 +65,7 @@ export interface AdminReview {
   city: string | null;
   text: string;
   rating: number;
+  mediaUrl?: string | null;
   isPublished: boolean;
   position: number;
   createdAt: string;

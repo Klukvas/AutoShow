@@ -1,6 +1,9 @@
 import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
+import { ShowroomMap } from '@/components/home/showroom-map';
 import { Eyebrow } from '@/components/ui/eyebrow';
+import { mapEmbedSrc, phoneHref } from '@/lib/storefront/contacts-summary';
+import { storefrontHttpUrl } from '@/lib/storefront/http-url';
 import { dayLabel } from '@/lib/working-hours';
 import type { Branding } from '@/lib/api/types';
 
@@ -20,21 +23,51 @@ const NAV_LINKS = [
  * sets the typefaces in type. Follows the Paper Lot palette in both themes.
  */
 export async function PublicFooter({ branding }: PublicFooterProps) {
-  const t = await getTranslations('footer');
+  const [t, locale] = await Promise.all([getTranslations('footer'), getLocale()]);
   const display = branding?.displayName ?? 'AutoFlow';
+  const mapSrc = mapEmbedSrc(branding?.address, locale);
+  const tel = phoneHref(branding?.contactPhone);
+  const telegram = storefrontHttpUrl(branding?.socialLinks?.telegram);
+  const viber = storefrontHttpUrl(branding?.socialLinks?.viber);
   return (
     <footer className="border-t border-line bg-surface text-ink">
+      {mapSrc && (
+        <div className="mx-auto px-5 pt-10 md:px-8">
+          <ShowroomMap src={mapSrc} title={t('mapTitle')} />
+        </div>
+      )}
       <div className="mx-auto grid grid-cols-1 gap-12 px-5 py-14 md:grid-cols-12 md:px-8">
         <div className="md:col-span-6">
           <Eyebrow as="div">{t('contactTitle')}</Eyebrow>
           <div className="mt-4 space-y-1 font-heading text-title-sm font-medium tracking-tight">
-            {branding?.contactPhone && (
+            {branding?.contactPhone && tel && (
+              <div>
+                <a href={tel} className="focus-ring tabular transition-colors hover:text-lot-gold">
+                  {branding.contactPhone}
+                </a>
+              </div>
+            )}
+            {telegram && (
               <div>
                 <a
-                  href={`tel:${branding.contactPhone.replace(/[^+\d]/g, '')}`}
-                  className="focus-ring tabular transition-colors hover:text-lot-gold"
+                  href={telegram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="focus-ring transition-colors hover:text-lot-gold"
                 >
-                  {branding.contactPhone}
+                  {t('telegram')}
+                </a>
+              </div>
+            )}
+            {viber && (
+              <div>
+                <a
+                  href={viber}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="focus-ring transition-colors hover:text-lot-gold"
+                >
+                  {t('viber')}
                 </a>
               </div>
             )}

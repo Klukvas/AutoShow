@@ -8,7 +8,11 @@
     "language": "Language",
     "menuOpen": "Open menu",
     "menuLabel": "Navigation",
-    "menuClose": "Close menu"
+    "menuClose": "Close menu",
+    "socialInstagram": "Instagram",
+    "socialTiktok": "TikTok",
+    "socialFacebook": "Facebook",
+    "socialYoutube": "YouTube"
   },
   "theme": {
     "toggle": "Switch theme"
@@ -20,7 +24,10 @@
     "catalog": "Catalog",
     "about": "About",
     "contacts": "Contacts",
-    "closed": "closed"
+    "closed": "closed",
+    "telegram": "Message on Telegram",
+    "viber": "Message on Viber",
+    "mapTitle": "Showroom on the map"
   },
   "home": {
     "cinematicNavCatalog": "Cars",
@@ -74,6 +81,50 @@
         "ctaPackages": "Listing plans"
       }
     },
+    "ctaTitle": "We’ll match a car and show it in the showroom.",
+    "ctaCall": "Call",
+    "ctaTelegram": "Message on Telegram",
+    "aboutTitle": "The showroom",
+    "aboutP1": "We don't collect thousands of random ads. We choose each car, inspect it, and photograph it ourselves.",
+    "aboutP2": "The floor only holds cars we would recommend: a clear history, the real mileage, and the papers in hand.",
+    "aboutP3": "A viewing is by appointment. Come for a test drive, compare a few cars, and decide without being rushed.",
+    "aboutP4": "Selling yours? We'll buy it or take it on commission: photos, calls, and viewings are on us.",
+    "aboutMore": "More about us",
+    "faqTitle": "Before you visit",
+    "faq": {
+      "documents": {
+        "q": "Which papers come with the car?",
+        "a": "The sale contract, the service history we have, and the customs papers if the car was imported. You see the folder before you sign."
+      },
+      "credit": {
+        "q": "Can I buy on credit?",
+        "a": "Yes. You can sketch the deposit and the term on the site, and we pass the request to partner banks. The bank decides."
+      },
+      "tradein": {
+        "q": "Do you take a car in exchange?",
+        "a": "Yes. We value yours and put that amount toward the next one. The difference is agreed before the contract."
+      },
+      "testdrive": {
+        "q": "How do I book a test drive?",
+        "a": "Leave a request or call. We agree a time, prepare the car, and meet you at the showroom."
+      },
+      "warranty": {
+        "q": "Is there a warranty?",
+        "a": "On a used car the terms depend on that car and are written in the contract. A mechanic inspects it before the sale."
+      },
+      "delivery": {
+        "q": "Will you deliver to another city?",
+        "a": "Yes, within Ukraine. The cost and the time depend on the route, and we name both before you pay."
+      },
+      "inspection": {
+        "q": "Who inspects a car before it is sold?",
+        "a": "The showroom mechanic. We look at the suspension, engine, body, and electrics. Anything we find is written in the listing."
+      }
+    },
+    "reviewsPrev": "Previous reviews",
+    "reviewsNext": "Next reviews",
+    "reviewsWatch": "Watch the video",
+    "reviewsReel": "Watch the Reel",
     "packages": {
       "title": "Listing plans",
       "subtitle": "Selling it yourself? We'll place your car in our channels — buyers call you directly.",
@@ -346,7 +397,10 @@
     "showroom": "Showroom",
     "hoursTitle": "Opening hours",
     "closed": "closed",
-    "mapCta": "Open in maps"
+    "mapCta": "Open in maps",
+    "mapTitle": "Showroom on the map",
+    "telegram": "Message on Telegram",
+    "viber": "Message on Viber"
   },
   "errors": {
     "notFoundTitle": "Page not found",
@@ -816,6 +870,8 @@
       "author": "Customer name",
       "city": "City",
       "text": "Review text",
+      "media": "Photo or video",
+      "mediaHint": "A /demo/… path, or a YouTube or Instagram Reel link",
       "rating": "Rating",
       "published": "Published",
       "hidden": "Hidden",

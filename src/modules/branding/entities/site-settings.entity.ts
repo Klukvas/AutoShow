@@ -12,6 +12,8 @@ export interface SocialLinks {
   telegram?: string;
   youtube?: string;
   tiktok?: string;
+  /** https invite or profile, for example https://viber.me/… — not a viber: URI. */
+  viber?: string;
 }
 
 export interface SeoDefaults {

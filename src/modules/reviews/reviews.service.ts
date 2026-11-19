@@ -35,6 +35,7 @@ export class ReviewsService {
         authorName: dto.authorName,
         city: dto.city ?? null,
         text: dto.text,
+        mediaUrl: dto.mediaUrl?.trim() || null,
         rating: dto.rating ?? 5,
         isPublished: dto.isPublished ?? true,
         position: dto.position ?? 0,
@@ -58,6 +59,7 @@ export class ReviewsService {
     if (dto.authorName !== undefined) patch.authorName = dto.authorName;
     if (dto.city !== undefined) patch.city = dto.city || null;
     if (dto.text !== undefined) patch.text = dto.text;
+    if (dto.mediaUrl !== undefined) patch.mediaUrl = dto.mediaUrl?.trim() || null;
     if (dto.rating !== undefined) patch.rating = dto.rating;
     if (dto.isPublished !== undefined) patch.isPublished = dto.isPublished;
     if (dto.position !== undefined) patch.position = dto.position;

@@ -16,6 +16,15 @@ describe('UpdateBrandingDto validation', () => {
     expect(errors.length).toBeGreaterThan(0);
   });
 
+  it('rejects a viber: app link and accepts an https invite', async () => {
+    expect(
+      (await check({ socialLinks: { viber: 'viber://chat?number=380441234567' } })).length,
+    ).toBeGreaterThan(0);
+    expect(
+      await check({ socialLinks: { viber: 'https://invite.viber.com/?g2=demo' } }),
+    ).toHaveLength(0);
+  });
+
   it('accepts an https social link', async () => {
     const errors = await check({ socialLinks: { instagram: 'https://instagram.com/dealer' } });
     expect(errors).toHaveLength(0);

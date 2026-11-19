@@ -59,6 +59,12 @@ export class SocialLinksDto {
   @IsUrl(HTTP_URL)
   @MaxLength(512)
   tiktok?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsUrl(HTTP_URL)
+  @MaxLength(512)
+  viber?: string;
 }
 
 export class SeoDefaultsDto {

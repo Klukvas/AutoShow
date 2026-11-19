@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
+import { ScrollReveal } from '@/components/motion/scroll-reveal';
 import { HomeSectionHeading } from './home-section-heading';
 import type { Collection } from '@/lib/api/types';
 
@@ -13,20 +14,22 @@ export async function CollectionsSection({ collections }: CollectionsSectionProp
   if (collections.length === 0) return null;
   return (
     <section className="home-container home-section">
-      <HomeSectionHeading title={t('collectionsTitle')} />
-      <div className="home-collections-grid">
-        {collections.map((collection) => (
-          <Link
-            key={collection.key}
-            href={`/collections/${collection.key}`}
-            className="home-collection focus-ring"
-          >
-            <span>{collection.titleUk}</span>
-            {collection.descriptionUk && <p>{collection.descriptionUk}</p>}
-            <span aria-hidden className="home-collection-arrow">↗</span>
-          </Link>
+      <ScrollReveal>
+        <HomeSectionHeading title={t('collectionsTitle')} />
+      </ScrollReveal>
+      <ScrollReveal className="home-collections-grid">
+        {collections.map((collection, idx) => (
+          <ScrollReveal key={collection.key} delay={Math.min(idx, 5) * 0.05}>
+            <Link href={`/collections/${collection.key}`} className="home-collection focus-ring">
+              <span>{collection.titleUk}</span>
+              {collection.descriptionUk && <p>{collection.descriptionUk}</p>}
+              <span aria-hidden className="home-collection-arrow">
+                ↗
+              </span>
+            </Link>
+          </ScrollReveal>
         ))}
-      </div>
+      </ScrollReveal>
     </section>
   );
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapSearchHref, phoneHref, weeklySchedule } from './contacts-summary';
+import { mapEmbedSrc, mapSearchHref, phoneHref, weeklySchedule } from './contacts-summary';
 
 describe('phoneHref', () => {
   it('keeps only the digits and the plus of a phone typed for people', () => {
@@ -27,6 +27,20 @@ describe('mapSearchHref', () => {
     expect(mapSearchHref(null)).toBeNull();
     expect(mapSearchHref(undefined)).toBeNull();
     expect(mapSearchHref('')).toBeNull();
+  });
+});
+
+describe('mapEmbedSrc', () => {
+  it('embeds a Google map pinned to the address', () => {
+    expect(mapEmbedSrc('Київ, вул. Хрещатик 1', 'uk')).toBe(
+      `https://maps.google.com/maps?q=${encodeURIComponent('Київ, вул. Хрещатик 1')}&hl=uk&z=16&output=embed`,
+    );
+    expect(mapEmbedSrc('Київ', 'en')).toContain('hl=en');
+  });
+
+  it('has no frame without an address', () => {
+    expect(mapEmbedSrc(null)).toBeNull();
+    expect(mapEmbedSrc('   ')).toBeNull();
   });
 });
 

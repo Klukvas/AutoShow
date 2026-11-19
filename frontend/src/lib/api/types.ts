@@ -202,6 +202,8 @@ export interface PublicReview {
   city: string | null;
   text: string;
   rating: number;
+  /** Same-origin photo path, or a YouTube / Instagram url. Absent on older rows. */
+  mediaUrl?: string | null;
   createdAt: string;
 }
 

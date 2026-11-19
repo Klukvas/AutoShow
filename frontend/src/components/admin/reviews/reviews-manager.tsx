@@ -24,9 +24,18 @@ interface Draft {
   text: string;
   rating: number;
   position: number;
+  mediaUrl: string;
 }
 
-const EMPTY_DRAFT: Draft = { id: null, authorName: '', city: '', text: '', rating: 5, position: 0 };
+const EMPTY_DRAFT: Draft = {
+  id: null,
+  authorName: '',
+  city: '',
+  text: '',
+  rating: 5,
+  position: 0,
+  mediaUrl: '',
+};
 
 /** Admin CRUD for homepage testimonials: list, add/edit dialog, publish toggle. */
 export function ReviewsManager({ initial }: ReviewsManagerProps) {
@@ -67,6 +76,7 @@ export function ReviewsManager({ initial }: ReviewsManagerProps) {
         text: draft.text.trim(),
         rating: draft.rating,
         position: draft.position,
+        mediaUrl: draft.mediaUrl.trim(),
       };
       if (draft.id) await adminApi.updateReview(draft.id, body, { accessToken: token });
       else await adminApi.createReview(body, { accessToken: token });
@@ -158,6 +168,7 @@ export function ReviewsManager({ initial }: ReviewsManagerProps) {
                         text: review.text,
                         rating: review.rating,
                         position: review.position,
+                        mediaUrl: review.mediaUrl ?? '',
                       }),
                   },
                   {
@@ -213,6 +224,13 @@ export function ReviewsManager({ initial }: ReviewsManagerProps) {
               maxLength={128}
               value={draft.city}
               onChange={(e) => setDraft({ ...draft, city: e.target.value })}
+            />
+            <TextField
+              label={t('media')}
+              maxLength={512}
+              value={draft.mediaUrl}
+              placeholder={t('mediaHint')}
+              onChange={(e) => setDraft({ ...draft, mediaUrl: e.target.value })}
             />
             <TextareaField
               label={t('text')}

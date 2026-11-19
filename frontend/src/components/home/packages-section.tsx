@@ -19,9 +19,11 @@ export async function PackagesSection({ packages }: { packages: PublicPlacementP
 
   return (
     <section id="packages" className="home-container home-section home-packages">
-      <HomeSectionHeading title={t('title')} />
-      <p className="home-packages-subtitle">{t('subtitle')}</p>
-      <div className="home-packages-grid">
+      <ScrollReveal>
+        <HomeSectionHeading title={t('title')} />
+        <p className="home-packages-subtitle">{t('subtitle')}</p>
+      </ScrollReveal>
+      <ScrollReveal className="home-packages-grid">
         {packages.map((pkg, idx) => (
           <ScrollReveal key={pkg.id} delay={Math.min(idx, 5) * 0.06} className="h-full">
             <article className={cn('home-package', pkg.isFeatured && 'home-package-featured')}>
@@ -56,7 +58,7 @@ export async function PackagesSection({ packages }: { packages: PublicPlacementP
             </article>
           </ScrollReveal>
         ))}
-      </div>
+      </ScrollReveal>
     </section>
   );
 }

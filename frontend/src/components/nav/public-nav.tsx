@@ -14,6 +14,7 @@ import { useFavorites } from '@/lib/favorites';
 import { lockBodyScroll, unlockBodyScroll } from '@/lib/scroll-lock';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme/theme-toggle';
+import { HeaderSocial } from '@/components/nav/header-social';
 import { LanguageSwitcher } from '@/components/nav/language-switcher';
 import type { Branding } from '@/lib/api/types';
 
@@ -125,6 +126,7 @@ export function PublicNav({ branding }: PublicNavProps) {
 
         {/* Desktop right cluster */}
         <div className="hidden items-center gap-3 md:flex">
+          <HeaderSocial links={branding?.socialLinks} labels={socialLabels(t)} />
           <FavoritesLink label={t('favorites')} />
           {!isHomepage && <ThemeToggle />}
           <LanguageSwitcher label={t('language')} />
@@ -213,6 +215,7 @@ export function PublicNav({ branding }: PublicNavProps) {
                   })}
                 </nav>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
+                  <HeaderSocial links={branding?.socialLinks} labels={socialLabels(t)} />
                   <Button
                     as="link"
                     href="/contacts#lead"
@@ -236,6 +239,17 @@ export function PublicNav({ branding }: PublicNavProps) {
 
 /** Heart with a count bubble → /favorites. Hidden until hydration (count is
  *  client-only) and while empty — an always-on zero would just be noise. */
+function socialLabels(
+  t: (key: 'socialInstagram' | 'socialTiktok' | 'socialFacebook' | 'socialYoutube') => string,
+) {
+  return {
+    instagram: t('socialInstagram'),
+    tiktok: t('socialTiktok'),
+    facebook: t('socialFacebook'),
+    youtube: t('socialYoutube'),
+  };
+}
+
 function FavoritesLink({ label }: { label: string }) {
   const { slugs, ready } = useFavorites();
   if (!ready || slugs.length === 0) return null;

@@ -14,6 +14,13 @@ export class Review extends BaseEntity {
   @Column({ type: 'text' })
   text!: string;
 
+  /**
+   * Optional photo (`/demo/…`) or an https link to a YouTube video / Instagram Reel.
+   * The storefront decides how to preview it; anything else is ignored.
+   */
+  @Column({ name: 'media_url', type: 'varchar', length: 512, nullable: true })
+  mediaUrl!: string | null;
+
   /** 1..5 stars. */
   @Column({ type: 'int', default: 5 })
   rating!: number;

@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { HomeHero } from '@/components/hero/home-hero';
+import { AboutBand } from '@/components/home/about-band';
 import { CollectionsSection } from '@/components/home/collections-section';
+import { CtaBand } from '@/components/home/cta-band';
+import { FaqSection } from '@/components/home/faq-section';
 import { ReviewsSection } from '@/components/home/reviews-section';
 import { ServicesSection } from '@/components/home/services-section';
 import { SellCarSection } from '@/components/home/sell-car-section';
@@ -25,16 +28,18 @@ export function Home({ model, InventoryCard }: HomeProps) {
       {/* Current inventory, including the featured car. */}
       {inventory.length > 0 && (
         <section className="home-container home-section home-inventory">
-          <HomeSectionHeading
-            title={t('cinematicInventory')}
-            action={
-              <Link href="/cars" className="home-text-link focus-ring">
-                {t('cinematicViewAll')} <span aria-hidden>↗</span>
-              </Link>
-            }
-          />
+          <ScrollReveal>
+            <HomeSectionHeading
+              title={t('cinematicInventory')}
+              action={
+                <Link href="/cars" className="home-text-link focus-ring">
+                  {t('cinematicViewAll')} <span aria-hidden>↗</span>
+                </Link>
+              }
+            />
+          </ScrollReveal>
 
-          <div className="home-inventory-grid">
+          <ScrollReveal className="home-inventory-grid">
             {inventory.map((listing, idx) => (
               <ScrollReveal key={listing.id} delay={Math.min(idx, 5) * 0.05}>
                 <InventoryCard
@@ -44,19 +49,28 @@ export function Home({ model, InventoryCard }: HomeProps) {
                 />
               </ScrollReveal>
             ))}
-          </div>
+          </ScrollReveal>
         </section>
       )}
 
-      <StatsBand />
+      <ScrollReveal>
+        <StatsBand animate />
+      </ScrollReveal>
 
       <CollectionsSection collections={collections} />
+
+      <CtaBand
+        phone={branding?.contactPhone ?? null}
+        telegram={branding?.socialLinks?.telegram ?? null}
+      />
 
       {/* Trust block */}
       <section className="home-trust">
         <div className="home-container home-section">
-          <HomeSectionHeading title={t('trustEyebrow')} />
-          <div className="home-trust-grid">
+          <ScrollReveal>
+            <HomeSectionHeading title={t('trustEyebrow')} />
+          </ScrollReveal>
+          <ScrollReveal className="home-trust-grid">
             {[
               { title: t('trust1Title'), body: t('trust1Body') },
               { title: t('trust2Title'), body: t('trust2Body') },
@@ -69,9 +83,11 @@ export function Home({ model, InventoryCard }: HomeProps) {
                 </div>
               </ScrollReveal>
             ))}
-          </div>
+          </ScrollReveal>
         </div>
       </section>
+
+      <AboutBand />
 
       {installation.features.reviews && <ReviewsSection reviews={reviews} />}
 
@@ -80,6 +96,8 @@ export function Home({ model, InventoryCard }: HomeProps) {
       <PackagesSection packages={packages} />
 
       <SellCarSection packages={packages} />
+
+      <FaqSection />
     </>
   );
 }

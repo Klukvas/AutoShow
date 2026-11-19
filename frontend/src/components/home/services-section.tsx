@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { getTranslations } from 'next-intl/server';
 import { HomeSectionHeading } from './home-section-heading';
@@ -5,17 +6,15 @@ import { ScrollReveal } from '@/components/motion/scroll-reveal';
 
 /**
  * "Послуги" — the showroom's services beyond browsing: instant buyout, trade-in,
- * financing, and multi-channel promotion. Copy lives in messages/uk.json under
- * home.services.<key>; each card links into the relevant existing flow (the
- * consignment form #sell, the trade-in tag filter, or contacts).
+ * financing, and multi-channel promotion. Copy lives in messages under
+ * home.services.<key>. `image` is a public path the client can replace.
+ * Demo photos are free-license stock (Pexels, Unsplash).
  */
 const SERVICES = [
-  // buyout/promo → the #sell intake form (captures the car); tradein → the
-  // "Обмін" tag filter; credit → the catalog, where the per-car calculator lives.
-  { key: 'buyout', href: '#sell' },
-  { key: 'tradein', href: '/cars?tags%5B%5D=obmin' },
-  { key: 'credit', href: '/cars' },
-  { key: 'promo', href: '#sell' },
+  { key: 'buyout', href: '#sell', image: '/demo/services/buyout.jpg' },
+  { key: 'tradein', href: '/cars?tags%5B%5D=obmin', image: '/demo/services/tradein.jpg' },
+  { key: 'credit', href: '/cars', image: '/demo/services/credit.jpg' },
+  { key: 'promo', href: '#sell', image: '/demo/services/promo.jpg' },
 ] as const;
 
 export async function ServicesSection({ hasPackages }: { hasPackages: boolean }) {
@@ -29,17 +28,23 @@ export async function ServicesSection({ hasPackages }: { hasPackages: boolean })
 
   return (
     <section className="home-container home-section">
-      <HomeSectionHeading title={t('servicesTitle')} />
-      <div className="home-services-grid">
+      <ScrollReveal>
+        <HomeSectionHeading title={t('servicesTitle')} />
+      </ScrollReveal>
+      <ScrollReveal className="home-services-grid">
         {services.map((service, idx) => (
           <ScrollReveal key={service.key} delay={idx * 0.06}>
-            <Link
-              href={service.href}
-              className="home-service focus-ring"
-            >
-              <h3 className="home-item-title">
-                {t(`services.${service.key}.title`)}
-              </h3>
+            <Link href={service.href} className="home-service group focus-ring">
+              <span className="home-service-photo">
+                <Image
+                  src={service.image}
+                  alt=""
+                  fill
+                  sizes="(max-width: 479px) 100vw, (max-width: 1023px) 50vw, 25vw"
+                  className="object-cover"
+                />
+              </span>
+              <h3 className="home-item-title">{t(`services.${service.key}.title`)}</h3>
               <p className="mt-2 flex-1 text-body-md leading-[1.6] text-ink-2">
                 {t(`services.${service.key}.body`)}
               </p>
@@ -49,7 +54,7 @@ export async function ServicesSection({ hasPackages }: { hasPackages: boolean })
             </Link>
           </ScrollReveal>
         ))}
-      </div>
+      </ScrollReveal>
     </section>
   );
 }

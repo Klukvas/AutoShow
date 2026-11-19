@@ -19,6 +19,7 @@ import { Listing } from '../../modules/listings/entities/listing.entity';
 import { ListingOption } from '../../modules/listings/entities/listing-option.entity';
 import { ListingTag } from '../../modules/listings/entities/listing-tag.entity';
 import { Collection } from '../../modules/collections/entities/collection.entity';
+import { Review } from '../../modules/reviews/entities/review.entity';
 
 loadDotenv({ path: process.env.ENV_FILE ?? '.env' });
 
@@ -268,12 +269,19 @@ async function ensureSiteSettings(ds: DataSource) {
       accentColor: '#2563EB',
       contactPhone: '+380 44 123 45 67',
       contactEmail: 'sales@autoflow.example',
-      address: 'Київ',
+      address: 'Київ, вул. Велика Васильківська, 72',
       workingHours: {
         mon_fri: { open: '09:00', close: '19:00' },
         sat: { open: '10:00', close: '17:00' },
       },
-      socialLinks: { instagram: 'https://instagram.com/example' },
+      socialLinks: {
+        instagram: 'https://instagram.com/example',
+        facebook: 'https://facebook.com/autoflow.example',
+        youtube: 'https://youtube.com/@autoflow',
+        tiktok: 'https://www.tiktok.com/@autoflow',
+        telegram: 'https://t.me/autoflow_demo',
+        viber: 'https://invite.viber.com/?g2=autoflowdemo',
+      },
       seoDefaults: {
         titleTemplate: '%s — AutoFlow',
         description: 'Кураторська вітрина перевірених автомобілів',
@@ -442,6 +450,67 @@ async function ensureDemoListings(ds: DataSource) {
   console.log(`Seeded ${demos.length} demo listings`);
 }
 
+const demoReviews: Array<{
+  authorName: string;
+  city: string;
+  text: string;
+  rating: number;
+  position: number;
+  mediaUrl: string;
+}> = [
+  {
+    authorName: 'Олена Коваль',
+    city: 'Київ',
+    text: 'Прийшли в салон без списку, за годину звузили до двох машин. Договір і сервісна історія були на столі до тесту.',
+    rating: 5,
+    position: 1,
+    mediaUrl: '/demo/reviews/1.jpg',
+  },
+  {
+    authorName: 'Андрій Мельник',
+    city: 'Бровари',
+    text: 'Просив показати, що дивився механік. Відкрили капот і ходову, а не лише салон. Зауваження були в оголошенні.',
+    rating: 5,
+    position: 2,
+    mediaUrl: '/demo/reviews/2.jpg',
+  },
+  {
+    authorName: 'Марина Шевченко',
+    city: 'Київ',
+    text: 'Шукала сімейне авто з одним власником. На вітрині було менше варіантів, ніж на дошках, і жоден не довелося відкидати після огляду.',
+    rating: 5,
+    position: 3,
+    mediaUrl: '/demo/reviews/3.jpg',
+  },
+  {
+    authorName: 'Ігор Савчук',
+    city: 'Ірпінь',
+    text: 'Здав своє авто в обмін. Оцінку назвали в салоні, доплату порахували до договору, без нової ціни на наступний день.',
+    rating: 4,
+    position: 4,
+    mediaUrl: '/demo/reviews/4.jpg',
+  },
+  {
+    authorName: 'Наталія Бондар',
+    city: 'Київ',
+    text: 'Запис на тест-драйв зайняв один дзвінок. Авто було готове, ніхто не квапив з рішенням у той самий вечір.',
+    rating: 5,
+    position: 5,
+    mediaUrl: '/demo/reviews/5.jpg',
+  },
+];
+
+/** Dev-only placeholders so the homepage carousel has photos and one video link. */
+async function ensureDemoReviews(ds: DataSource) {
+  const repo = ds.getRepository(Review);
+  const existing = await repo.count({ where: { deletedAt: IsNull() } });
+  if (existing > 0) return;
+  for (const review of demoReviews) {
+    await repo.save(repo.create({ ...review, isPublished: true }));
+  }
+  console.log(`Seeded ${demoReviews.length} reviews`);
+}
+
 async function main() {
   const ds = new DataSource({ ...adminDataSourceOptions, entities: ALL_ENTITIES });
   await ds.initialize();
@@ -453,6 +522,7 @@ async function main() {
     // Demo listings/media are dev-only fixtures; never seed them into production.
     if (!IS_PRODUCTION) {
       await ensureDemoListings(ds);
+      await ensureDemoReviews(ds);
     }
     console.log('Seeds complete.');
   } finally {

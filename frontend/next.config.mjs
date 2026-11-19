@@ -64,6 +64,7 @@ const csp = [
   `connect-src 'self' ${mediaOrigins.join(' ')}${analyticsConnections}`.trim(),
   `font-src 'self' data:`,
   `object-src 'none'`,
+  `frame-src https://maps.google.com https://www.google.com`,
   `base-uri 'self'`,
   `form-action 'self'`,
   `frame-ancestors 'none'`,
